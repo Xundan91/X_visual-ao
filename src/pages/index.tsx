@@ -1,115 +1,80 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+"use client";
+import FlowPanel from '@/components/panel';
+import { Edge, Edges } from '@/edges';
+import { useGlobalState } from '@/hooks/useGlobalStore';
+import { Node, Nodes } from '@/nodes';
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import { MouseEvent, useCallback, useEffect } from 'react';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
 
 export default function Home() {
-  return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const globals = useGlobalState()
+  const [nodes, setNodes, onNodesChange] = useNodesState([
+    { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
+    { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
+  ]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([
+    { id: "start-add", source: "start", target: "add", type: "dashed" },
+  ]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    function onAddNodeEvent(e: CustomEvent) {
+      const type = e.detail.type;
+      let newId = "";
+      setEdges(edges => {
+        setNodes(nodes => {
+          newId = `node-${nodes.length + 1}`;
+          const lastNode = nodes.pop();
+          nodes.push({ id: newId, position: { x: lastNode?.position.x! + 100, y: lastNode?.position.y! + 100 }, type: type, data: {} })
+          nodes.push({ id: "add", position: { x: lastNode?.position.x! + 200, y: lastNode?.position.y! + 100 }, data: {}, type: "add" });
+          console.log("nodes", nodes);
+          return [...nodes];
+        })
+        const lastEdge = edges.pop(); // edge from the add node
+        const edge1Id = `${lastEdge?.source}-${newId}`;
+        const edge2Id = `${newId}-add`;
+        edges.push({ id: edge1Id, source: lastEdge?.source as string, target: newId, type: "default" });
+        edges.push({ id: edge2Id, source: newId, target: "add", type: "dashed" });
+        console.log("edges", edges);
+        return [...edges];
+      })
+      globals.toggleNodebar()
+      console.log("add node event", e.detail);
+    }
+
+    window.addEventListener("add-node", onAddNodeEvent as EventListener);
+    return () => window.removeEventListener("add-node", onAddNodeEvent as EventListener);
+  }, [])
+
+  function onNodeClick(e: any, node: Node) {
+    switch (node.type) {
+      case "add":
+        globals.toggleNodebar()
+        console.log("add node clicked");
+        break;
+      case "start":
+        console.log("start node clicked");
+        break;
+    }
+  }
+
+  return (
+    <div className="h-screen w-full bg-gray-200">
+      <ReactFlow
+        nodeTypes={Nodes as any}
+        edgeTypes={Edges}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick as any}
+      >
+        {/* <FlowPanel /> */}
+        <Background variant={BackgroundVariant.Dots} bgColor="#fef9f2" />
+        <MiniMap />
+        <Controls />
+      </ReactFlow>
     </div>
   );
 }
