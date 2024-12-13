@@ -20,6 +20,12 @@ const Nodes = {
 
 type TNodes = keyof typeof Nodes
 
+const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
+    start: { width: 48, height: 48 },
+    add: { width: 48, height: 48 },
+    "handler-add": { width: 112, height: 112 }
+}
+
 export function keyToNode(key: TNodes): string {
     switch (key) {
         case "start":
@@ -33,4 +39,4 @@ export function keyToNode(key: TNodes): string {
     }
 }
 
-export { Nodes, type TNodes };
+export { Nodes, type TNodes, NodeSizes };

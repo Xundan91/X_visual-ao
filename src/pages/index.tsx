@@ -2,7 +2,7 @@
 import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { Node, Nodes } from '@/nodes';
+import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { MouseEvent, useCallback, useEffect } from 'react';
@@ -26,8 +26,22 @@ export default function Home() {
         setNodes(nodes => {
           newId = `node-${nodes.length + 1}`;
           const lastNode = nodes.pop();
-          nodes.push({ id: newId, position: { x: lastNode?.position.x! + 100, y: lastNode?.position.y! + 100 }, type: type, data: {} })
-          nodes.push({ id: "add", position: { x: lastNode?.position.x! + 200, y: lastNode?.position.y! + 100 }, data: {}, type: "add" });
+          if (!lastNode) return [...nodes];
+
+          // nodes.push({ id: newId, position: { x: lastNode?.position.x! + 100, y: lastNode?.position.y! + 100 }, type: type, data: {} })
+          // nodes.push({ id: "add", position: { x: lastNode?.position.x! + 200, y: lastNode?.position.y! + 100 }, data: {}, type: "add" });
+
+          // add new nodes at positions based of size of last node
+          const lastNodeSize = NodeSizes[lastNode.type as TNodes];
+          const currentNodeSize = NodeSizes[type as TNodes];
+
+          // if last node is "add", then add new node at the same position
+          if (lastNode.type === "add") {
+            nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
+          } else {
+            nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
+          }
+          nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
           console.log("nodes", nodes);
           return [...nodes];
         })
@@ -80,7 +94,11 @@ export default function Home() {
         edgeTypes={Edges}
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        onNodesChange={(e: any) => {
+          if (e.id != "add") {
+            onNodesChange(e)
+          }
+        }}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick as any}
         onPaneClick={() => {
