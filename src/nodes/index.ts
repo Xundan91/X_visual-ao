@@ -20,4 +20,17 @@ const Nodes = {
 
 type TNodes = keyof typeof Nodes
 
+export function keyToNode(key: TNodes): string {
+    switch (key) {
+        case "start":
+            return "Start";
+        case "add":
+            return "Add";
+        case "handler-add":
+            return "Handler Add";
+        default:
+            return "";
+    }
+}
+
 export { Nodes, type TNodes };

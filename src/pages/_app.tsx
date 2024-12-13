@@ -1,9 +1,15 @@
 import "@/styles/globals.css";
 import { ArweaveWalletKit } from "arweave-wallet-kit";
 import type { AppProps } from "next/app";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { LeftSidebar } from "@/components/left-sidebar";
 import { RightSidebar } from "@/components/right-sidebar";
+import { Toaster } from "@/components/ui/sonner";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+
 
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -19,9 +25,19 @@ export default function App({ Component, pageProps }: AppProps) {
     }}
   >
     <div className="flex">
-      <LeftSidebar />
-      <Component {...pageProps} />
-      <RightSidebar />
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel maxSize={30} minSize={15} defaultSize={20}>
+          <LeftSidebar />
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel>
+          <Component {...pageProps} />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+      <div className="z-20 absolute right-0">
+        <RightSidebar />
+      </div>
     </div>
+    <Toaster />
   </ArweaveWalletKit>
 }

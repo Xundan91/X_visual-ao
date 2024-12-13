@@ -1,4 +1,4 @@
-import { EdgeProps, getBezierPath } from '@xyflow/react';
+import { EdgeProps, getSmoothStepPath } from '@xyflow/react';
 
 const DashedEdge = ({
     id,
@@ -12,7 +12,7 @@ const DashedEdge = ({
     markerEnd,
     data,
 }: EdgeProps) => {
-    const [edgePath] = getBezierPath({
+    const [edgePath] = getSmoothStepPath({
         sourceX,
         sourceY,
         targetX,

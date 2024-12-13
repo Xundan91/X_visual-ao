@@ -1,3 +1,4 @@
+import { SmoothStepEdge } from "@xyflow/react";
 import DashedEdge from "./dashed";
 
 export interface Edge {
@@ -9,6 +10,7 @@ export interface Edge {
 }
 
 const Edges = {
+    default: SmoothStepEdge,
     dashed: DashedEdge
 }
 

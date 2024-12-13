@@ -1,0 +1,1 @@
+export const GOLD_SKY_GQL = "https://arweave-search.goldsky.com/graphql"

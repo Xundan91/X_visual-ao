@@ -50,12 +50,26 @@ export default function Home() {
   function onNodeClick(e: any, node: Node) {
     switch (node.type) {
       case "add":
-        globals.toggleNodebar()
+        if (!globals.nodebarOpen)
+          globals.toggleNodebar()
+        globals.setActiveNode(undefined)
         console.log("add node clicked");
         break;
       case "start":
+        if (globals.nodebarOpen)
+          globals.toggleNodebar()
+        globals.setActiveNode(undefined)
         console.log("start node clicked");
         break;
+      case "handler-add":
+        if (!globals.nodebarOpen)
+          globals.toggleNodebar()
+        globals.setActiveNode(node)
+        break;
+      default:
+        globals.setActiveNode(undefined)
+
+
     }
   }
 
@@ -69,6 +83,11 @@ export default function Home() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick as any}
+        onPaneClick={() => {
+          globals.setActiveNode(undefined)
+          if (globals.nodebarOpen)
+            globals.toggleNodebar()
+        }}
       >
         {/* <FlowPanel /> */}
         <Background variant={BackgroundVariant.Dots} bgColor="#fef9f2" />
