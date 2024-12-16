@@ -37,6 +37,7 @@ export function HandlerAddNodeSidebar() {
     const [actionType, setActionType] = useState<THandlerType>("")
     const [actionValue, setActionValue] = useState("")
     const { editingNode, setEditingNode, nodebarOpen, toggleNodebar, activeNode } = useGlobalState()
+    const nodeData = activeNode?.data as data
 
     useEffect(() => {
         const nodeData = activeNode?.data as data
@@ -73,7 +74,6 @@ export function HandlerAddNodeSidebar() {
         setEditingNode(true)
         if (nodebarOpen)
             toggleNodebar()
-
     }
 
     return <div className="flex flex-col gap-0.5">
@@ -102,12 +102,6 @@ export function HandlerAddNodeSidebar() {
                 <SmolText>Custom String</SmolText>
                 <Input className="border-y border-x-0 bg-yellow-50" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} />
             </>
-        }
-        {
-            // actionType === "custom-fun" && <>
-            //     <SmolText>Custom Function</SmolText>
-            //     <Input className="border-y border-x-0 bg-yellow-50" placeholder="Enter custom function" />
-            // </>
         }
         {
             actionValue && <>
