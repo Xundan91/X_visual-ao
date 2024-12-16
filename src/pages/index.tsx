@@ -171,12 +171,12 @@ export default function Home() {
           [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
         edges={edges}
         onNodesChange={(e: NodeChange[]) => {
-          console.log(e)
-          const e_ = e.filter(e => e.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes(e__.id))
+          // prevent deletion
+          const e_ = e.filter(e__ => e__.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes((e__ as any).id))
           onNodesChange(e_ as any)
         }}
         onEdgesChange={(e: EdgeChange[]) => {
-          console.log(e)
+          // prevent deletion
           const e_ = e.filter(e__ => e__.type !== "remove")
           onEdgesChange(e_ as any)
         }}
