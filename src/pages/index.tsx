@@ -6,6 +6,7 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { BoxIcon } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 export default function Home() {
@@ -58,8 +59,30 @@ export default function Home() {
       console.log("add node event", e.detail);
     }
 
+    function onUpdateNodeDataEvent(e: CustomEvent) {
+      const detail = e.detail;
+      setNodes(nodes => {
+        const nodeIndex = nodes.findIndex(node => node.id === detail.id);
+        if (nodeIndex === -1) return [...nodes];
+        nodes[nodeIndex].data = detail.data;
+        console.log("update node data event", nodes);
+        return [...nodes];
+      })
+    }
+
+    function onBlocklySaveEvent(e: CustomEvent) {
+
+    }
+
     window.addEventListener("add-node", onAddNodeEvent as EventListener);
-    return () => window.removeEventListener("add-node", onAddNodeEvent as EventListener);
+    window.addEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
+    window.addEventListener("save-blocks", onBlocklySaveEvent as EventListener)
+
+    return () => {
+      window.removeEventListener("add-node", onAddNodeEvent as EventListener);
+      window.removeEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
+      window.removeEventListener("save-blocks", onBlocklySaveEvent as EventListener)
+    }
   }, [])
 
   function onNodeClick(e: any, node: Node) {
@@ -93,7 +116,7 @@ export default function Home() {
     <div className="h-screen w-full">
       <div className="h-5 flex items-center px-1 border-b text-xs">
         {globals.activeProcess && <>
-          <div>{globals.activeProcess}</div>
+          <BoxIcon size={14} className='mr-1' strokeWidth={1.2} />{globals.activeProcess}
           {globals.activeNode && <>
             <div className='px-1.5 text-base'>/</div>
             <div>{globals.activeNode?.id}</div>
@@ -106,9 +129,10 @@ export default function Home() {
           </>}
         </>}
       </div>
-      {/* {
-        globals.editingNode && <BlocklyComponent />
-      } */}
+      {globals.editingNode && <div className='absolute left-0 top-0 w-screen h-screen bg-black/60 z-50 flex flex-col items-center justify-center'>
+        <BlocklyComponent />
+      </div>
+      }
 
       <ReactFlow
         className='!h-[calc(100vh-20px)]'

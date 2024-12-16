@@ -1,6 +1,6 @@
 import StartNode from "@/nodes/start";
 import AddNode from "./add";
-import HandlerAddNode from "./handler-add";
+import HandlerAddNode, { data as HandlerAddNodeData } from "./handler-add";
 import AnnotationNode from "./annotation";
 
 export interface Node {
@@ -9,7 +9,7 @@ export interface Node {
         x: number;
         y: number;
     };
-    data: {};
+    data: {} | HandlerAddNodeData;
     type: TNodes;
 }
 
@@ -31,10 +31,6 @@ const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
 
 export function keyToNode(key: TNodes): string {
     switch (key) {
-        case "start":
-            return "Start";
-        case "add":
-            return "Add";
         case "handler-add":
             return "Handler Add";
         default:
