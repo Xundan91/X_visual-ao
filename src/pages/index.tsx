@@ -106,9 +106,9 @@ export default function Home() {
           </>}
         </>}
       </div>
-      {
+      {/* {
         globals.editingNode && <BlocklyComponent />
-      }
+      } */}
 
       <ReactFlow
         className='!h-[calc(100vh-20px)]'

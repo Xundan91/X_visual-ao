@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { CheckIcon, XIcon } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ToolboxDefinition, BlocklyWorkspace, useBlocklyWorkspace } from "react-blockly"
 import { toolboxConfiguration } from './toolbox';
 
@@ -13,27 +13,31 @@ export default function BlocklyComponent() {
         toolboxConfiguration: toolboxConfiguration, // this must be a JSON toolbox definition
         initialXml: `<xml xmlns="http://www.w3.org/1999/xhtml"></xml>`,
         onWorkspaceChange(workspace) {
-            console.log("workspace changed", workspace)
+            // console.log("workspace changed", workspace)
         },
     });
     const { setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()
 
-    function discardBlocks() {
-        setEditingNode(false)
-        if (!nodebarOpen) toggleNodebar()
-    }
+    useEffect(() => {
+        function onSaveEvent() {
+            saveBlocks()
+        }
+
+        window.addEventListener("save-blocks", onSaveEvent)
+        return () => window.removeEventListener("save-blocks", onSaveEvent)
+
+    }, [])
 
     function saveBlocks() {
         console.log("xml", xml)
         setEditingNode(false)
-        if (!nodebarOpen) toggleNodebar()
     }
 
-    return <div className="absolute left-0 top-0 h-screen w-screen z-20 bg-black/20 flex flex-col items-center justify-center">
-        <div ref={blocklyRef} className="w-[90vw] h-[90vh] border border-black/40 bg-white rounded-md overflow-clip"></div>
-        <div className='w-full max-w-[90vw] p-1 flex gap-1 items-center justify-end'>
+    return <div className="z-20 flex flex-col items-center justify-center">
+        <div className="relative z-10 w-[90vw] h-[90vh] border bg-white rounded-md overflow-clip"></div>
+        {/* <div className='w-full max-w-[90vw] p-1 flex gap-1 items-center justify-end'>
             <Button variant="secondary" className="hover:bg-destructive hover:text-white" onClick={discardBlocks}><XIcon /></Button>
             <Button variant="secondary" className="hover:bg-green-500 hover:text-white" onClick={saveBlocks}><CheckIcon /></Button>
-        </div>
+        </div> */}
     </div>
 }
