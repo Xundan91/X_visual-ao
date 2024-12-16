@@ -2,8 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: "export",
-  transpilePackages: ["react-blockly"],
-  basePath: "/vao"
+  transpilePackages: ["react-blockly"]
 };
 
 export default nextConfig;
