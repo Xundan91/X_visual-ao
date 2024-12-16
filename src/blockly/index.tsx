@@ -1,17 +1,23 @@
 import { Button } from '@/components/ui/button';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { CheckIcon, XIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ToolboxDefinition, BlocklyWorkspace, useBlocklyWorkspace } from "react-blockly"
 import { toolboxConfiguration } from './toolbox';
+import { DEFAULT_XML } from './xml';
+import { data as HandlerAddData } from '@/nodes/handler-add';
 
 export default function BlocklyComponent() {
+    const { activeNode } = useGlobalState()
+    const data = activeNode?.data as HandlerAddData
+    // const [xmlV, setXmlV] = useState(data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"))
+
     const blocklyRef = useRef(null);
     const { workspace, xml } = useBlocklyWorkspace({
         ref: blocklyRef,
         workspaceConfiguration: { readOnly: false },
         toolboxConfiguration: toolboxConfiguration, // this must be a JSON toolbox definition
-        initialXml: `<xml xmlns="http://www.w3.org/1999/xhtml"></xml>`,
+        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
         },
@@ -23,7 +29,7 @@ export default function BlocklyComponent() {
     }
 
     function saveBlocks() {
-        console.log("xml", xml)
+        dispatchEvent(new CustomEvent("save-blocks", { detail: { xml } }))
         setEditingNode(false)
     }
 

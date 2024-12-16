@@ -4,21 +4,48 @@ import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
-import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
+import { data } from '@/nodes/handler-add';
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BoxIcon } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
+const defaults = {
+  nodes: [
+    { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
+    { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
+  ],
+  edges: [
+    { id: "start-add", source: "start", target: "add", type: "dashed" },
+  ]
+}
+const ignoreChangesForNodes = ["start"]
+
 export default function Home() {
   const globals = useGlobalState()
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([
-    { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
-    { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
-  ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([
-    { id: "start-add", source: "start", target: "add", type: "dashed" },
-  ]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(defaults.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem(`${globals.activeProcess}-flow`);
+    if (storedData) {
+      const { nodes, edges } = JSON.parse(storedData);
+      setNodes(nodes);
+      setEdges(edges);
+    } else {
+      setNodes(defaults.nodes);
+      setEdges(defaults.edges);
+    }
+  }, [globals.activeProcess]);
+
+  useEffect(() => {
+    if (!globals.activeProcess) return;
+    if (nodes !== defaults.nodes || edges !== defaults.edges) {
+      const data = { nodes, edges };
+      localStorage.setItem(`${globals.activeProcess}-flow`, JSON.stringify(data));
+    }
+  }, [nodes, edges, globals.activeProcess]);
 
   useEffect(() => {
     function onAddNodeEvent(e: CustomEvent) {
@@ -30,21 +57,15 @@ export default function Home() {
           const lastNode = nodes.pop();
           if (!lastNode) return [...nodes];
 
-          // nodes.push({ id: newId, position: { x: lastNode?.position.x! + 100, y: lastNode?.position.y! + 100 }, type: type, data: {} })
-          // nodes.push({ id: "add", position: { x: lastNode?.position.x! + 200, y: lastNode?.position.y! + 100 }, data: {}, type: "add" });
-
-          // add new nodes at positions based of size of last node
           const lastNodeSize = NodeSizes[lastNode.type as TNodes];
           const currentNodeSize = NodeSizes[type as TNodes];
 
-          // if last node is "add", then add new node at the same position
           if (lastNode.type === "add") {
             nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
           } else {
             nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
           }
           nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
-          console.log("nodes", nodes);
           return [...nodes];
         })
         const lastEdge = edges.pop(); // edge from the add node
@@ -52,11 +73,9 @@ export default function Home() {
         const edge2Id = `${newId}-add`;
         edges.push({ id: edge1Id, source: lastEdge?.source as string, target: newId, type: "default" });
         edges.push({ id: edge2Id, source: newId, target: "add", type: "dashed" });
-        console.log("edges", edges);
         return [...edges];
       })
       globals.toggleNodebar()
-      console.log("add node event", e.detail);
     }
 
     function onUpdateNodeDataEvent(e: CustomEvent) {
@@ -65,13 +84,26 @@ export default function Home() {
         const nodeIndex = nodes.findIndex(node => node.id === detail.id);
         if (nodeIndex === -1) return [...nodes];
         nodes[nodeIndex].data = detail.data;
-        console.log("update node data event", nodes);
         return [...nodes];
       })
     }
 
     function onBlocklySaveEvent(e: CustomEvent) {
+      const xml = e.detail.xml;
+      if (!globals.activeNode) return console.log(globals.activeNode);
 
+      console.log("saving blocks")
+      setNodes(nodes => {
+        return nodes.map(node => {
+          if (node.id == globals.activeNode?.id) {
+            const node_ = { ...node, data: { ...node.data, blocklyXml: xml } } as Node
+            globals.setActiveNode(node_)
+            console.log("node updated", node_)
+            return node_
+          }
+          return node
+        })
+      })
     }
 
     window.addEventListener("add-node", onAddNodeEvent as EventListener);
@@ -83,7 +115,7 @@ export default function Home() {
       window.removeEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
       window.removeEventListener("save-blocks", onBlocklySaveEvent as EventListener)
     }
-  }, [])
+  }, [globals.activeNode])
 
   function onNodeClick(e: any, node: Node) {
     switch (node.type) {
@@ -91,13 +123,11 @@ export default function Home() {
         if (!globals.nodebarOpen)
           globals.toggleNodebar()
         globals.setActiveNode(undefined)
-        console.log("add node clicked");
         break;
       case "start":
         if (globals.nodebarOpen)
           globals.toggleNodebar()
         globals.setActiveNode(undefined)
-        console.log("start node clicked");
         break;
       case "handler-add":
         if (!globals.nodebarOpen)
@@ -110,7 +140,6 @@ export default function Home() {
 
     }
   }
-
 
   return (
     <div className="h-screen w-full">
@@ -141,12 +170,16 @@ export default function Home() {
         nodes={globals.activeProcess ? nodes :
           [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
         edges={edges}
-        onNodesChange={(e: any) => {
-          if (e.id != "add") {
-            onNodesChange(e)
-          }
+        onNodesChange={(e: NodeChange[]) => {
+          console.log(e)
+          const e_ = e.filter(e => e.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes(e__.id))
+          onNodesChange(e_ as any)
         }}
-        onEdgesChange={onEdgesChange}
+        onEdgesChange={(e: EdgeChange[]) => {
+          console.log(e)
+          const e_ = e.filter(e__ => e__.type !== "remove")
+          onEdgesChange(e_ as any)
+        }}
         onNodeClick={onNodeClick as any}
         onPaneClick={() => {
           globals.setActiveNode(undefined)

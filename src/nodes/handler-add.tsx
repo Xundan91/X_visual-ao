@@ -6,8 +6,6 @@ import { keyToNode, TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import BlocklyComponent from "@/blockly";
 
 // data field structure for react-node custom node
 export interface data {
@@ -22,7 +20,6 @@ type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
 export default function HandlerAddNode(props: Node) {
     const { activeNode } = useGlobalState()
     const data = props.data as unknown as data
-    // console.log("data", data)
 
     const iAmActive = activeNode?.id === props.id
 
@@ -43,11 +40,9 @@ export function HandlerAddNodeSidebar() {
 
     useEffect(() => {
         const nodeData = activeNode?.data as data
-        console.log("nodeData", nodeData)
         setHandlerName(nodeData?.handlerName || "")
         setActionType(nodeData?.actionType as THandlerType || "")
         setActionValue(nodeData?.actionValue || "")
-        console.log("node Data Loaded")
     }, [activeNode?.id])
 
     useEffect(() => {
@@ -74,10 +69,6 @@ export function HandlerAddNodeSidebar() {
 
     }, [handlerName, actionType, actionValue])
 
-    function dispatchSaveBlocks() {
-        dispatchEvent(new CustomEvent("save-blocks"))
-    }
-
     function openBlocklyEditor() {
         setEditingNode(true)
         if (nodebarOpen)
@@ -93,7 +84,7 @@ export function HandlerAddNodeSidebar() {
         {/* dropdown with options to either use default action, custom string action, or write your own checker */}
         {handlerName.length > 3 && <>
             <SmolText>Checker Function</SmolText>
-            <select disabled={!handlerName} defaultValue={actionType || "default"} value={actionType} onChange={(e) => {
+            <select disabled={!handlerName} defaultValue={actionType || "default"} value={actionType || "default"} onChange={(e) => {
                 setActionType(e.target.value as THandlerType)
                 if (e.target.value === "default-action") {
                     setActionValue(`${handlerName}`)
