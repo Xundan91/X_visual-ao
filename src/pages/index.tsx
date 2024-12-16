@@ -1,15 +1,16 @@
 "use client";
+import BlocklyComponent from '@/blockly';
 import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { MouseEvent, useCallback, useEffect } from 'react';
-
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 export default function Home() {
   const globals = useGlobalState()
+
   const [nodes, setNodes, onNodesChange] = useNodesState([
     { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
     { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
@@ -87,12 +88,34 @@ export default function Home() {
     }
   }
 
+
   return (
-    <div className="h-screen w-full bg-gray-200">
+    <div className="h-screen w-full">
+      <div className="h-5 flex items-center px-1 border-b text-xs">
+        {globals.activeProcess && <>
+          <div>{globals.activeProcess}</div>
+          {globals.activeNode && <>
+            <div className='px-1.5 text-base'>/</div>
+            <div>{globals.activeNode?.id}</div>
+            {
+              globals.editingNode && <>
+                <div className='px-1.5 text-base'>/</div>
+                <div>block editor</div>
+              </>
+            }
+          </>}
+        </>}
+      </div>
+      {
+        globals.editingNode && <BlocklyComponent />
+      }
+
       <ReactFlow
+        className='!h-[calc(100vh-20px)]'
         nodeTypes={Nodes as any}
         edgeTypes={Edges}
-        nodes={nodes}
+        nodes={globals.activeProcess ? nodes :
+          [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
         edges={edges}
         onNodesChange={(e: any) => {
           if (e.id != "add") {

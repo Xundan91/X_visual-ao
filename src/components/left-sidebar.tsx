@@ -2,7 +2,7 @@ import { useGlobalState } from "@/hooks/useGlobalStore"
 import { findMyPIDs } from "@/lib/aos"
 import { shortAddress } from "@/lib/utils"
 import { ConnectButton, useActiveAddress } from "arweave-wallet-kit"
-import { CopyIcon } from "lucide-react"
+import { CopyIcon, RefreshCw } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "./ui/button"
@@ -21,8 +21,12 @@ export function LeftSidebar() {
     const { activeProcess } = useGlobalState()
     const [processes, setProcesses] = useState<{ cursor: string, id: string, name: string }[]>([])
 
-    useEffect(() => {
+    async function myProcesses() {
         findMyPIDs(address).then(setProcesses)
+    }
+
+    useEffect(() => {
+        myProcesses()
     }, [address])
 
     useEffect(() => {
@@ -37,7 +41,7 @@ export function LeftSidebar() {
             <div className="p-2">Visual AO</div>
             <ConnectButton className="mx-auto w-full" />
             <div className="p-0 flex flex-col">
-                <div className="p-2">My Processes</div>
+                <div className="p-2 flex items-center gap-2">My Processes <Button variant="ghost" className="w-7 h-7" onClick={myProcesses}><RefreshCw size={16} /></Button></div>
                 {/* <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" />
                 <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" name="testaddasdasdasdasdasdasdasdasasd1" />
                 <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" name="Process 3" /> */}

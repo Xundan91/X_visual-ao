@@ -22,11 +22,13 @@ function NodeTemplate({ name, Icon }: { name: TNodes, Icon: LucideIcon }) {
 }
 
 function AvailableNodes() {
+    const hidden = ["add", "start", "annotation"]
+
     return <>
         <div className="p-2">Available Nodes</div>
         <div className="p-0">
             {
-                (Object.keys(Nodes).filter(v => !["add", "start"].includes(v)) as TNodes[]).map((nodeKey: TNodes, index) => <NodeTemplate key={index} name={nodeKey} Icon={CodeIcon} />)
+                (Object.keys(Nodes).filter(v => !hidden.includes(v)) as TNodes[]).map((nodeKey: TNodes, index) => <NodeTemplate key={index} name={nodeKey} Icon={CodeIcon} />)
             }
         </div></>
 }
@@ -36,6 +38,12 @@ function HandlerAddNodeData() {
     const [handlerName, setHandlerName] = useState("")
     const [actionType, setActionType] = useState<THandlerType>("")
     const [actionValue, setActionValue] = useState("")
+    const { setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()
+
+    function openBlockEditor() {
+        setEditingNode(true)
+        if (nodebarOpen) toggleNodebar()
+    }
 
     return <div className="flex flex-col gap-0.5">
         {/* inputs for handler name */}
@@ -74,7 +82,7 @@ function HandlerAddNodeData() {
             actionValue && <>
                 <SmolText>Handler Body</SmolText>
                 <div className="p-2 bg-yellow-50 border-y border-x-0 aspect-video flex items-center justify-center">
-                    <Button variant="link" className="text-muted-foreground">Edit Block Code</Button>
+                    <Button variant="link" className="text-muted-foreground" onClick={openBlockEditor}>Edit Block Code</Button>
                 </div>
             </>
         }
