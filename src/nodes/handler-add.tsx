@@ -17,6 +17,14 @@ export interface data {
 }
 type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
 
+function embedHandler(name: string, action: string, xml: string) {
+    return `Handlers.add(
+    "${name}",
+    "${action}",
+    ${xmlToLua(xml).split("\n").map(v => `\t${v}`).join("\n")}
+)`
+}
+
 // the handler add node for react-flow
 export default function HandlerAddNode(props: Node) {
     const { activeNode } = useGlobalState()
@@ -57,17 +65,22 @@ export function HandlerAddNodeSidebar() {
     }, [editingNode, nodebarOpen])
 
     useEffect(() => {
+        if (actionType == "default-action")
+            setActionValue(`${handlerName}`)
+    }, [actionType, handlerName])
+
+    useEffect(() => {
         if (!handlerName) return
 
         // update the node data in react-flow
-        const nodeData: data = {
+        const newNodeData: data = {
             handlerName,
             actionType,
             actionValue,
-            blocklyXml: ""
+            blocklyXml: nodeData?.blocklyXml || ""
         }
 
-        dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: nodeData } }))
+        dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
 
     }, [handlerName, actionType, actionValue])
 
@@ -113,17 +126,19 @@ export function HandlerAddNodeSidebar() {
         {
             actionValue && <>
                 <SmolText>Handler Body</SmolText>
-                <div className="p-2 bg-yellow-50 border-y border-x-0 aspect-video flex items-center justify-center">
-                    <Button variant="link" className="text-muted-foreground" onClick={openBlocklyEditor}>
+                <div className="bg-yellow-50 border-y flex flex-col items-start justify-start overflow-clip">
+                    <Button variant="link" className="text-muted-foreground w-full" onClick={openBlocklyEditor}>
                         <FunctionSquareIcon size={20} /> Edit Block Code
                     </Button>
+                    {
+                        nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
+                            <pre className="text-xs">
+                                {embedHandler(handlerName, actionValue, nodeData.blocklyXml)}
+                            </pre>
+                        </div>
+                    }
                 </div>
             </>
-        }
-        {
-            nodeData?.blocklyXml && <div className="p-2 border-y border-x-0 min-h-[100px] overflow-scroll">
-                <pre className="text-xs">{xmlToLua(nodeData.blocklyXml)}</pre>
-            </div>
         }
     </div>
 }

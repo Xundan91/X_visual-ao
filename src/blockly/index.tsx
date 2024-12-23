@@ -24,7 +24,7 @@ export default function BlocklyComponent() {
         ref: blocklyRef,
         workspaceConfiguration: { readOnly: false },
         toolboxConfiguration: getToolboxConfiguration(),
-        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName),
+        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName + "Handler"),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
             console.log(luaGenerator.workspaceToCode(workspace))
