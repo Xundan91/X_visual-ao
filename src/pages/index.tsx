@@ -1,8 +1,10 @@
 "use client";
 import BlocklyComponent from '@/blockly';
+import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
+import { runFlow } from '@/lib/utils';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { data } from '@/nodes/handler-add';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
@@ -137,6 +139,7 @@ export default function Home() {
         if (globals.nodebarOpen)
           globals.toggleNodebar()
         globals.setActiveNode(undefined)
+        runFlow(nodes, edges)
         break;
       case "handler-add":
         if (!globals.nodebarOpen)
