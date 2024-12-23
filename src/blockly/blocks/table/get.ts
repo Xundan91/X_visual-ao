@@ -1,7 +1,7 @@
 import { Block } from 'blockly';
 import { BlockRegistration, registerBlock } from '../../utils/registry';
 import * as Lua from 'blockly/lua';
-
+import * as Blockly from 'blockly';
 const type = "table_get"
 const block: BlockRegistration = {
     type,

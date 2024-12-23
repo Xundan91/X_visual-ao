@@ -11,7 +11,7 @@ const block: BlockRegistration = {
         init: function (this: Block) {
             this.appendValueInput("Message")
                 .setCheck("TABLE")
-                .appendField("Send");
+                .appendField("Send")
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
