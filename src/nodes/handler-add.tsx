@@ -6,6 +6,7 @@ import { keyToNode, TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
+import { xmlToLua } from "@/blockly/utils/xml";
 
 // data field structure for react-node custom node
 export interface data {
@@ -118,6 +119,11 @@ export function HandlerAddNodeSidebar() {
                     </Button>
                 </div>
             </>
+        }
+        {
+            nodeData?.blocklyXml && <div className="p-2 border-y border-x-0 min-h-[100px] overflow-scroll">
+                <pre className="text-xs">{xmlToLua(nodeData.blocklyXml)}</pre>
+            </div>
         }
     </div>
 }

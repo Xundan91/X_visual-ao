@@ -2,14 +2,16 @@ import { Button } from '@/components/ui/button';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { CheckIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { ToolboxDefinition, BlocklyWorkspace, useBlocklyWorkspace } from "react-blockly"
-import { toolboxConfiguration } from './toolbox';
-import { DEFAULT_XML } from './xml';
+import { useBlocklyWorkspace } from "react-blockly"
+import { DEFAULT_XML } from './utils/xml';
 import { data as HandlerAddData } from '@/nodes/handler-add';
-import { registerBlocks } from './custom-blocks/lua';
 import { luaGenerator } from 'blockly/lua';
+import { initializeBlocks } from './utils/registry';
+import { getToolboxConfiguration } from './toolbox';
+import "./blocks"
 
-registerBlocks()
+
+initializeBlocks()
 export default function BlocklyComponent() {
     const { activeNode } = useGlobalState()
     console.log(activeNode)
@@ -17,16 +19,18 @@ export default function BlocklyComponent() {
     // const [xmlV, setXmlV] = useState(data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"))
 
     const blocklyRef = useRef(null);
+
     const { workspace, xml } = useBlocklyWorkspace({
         ref: blocklyRef,
         workspaceConfiguration: { readOnly: false },
-        toolboxConfiguration: toolboxConfiguration, // this must be a JSON toolbox definition
+        toolboxConfiguration: getToolboxConfiguration(),
         initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
             console.log(luaGenerator.workspaceToCode(workspace))
         },
     });
+    console.log(getToolboxConfiguration())
     const { setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()
 
     function discardBlocks() {
