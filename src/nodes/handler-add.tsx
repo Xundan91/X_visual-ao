@@ -36,7 +36,7 @@ export function HandlerAddNodeSidebar() {
     const [handlerName, setHandlerName] = useState("")
     const [actionType, setActionType] = useState<THandlerType>("")
     const [actionValue, setActionValue] = useState("")
-    const { editingNode, setEditingNode, nodebarOpen, toggleNodebar, activeNode } = useGlobalState()
+    const { editingNode, setEditingNode, nodebarOpen, toggleNodebar, activeNode, setActiveNode } = useGlobalState()
     const nodeData = activeNode?.data as data
 
     useEffect(() => {
@@ -71,9 +71,15 @@ export function HandlerAddNodeSidebar() {
     }, [handlerName, actionType, actionValue])
 
     function openBlocklyEditor() {
-        setEditingNode(true)
+        nodeData.handlerName = handlerName
+        nodeData.actionType = actionType
+        nodeData.actionValue = actionValue
+        if (activeNode?.id) {
+            setActiveNode({ ...activeNode, data: nodeData, id: activeNode.id })
+        }
         if (nodebarOpen)
             toggleNodebar()
+        setEditingNode(true)
     }
 
     return <div className="flex flex-col gap-0.5">

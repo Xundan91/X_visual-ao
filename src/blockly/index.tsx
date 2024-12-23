@@ -6,9 +6,13 @@ import { ToolboxDefinition, BlocklyWorkspace, useBlocklyWorkspace } from "react-
 import { toolboxConfiguration } from './toolbox';
 import { DEFAULT_XML } from './xml';
 import { data as HandlerAddData } from '@/nodes/handler-add';
+import { registerBlocks } from './custom-blocks/lua';
+import { luaGenerator } from 'blockly/lua';
 
+registerBlocks()
 export default function BlocklyComponent() {
     const { activeNode } = useGlobalState()
+    console.log(activeNode)
     const data = activeNode?.data as HandlerAddData
     // const [xmlV, setXmlV] = useState(data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"))
 
@@ -17,9 +21,10 @@ export default function BlocklyComponent() {
         ref: blocklyRef,
         workspaceConfiguration: { readOnly: false },
         toolboxConfiguration: toolboxConfiguration, // this must be a JSON toolbox definition
-        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"),
+        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
+            console.log(luaGenerator.workspaceToCode(workspace))
         },
     });
     const { setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()

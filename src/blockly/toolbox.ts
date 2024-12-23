@@ -13,6 +13,10 @@ export const toolboxConfiguration: ToolboxDefinition = {
                     kind: 'block',
                 },
                 {
+                    type: 'controls_ifelse',
+                    kind: 'block',
+                },
+                {
                     type: 'logic_compare',
                     kind: 'block',
                     fields: {
@@ -772,8 +776,8 @@ export const toolboxConfiguration: ToolboxDefinition = {
         {
             kind: 'category',
             name: 'Variables',
-            custom: 'VARIABLE',
             categorystyle: 'variable_category',
+            custom: 'VARIABLE',
         },
         {
             kind: 'category',
@@ -781,5 +785,30 @@ export const toolboxConfiguration: ToolboxDefinition = {
             custom: 'PROCEDURE',
             categorystyle: 'procedure_category',
         },
+        {
+            kind: 'sep',
+        },
+        {
+            kind: "category",
+            name: "AO",
+            // custom: "AO",
+            categorystyle: "ao_category",
+            contents: [
+                {
+                    type: "ao_send",
+                    kind: "block",
+                    inputs: {
+                        Message: {
+                            shadow: {
+                                type: "TABLE",
+                                fields: {
+                                    TABLE: "msg"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
     ],
 }

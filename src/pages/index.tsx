@@ -7,6 +7,7 @@ import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { data } from '@/nodes/handler-add';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -23,9 +24,17 @@ const ignoreChangesForNodes = ["start"]
 
 export default function Home() {
   const globals = useGlobalState()
+  const address = useActiveAddress()
 
   const [nodes, setNodes, onNodesChange] = useNodesState(defaults.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
+
+  useEffect(() => {
+    globals.setActiveProcess("")
+    globals.setActiveNode(undefined)
+    if (globals.nodebarOpen)
+      globals.toggleNodebar()
+  }, [address])
 
   useEffect(() => {
     const storedData = localStorage.getItem(`${globals.activeProcess}-flow`);
