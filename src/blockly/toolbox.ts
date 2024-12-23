@@ -1,5 +1,11 @@
 import { ToolboxDefinition } from "react-blockly";
 
+declare module 'blockly' {
+    interface Block {
+        itemCount_: number;
+    }
+}
+
 export const toolboxConfiguration: ToolboxDefinition = {
     kind: 'categoryToolbox',
     contents: [
@@ -791,8 +797,7 @@ export const toolboxConfiguration: ToolboxDefinition = {
         {
             kind: "category",
             name: "AO",
-            // custom: "AO",
-            categorystyle: "ao_category",
+            categorystyle: "procedure_category",
             contents: [
                 {
                     type: "ao_send",
@@ -800,14 +805,126 @@ export const toolboxConfiguration: ToolboxDefinition = {
                     inputs: {
                         Message: {
                             shadow: {
-                                type: "TABLE",
-                                fields: {
-                                    TABLE: "msg"
-                                }
+                                type: "TABLE"
                             }
                         }
                     }
                 }
+            ]
+        },
+        {
+            kind: "category",
+            name: "Lua Tables",
+            categorystyle: "list_category",
+            contents: [
+                {
+                    type: "lua_create_table",
+                    kind: "block",
+                    fields: {
+                        VAR: {
+                            name: "table"
+                        }
+                    }
+                },
+                {
+                    type: "lua_table_set",
+                    kind: "block",
+                    inputs: {
+                        TABLE: {
+                            shadow: {
+                                type: "TABLE"
+                            }
+                        },
+                        KEY: {
+                            shadow: {
+                                type: "text",
+                                fields: {
+                                    TEXT: "key"
+                                }
+                            }
+                        },
+                        VALUE: {
+                            shadow: {
+                                type: "text",
+                                fields: {
+                                    TEXT: "value"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "lua_table_get",
+                    kind: "block",
+                    inputs: {
+                        TABLE: {
+                            shadow: {
+                                type: "TABLE"
+                            }
+                        },
+                        KEY: {
+                            shadow: {
+                                type: "text",
+                                fields: {
+                                    TEXT: "key"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "lua_table_length",
+                    kind: "block",
+                    inputs: {
+                        TABLE: {
+                            shadow: {
+                                type: "TABLE"
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "lua_table_insert",
+                    kind: "block",
+                    inputs: {
+                        TABLE: {
+                            shadow: {
+                                type: "TABLE"
+                            }
+                        },
+                        VALUE: {
+                            shadow: {
+                                type: "text",
+                                fields: {
+                                    TEXT: "value"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "lua_table_remove",
+                    kind: "block",
+                    inputs: {
+                        TABLE: {
+                            shadow: {
+                                type: "TABLE"
+                            }
+                        },
+                        INDEX: {
+                            shadow: {
+                                type: "math_number",
+                                fields: {
+                                    NUM: 1
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "TABLE",
+                    kind: "block",
+                },
             ]
         }
     ],

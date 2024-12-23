@@ -1,3 +1,6 @@
+import * as Blockly from "blockly"
+import { luaGenerator } from "blockly/lua";
+
 export const DEFAULT_XML = `<xml xmlns="https://developers.google.com/blockly/xml">
     <variables>
         <variable id="qP-G\`#ofza~ff3ZnKMWb">msg</variable>
@@ -9,3 +12,22 @@ export const DEFAULT_XML = `<xml xmlns="https://developers.google.com/blockly/xm
         <field name="NAME"><HANDLER_NAME></field>
     </block>
 </xml>`
+
+export function xmlToLua(xmlString: string): string {
+    // Create a headless workspace
+    const workspace = new Blockly.Workspace();
+    
+    try {
+        // Load the XML into the workspace
+        const xml = Blockly.utils.xml.textToDom(xmlString);
+        Blockly.Xml.domToWorkspace(xml, workspace);
+        
+        // Generate Lua code
+        const code = luaGenerator.workspaceToCode(workspace);
+        
+        return code;
+    } finally {
+        // Clean up the workspace
+        workspace.dispose();
+    }
+}
