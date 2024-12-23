@@ -4,7 +4,7 @@ import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { runFlow } from '@/lib/utils';
+import { embedHandler, getNodesOrdered } from '@/lib/utils';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { data } from '@/nodes/handler-add';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
@@ -128,7 +128,8 @@ export default function Home() {
     }
   }, [globals.activeNode])
 
-  function onNodeClick(e: any, node: Node) {
+  async function onNodeClick(e: any, node: Node) {
+    if (globals.flowIsRunning) return
     switch (node.type) {
       case "add":
         if (!globals.nodebarOpen)
@@ -139,7 +140,24 @@ export default function Home() {
         if (globals.nodebarOpen)
           globals.toggleNodebar()
         globals.setActiveNode(undefined)
-        runFlow(nodes, edges)
+        // iterate over nodes and run them one by one
+        const list = getNodesOrdered(nodes, edges)
+        globals.setFlowIsRunning(true)
+        globals.resetNodes()
+        for (const node of list) {
+          globals.addRunningNode(node)
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          const ndata = node.data as data
+          try {
+            console.log(embedHandler(ndata.handlerName, ndata.actionValue, ndata.blocklyXml))
+            globals.addSuccessNode(node)
+          } catch (e) {
+            console.log(e)
+            globals.addErrorNode(node)
+          }
+        }
+
+        globals.setFlowIsRunning(false)
         break;
       case "handler-add":
         if (!globals.nodebarOpen)

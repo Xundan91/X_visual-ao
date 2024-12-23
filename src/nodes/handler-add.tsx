@@ -1,4 +1,4 @@
-import { CheckIcon, CodeIcon, FunctionSquareIcon, Icon, PlusIcon, XIcon } from "lucide-react";
+import { CheckIcon, CodeIcon, FunctionSquareIcon, Icon, Loader, PlusIcon, XIcon } from "lucide-react";
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { xmlToLua } from "@/blockly/utils/xml";
+import { cn, embedHandler } from "@/lib/utils";
 
 // data field structure for react-node custom node
 export interface data {
@@ -17,22 +18,33 @@ export interface data {
 }
 type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
 
-function embedHandler(name: string, action: string, xml: string) {
-    return `Handlers.add(
-    "${name}",
-    "${action}",
-    ${xmlToLua(xml).split("\n").map(v => `\t${v}`).join("\n")}
-)`
-}
-
 // the handler add node for react-flow
 export default function HandlerAddNode(props: Node) {
-    const { activeNode } = useGlobalState()
+    const { activeNode, runningNodes, successNodes, errorNodes } = useGlobalState()
     const data = props.data as unknown as data
 
-    const iAmActive = activeNode?.id === props.id
+    // order of preference for applying classes is selected > running > success > error
+    const iAmSelected = activeNode?.id === props.id
+    const iAmError = !!errorNodes.find(node => node.id == props.id)
+    const iAmSuccess = !iAmError && !!successNodes.find(node => node.id == props.id)
+    const iAmRunning = !iAmError && !iAmSuccess && !!runningNodes.find(node => node.id == props.id)
+    // running - yellow
+    // success - green
+    // error - red
+    // selected - blue  
 
-    return <div data-active={iAmActive} className="bg-white border data-[active=true]:border-black p-2 border-black/30 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28">
+    return <div data-selected={iAmSelected}
+        data-running={iAmRunning}
+        data-success={iAmSuccess}
+        data-error={iAmError}
+
+        className={cn(`bg-white border data-[selected=true]:!border-black p-2 border-black/30 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28 relative`,
+            `data-[running=true]:bg-yellow-50 data-[success=true]:bg-green-50 data-[error=true]:bg-red-50`,
+            `data-[selected=true]:border-black data-[running=true]:border-yellow-500 data-[success=true]:border-green-500 data-[error=true]:border-red-500`,
+        )}>
+        {
+            iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />
+        }
         <CodeIcon size={30} strokeWidth={1} />
         <div>{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />

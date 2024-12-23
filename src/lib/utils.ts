@@ -1,3 +1,4 @@
+import { xmlToLua } from "@/blockly/utils/xml"
 import { Edge } from "@/edges"
 import { Node } from "@/nodes"
 import { clsx, type ClassValue } from "clsx"
@@ -11,7 +12,15 @@ export function shortAddress(address: string) {
   return `${address.slice(0, 5)}...${address.slice(-5)}`
 }
 
-export function runFlow(nodes: any, edges: any) {
+export function embedHandler(name: string, action: string, xml: string) {
+  return `Handlers.add(
+  "${name}",
+  "${action}",
+${xmlToLua(xml).split("\n").map(v => `\t${v}`).join("\n")}
+)`
+}
+
+export function getNodesOrdered(nodes: any, edges: any): Node[] {
   // make a list of connected nodes in order between start and add
   let edge: Edge = edges[0]
   let node: Node = nodes[0]
@@ -24,5 +33,5 @@ export function runFlow(nodes: any, edges: any) {
     edge = nextEdge
     list.push(node)
   }
-  console.log(list)
+  return list
 }

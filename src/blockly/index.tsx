@@ -22,7 +22,21 @@ export default function BlocklyComponent() {
 
     const { workspace, xml } = useBlocklyWorkspace({
         ref: blocklyRef,
-        workspaceConfiguration: { readOnly: false },
+        workspaceConfiguration: {
+            readOnly: false,
+            renderer: "thrasos",
+            oneBasedIndex: true,
+            theme: "material",
+            comments: false,
+            grid: {
+                snap: true,
+                spacing: 25,
+                length: 5,
+                colour: "#eee",
+            },
+            zoom: { controls: true },
+
+        },
         toolboxConfiguration: getToolboxConfiguration(),
         initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName + "Handler"),
         onWorkspaceChange(workspace) {
@@ -43,10 +57,10 @@ export default function BlocklyComponent() {
     }
 
     return <>
-        <div ref={blocklyRef} className="z-10 w-[90vw] h-[90vh] border bg-white rounded-md overflow-clip"></div>
-        <div className='w-full max-w-[90vw] p-1 flex gap-1 items-center justify-end'>
-            <Button variant="secondary" className="hover:bg-destructive hover:text-white" onClick={discardBlocks}><XIcon /></Button>
-            <Button variant="secondary" className="hover:bg-green-500 hover:text-white" onClick={saveBlocks}><CheckIcon /></Button>
+        <div className='w-full absolute top-16 pr-8 z-40 max-w-[90vw] flex gap-1 items-center justify-end'>
+            <Button variant="secondary" className="!bg-transparent border-[#cfcfcf] border-[2.5px] hover:border-destructive text-[#cfcfcf] hover:text-destructive rounded-full p-0 !aspect-square" onClick={discardBlocks}><XIcon strokeWidth={3} /></Button>
+            <Button variant="secondary" className="!bg-transparent border-[#cfcfcf] border-[2.5px] hover:border-green-500 text-[#cfcfcf] hover:text-green-500 rounded-full p-0 !aspect-square" onClick={saveBlocks}><CheckIcon strokeWidth={3} /></Button>
         </div>
+        <div ref={blocklyRef} className="z-10 w-[90vw] h-[90vh] border bg-white rounded-md overflow-clip"></div>
     </>
 }
