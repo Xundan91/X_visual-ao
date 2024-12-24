@@ -1,6 +1,7 @@
 import { Block } from 'blockly';
 import { BlockRegistration, registerBlock } from '../../utils/registry';
 import * as Lua from 'blockly/lua';
+import * as Blockly from 'blockly';
 
 const type = "table_insert"
 const block: BlockRegistration = {
@@ -8,6 +9,7 @@ const block: BlockRegistration = {
     category: 'Lua Tables',
     block: {
         init: function (this: Block) {
+            this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
@@ -28,7 +30,27 @@ const block: BlockRegistration = {
     },
     toolbox: {
         type,
-        kind: "block"
+        kind: "block",
+        inputs: {
+            TABLE: {
+                shadow: {
+                    type: "TABLE",
+                    fields: {
+                        TABLE: "table"
+                    }
+                }
+            },
+            VALUE: {
+                kind: "input",
+                type: "text",
+                shadow: {
+                    type: "text",
+                    fields: {
+                        TEXT: "value"
+                    }
+                }
+            }
+        }
     }
 };
 

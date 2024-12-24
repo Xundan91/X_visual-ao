@@ -8,12 +8,13 @@ const block: BlockRegistration = {
     category: 'Lua Tables',
     block: {
         init: function (this: Block) {
+            this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
             this.appendValueInput('TABLE')
                 .setCheck('TABLE')
-                .appendField('set table');
+                .appendField('set in table');
             this.appendValueInput('KEY')
                 .setCheck(null)
                 .appendField('key');
@@ -32,7 +33,37 @@ const block: BlockRegistration = {
     },
     toolbox: {
         type,
-        kind: "block"
+        kind: "block",
+        inputs: {
+            TABLE: {
+                shadow: {
+                    type: "TABLE",
+                    fields: {
+                        TABLE: "table"
+                    }
+                }
+            },
+            KEY: {
+                kind: "input",
+                type: "text",
+                shadow: {
+                    type: "text",
+                    fields: {
+                        TEXT: "key"
+                    }
+                }
+            },
+            VALUE: {
+                kind: "input",
+                type: "text",
+                shadow: {
+                    type: "text",
+                    fields: {
+                        TEXT: "value"
+                    }
+                }
+            }
+        }
     }
 };
 

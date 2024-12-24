@@ -23,7 +23,17 @@ const block: BlockRegistration = {
     },
     toolbox: {
         type,
-        kind: "block"
+        kind: "block",
+        inputs: {
+            TABLE: {
+                shadow: {
+                    type: "TABLE",
+                    fields: {
+                        TABLE: "table"
+                    }
+                }
+            }
+        }
     }
 };
 

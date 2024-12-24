@@ -1,8 +1,12 @@
 import * as Blockly from 'blockly';
 import { luaGenerator } from 'blockly/lua';
+import { ToolboxDefinition } from 'react-blockly';
 
 export interface BlockDefinition {
     init: (this: Blockly.Block) => void;
+    mutate?: (this: Blockly.Block) => void;
+    compose?: (topBlock: Blockly.Block) => void;
+    decompose?: (workspace: Blockly.Workspace) => Blockly.Block;
 }
 
 export interface ToolboxBlockDefinition {
@@ -19,6 +23,7 @@ export interface BlockRegistration {
     block: BlockDefinition;
     generator: (block: Blockly.Block) => string | [string, number];
     toolbox: ToolboxBlockDefinition;
+    // extensions?: string[];
 }
 
 // Global registry of all blocks

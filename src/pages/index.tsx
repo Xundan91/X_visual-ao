@@ -4,6 +4,7 @@ import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
+import { runLua } from '@/lib/aos';
 import { embedHandler, getNodesOrdered } from '@/lib/utils';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { data } from '@/nodes/handler-add';
@@ -149,7 +150,10 @@ export default function Home() {
           await new Promise(resolve => setTimeout(resolve, 1000))
           const ndata = node.data as data
           try {
-            console.log(embedHandler(ndata.handlerName, ndata.actionValue, ndata.blocklyXml))
+            const code = embedHandler(ndata.handlerName, ndata.actionValue, ndata.blocklyXml)
+            console.log("running lua", code)
+            const result = await runLua(code, globals.activeProcess)
+            console.log(result)
             globals.addSuccessNode(node)
           } catch (e) {
             console.log(e)

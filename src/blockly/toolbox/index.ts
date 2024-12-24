@@ -631,10 +631,6 @@ const defaultCategories = [
                 kind: 'block',
             },
             {
-                type: 'lists_create_with',
-                kind: 'block',
-            },
-            {
                 type: 'lists_repeat',
                 kind: 'block',
                 inputs: {

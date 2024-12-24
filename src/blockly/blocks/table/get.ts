@@ -9,13 +9,14 @@ const block: BlockRegistration = {
     block: {
         init: function (this: Block) {
             this.setOutput(true, null);
+            this.setInputsInline(true);
             this.setColour(230);
             this.appendValueInput('TABLE')
                 .setCheck('TABLE')
-                .appendField('get from table');
+                .appendField('get from table')
             this.appendValueInput('KEY')
                 .setCheck(null)
-                .appendField('key');
+                .appendField('key')
             this.setTooltip("Get a value from a table");
             this.setHelpUrl("");
         }
@@ -27,7 +28,27 @@ const block: BlockRegistration = {
     },
     toolbox: {
         type,
-        kind: "block"
+        kind: "block",
+        inputs: {
+            TABLE: {
+                shadow: {
+                    type: "TABLE",
+                    fields: {
+                        TABLE: "table"
+                    }
+                }
+            },
+            KEY: {
+                kind: "input",
+                type: "text",
+                shadow: {
+                    type: "text",
+                    fields: {
+                        TEXT: "key"
+                    }
+                }
+            }
+        }
     }
 };
 

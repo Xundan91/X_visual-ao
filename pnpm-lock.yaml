@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@permaweb/aoconnect':
+        specifier: ^0.0.62
+        version: 0.0.62
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.3
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.16))(@types/react@18.3.16)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -869,6 +872,17 @@ packages:
       arweave: ^1.15.1
       axios: ^1.7.4
       warp-arbundles: ^1.0.4
+
+  '@permaweb/ao-scheduler-utils@0.0.25':
+    resolution: {integrity: sha512-b0UYSTgnLMIYLScrfNBgcqK7ZMmd78L3J0Jz4RIsIq2P5PtkdRqQ7fYqLlltg7bD1f3dvl4TkO1925ED4ei7LA==}
+    engines: {node: '>=18'}
+
+  '@permaweb/aoconnect@0.0.62':
+    resolution: {integrity: sha512-e42yASru6ze09rugKzi2yD3E57OK0xSbjDM5TI7gKnDVMo8JHweiLCntglItJ44vuNUA7Sdool83v4bmEohaZw==}
+    engines: {node: '>=18'}
+
+  '@permaweb/protocol-tag-utils@0.0.2':
+    resolution: {integrity: sha512-2IiKu71W7pkHKIzxabCGQ5q8DSppZaE/sPcPF2hn+OWwfe04M7b5X5LHRXQNPRuxHWuioieGdPQb3F7apOlffQ==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -2294,6 +2308,9 @@ packages:
   human-crypto-keys@0.1.4:
     resolution: {integrity: sha512-4XwGU+M/bPSdw4fSpxQ9wCMsTAu9jSOJCwg25gi9goJPyyTrfHrc2krTor7o3DLJObieITZnF4lnIHnvcEjUcQ==}
 
+  hyper-async@1.1.2:
+    resolution: {integrity: sha512-cnpOgKa+5FZOaccTtjduac1FrZuSc38/ftCp3vYJdUMt+7c+uvGDKLDK4MTNK8D3aFjIeveVrPcSgUPvzZLopg==}
+
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
@@ -2668,6 +2685,9 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
+  mnemonist@0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -2785,6 +2805,9 @@ packages:
   object.values@1.2.0:
     resolution: {integrity: sha512-yBYjY9QX2hnRmZHAjG/f13MzmBzxzYgQhFrke06TTyKY5zSTEqkOeukBzIdVA3j3ulu8Qa3MbVFShV7T2RmGtQ==}
     engines: {node: '>= 0.4'}
+
+  obliterator@2.0.4:
+    resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
 
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
@@ -2949,6 +2972,9 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  ramda@0.30.1:
+    resolution: {integrity: sha512-tEF5I22zJnuclswcZMc8bDIrwRHRzf+NqVEmqg50ShAZMP7MWeR/RGDthfM/p+BlqvF2fXAzpn8i+SJcYD3alw==}
 
   react-blockly@9.0.0:
     resolution: {integrity: sha512-EzvGpaYYjbTbsenQov7UyrxvnjqitqJ03wBY4Rz0Q/9tfpVTZ4Lx4um0sDG6xY5KsWzyOIuo60KablYCOr8LUQ==}
@@ -3576,6 +3602,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@3.24.1:
+    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
 
   zustand@4.5.5:
     resolution: {integrity: sha512-+0PALYNJNgK6hldkgDq2vLrw5f6g/jCInz52n9RTpropGgeAf/ioFUCdtsjCqu4gNhW9D01rUQBROoRjdzyn2Q==}
@@ -4606,6 +4635,28 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@permaweb/ao-scheduler-utils@0.0.25':
+    dependencies:
+      lru-cache: 10.4.3
+      ramda: 0.30.1
+      zod: 3.24.1
+
+  '@permaweb/aoconnect@0.0.62':
+    dependencies:
+      '@permaweb/ao-scheduler-utils': 0.0.25
+      '@permaweb/protocol-tag-utils': 0.0.2
+      buffer: 6.0.3
+      debug: 4.4.0
+      hyper-async: 1.1.2
+      mnemonist: 0.39.8
+      ramda: 0.30.1
+      warp-arbundles: 1.0.4
+      zod: 3.24.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@permaweb/protocol-tag-utils@0.0.2': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -6317,6 +6368,8 @@ snapshots:
       node-forge: 0.8.5
       pify: 4.0.1
 
+  hyper-async@1.1.2: {}
+
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
@@ -6686,6 +6739,10 @@ snapshots:
 
   minipass@7.1.2: {}
 
+  mnemonist@0.39.8:
+    dependencies:
+      obliterator: 2.0.4
+
   ms@2.1.3: {}
 
   multiformats@9.9.0: {}
@@ -6793,6 +6850,8 @@ snapshots:
       call-bind: 1.0.8
       define-properties: 1.2.1
       es-object-atoms: 1.0.0
+
+  obliterator@2.0.4: {}
 
   once@1.4.0:
     dependencies:
@@ -6966,6 +7025,8 @@ snapshots:
   querystringify@2.2.0: {}
 
   queue-microtask@1.2.3: {}
+
+  ramda@0.30.1: {}
 
   react-blockly@9.0.0(react@18.3.1):
     dependencies:
@@ -7684,6 +7745,8 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
+
+  zod@3.24.1: {}
 
   zustand@4.5.5(@types/react@18.3.16)(react@18.3.1):
     dependencies:

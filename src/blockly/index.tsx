@@ -42,6 +42,7 @@ export default function BlocklyComponent() {
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
             console.log(luaGenerator.workspaceToCode(workspace))
+            // console.log(workspace.getToolbox())
         },
     });
     console.log(getToolboxConfiguration())
