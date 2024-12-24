@@ -1,7 +1,15 @@
 import { Node } from '@/nodes';
+import { ImperativePanelHandle } from 'react-resizable-panels';
 import { create } from 'zustand'
 
+export type OutputType = { type: "output" | "error" | "success" | "info" | "warning", message: string };
 interface GlobalState {
+    consoleRef: React.RefObject<ImperativePanelHandle> | null;
+    setConsoleRef: (ref: React.RefObject<ImperativePanelHandle>) => void;
+    outputs: OutputType[];
+    addOutput: (output: OutputType) => void;
+    clearOutputs: () => void;
+
     nodebarOpen: boolean;
     toggleNodebar: () => void;
     activeProcess: string;
@@ -23,6 +31,12 @@ interface GlobalState {
 }
 
 export const useGlobalState = create<GlobalState>()((set) => ({
+    consoleRef: null,
+    setConsoleRef: (ref: React.RefObject<ImperativePanelHandle>) => set(() => ({ consoleRef: ref })),
+    outputs: [],
+    addOutput: (output: OutputType) => set((state) => ({ outputs: [...state.outputs, output] })),
+    clearOutputs: () => set(() => ({ outputs: [] })),
+
     nodebarOpen: false,
     toggleNodebar: () => set((state) => ({ nodebarOpen: !state.nodebarOpen })),
     activeProcess: "",

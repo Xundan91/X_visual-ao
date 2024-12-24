@@ -6,7 +6,7 @@ export default function Document() {
       <Head>
         <title>VAO</title>
       </Head>
-      <body className="antialiased">
+      <body className="antialiased overflow-hidden">
         <Main />
         <NextScript />
       </body>
