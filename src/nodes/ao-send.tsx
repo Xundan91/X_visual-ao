@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
 
 
 // data field structure for react-node custom node
@@ -63,6 +64,8 @@ export function AOSendNodeSidebar() {
     const [dataType, setDataType] = useState<InputTypes>("TEXT")
     const [data, setData] = useState("")
     const [tags, setTags] = useState<Tag[]>([])
+    const [newTagKey, setNewTagKey] = useState("")
+    const [newTagValue, setNewTagValue] = useState("")
 
     const { activeNode } = useGlobalState()
 
@@ -104,6 +107,20 @@ export function AOSendNodeSidebar() {
         setAction(nodeData?.action || "")
         setData(nodeData?.data || "")
         setTags(nodeData?.tags || [])
+    }
+
+    function addTag() {
+        if (newTagKey && newTagValue) {
+            setTags([...tags, { name: newTagKey, value: newTagValue }])
+            setNewTagKey("")
+            setNewTagValue("")
+        }
+    }
+
+    function removeTag(index: number) {
+        const newTags = [...tags]
+        newTags.splice(index, 1)
+        setTags(newTags)
     }
 
     return <div className="flex flex-col gap-0.5">
@@ -174,6 +191,53 @@ export function AOSendNodeSidebar() {
             onChange={(e) => setData(valueFromType(e.target.value, dataType))}
         />
 
+        <SmolText className="mt-4">Tags</SmolText>
+        {/* Existing tags */}
+        {tags.map((tag, index) => (
+            <div key={index} className="flex gap-0.5 items-center">
+                <Input
+                    className="bg-yellow-50 border-x-0 border-r"
+                    value={tag.name}
+                    onChange={(e) => setTags(tags.map((t, i) => i == index ? { ...t, name: e.target.value } : t))}
+                />
+                <Input
+                    className="bg-yellow-50"
+                    value={tag.value}
+                    onChange={(e) => setTags(tags.map((t, i) => i == index ? { ...t, value: e.target.value } : t))}
+                />
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-lg rounded-none mr-0.5"
+                    onClick={() => removeTag(index)}
+                >
+                    -
+                </Button>
+            </div>
+        ))}
 
+        {/* New tag input */}
+        <div className="flex gap-0.5 items-center">
+            <Input
+                className="bg-yellow-50 border-x-0 border-r"
+                placeholder="Name"
+                value={newTagKey}
+                onChange={(e) => setNewTagKey(e.target.value)}
+            />
+            <Input
+                className="bg-yellow-50"
+                placeholder="Value"
+                value={newTagValue}
+                onChange={(e) => setNewTagValue(e.target.value)}
+            />
+            <Button
+                variant="ghost"
+                size="sm"
+                className="text-lg rounded-none mr-0.5"
+                onClick={addTag}
+            >
+                +
+            </Button>
+        </div>
     </div>
 }
