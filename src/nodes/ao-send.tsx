@@ -54,11 +54,13 @@ export default function AOSendNode(props: Node) {
     </div>
 }
 
-type TargetTypes = "TEXT" | "VARIABLE"
+type InputTypes = "TEXT" | "VARIABLE"
 export function AOSendNodeSidebar() {
-    const [type, setType] = useState<TargetTypes | null>()
+    const [targetType, setTargetType] = useState<InputTypes>("TEXT")
     const [target, setTarget] = useState("")
+    const [actionType, setActionType] = useState<InputTypes>("TEXT")
     const [action, setAction] = useState("")
+    const [dataType, setDataType] = useState<InputTypes>("TEXT")
     const [data, setData] = useState("")
     const [tags, setTags] = useState<Tag[]>([])
 
@@ -72,6 +74,20 @@ export function AOSendNodeSidebar() {
         setTags(nodeData?.tags || [])
     }, [activeNode?.id])
 
+    useEffect(() => {
+        console.log(target, action, data, tags)
+        updateNodeData()
+    }, [target, action, data, tags])
+
+
+    function valueFromType(value: string, type: InputTypes) {
+        if (type == "TEXT") {
+            return `"${value}"`
+        } else {
+            return value
+        }
+    }
+
     function updateNodeData() {
         const newNodeData: data = {
             target,
@@ -79,7 +95,7 @@ export function AOSendNodeSidebar() {
             data,
             tags
         }
-        dispatchEvent(new CustomEvent("update-node-data", { detail: { nodeData: newNodeData } }))
+        dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
     }
 
     function discardChanges() {
@@ -93,26 +109,71 @@ export function AOSendNodeSidebar() {
     return <div className="flex flex-col gap-0.5">
         {/* inputs for handler name */}
 
-        <SmolText className="mt-4">Target</SmolText>
-        <div className="flex">
-            <Select value={type as string} defaultValue="-" onValueChange={(value) => setType(value as TargetTypes)}>
-                <SelectTrigger className="rounded-none bg-yellow-50 border-x-0 w-1/3">
-                    <SelectValue />
+        <div className="flex mt-4 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0 pl-2">Target</SmolText>
+            <Select value={targetType as string} defaultValue="TEXT" onValueChange={(value) => setTargetType(value as InputTypes)}>
+                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
+                    <SelectValue className="p-0" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem disabled value="-">type</SelectItem>
                     <SelectItem value="TEXT">Text</SelectItem>
-                    <SelectItem value="VARIABLE">Var</SelectItem>
+                    <SelectItem value="VARIABLE">Variable</SelectItem>
                 </SelectContent>
             </Select>
-            <Input
-                disabled={type == null}
-                className=" bg-yellow-50"
-                placeholder="Enter target"
-                defaultValue={target}
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-            />
         </div>
+
+        <Input
+            className=" bg-yellow-50 border-x-0"
+            placeholder="Input Target"
+            defaultValue={target.replaceAll('"', '')}
+            value={target.replaceAll('"', '')}
+            onChange={(e) => setTarget(valueFromType(e.target.value, targetType))}
+        />
+
+        <div className="flex mt-4 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0 pl-2">Action</SmolText>
+            <Select value={actionType as string} defaultValue="TEXT" onValueChange={(value) => setActionType(value as InputTypes)}>
+                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
+                    <SelectValue className="p-0" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="TEXT">Text</SelectItem>
+                    <SelectItem value="VARIABLE">Variable</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
+        <Input
+            disabled={target.length <= 0}
+            className=" bg-yellow-50 border-x-0"
+            placeholder="Input Action"
+            defaultValue={action.replaceAll('"', '')}
+            value={action.replaceAll('"', '')}
+            onChange={(e) => setAction(valueFromType(e.target.value, actionType))}
+        />
+
+        <div className="flex mt-4 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0 pl-2">Data</SmolText>
+            <Select value={dataType as string} defaultValue="TEXT" onValueChange={(value) => setDataType(value as InputTypes)}>
+                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
+                    <SelectValue className="p-0" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="TEXT">Text</SelectItem>
+                    <SelectItem value="VARIABLE">Variable</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
+        <Input
+            disabled={action.length <= 0}
+            className=" bg-yellow-50 border-x-0"
+            placeholder="Input Data"
+            defaultValue={data.replaceAll('"', '')}
+            value={data.replaceAll('"', '')}
+            onChange={(e) => setData(valueFromType(e.target.value, dataType))}
+        />
+
+
     </div>
 }

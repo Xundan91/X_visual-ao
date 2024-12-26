@@ -92,8 +92,10 @@ export default function Main() {
 
     function onUpdateNodeDataEvent(e: CustomEvent) {
       const detail = e.detail;
+      console.log(detail)
       setNodes(nodes => {
-        const nodeIndex = nodes.findIndex(node => node.id === detail.id);
+        const nodeIndex = nodes.findIndex(node => node.id == detail.id);
+        console.log(nodeIndex)
         if (nodeIndex === -1) return [...nodes];
         nodes[nodeIndex].data = detail.data;
         return [...nodes];
