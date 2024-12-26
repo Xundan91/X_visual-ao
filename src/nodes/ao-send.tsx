@@ -15,9 +15,12 @@ import { Button } from "@/components/ui/button";
 // data field structure for react-node custom node
 export interface data {
     target: string;
+    targetType: InputTypes;
     action: string;
+    actionType: InputTypes;
     data: string;
-    tags: Tag[];
+    dataType: InputTypes;
+    tags: (Tag & { type: InputTypes })[];
 }
 
 // the handler add node for react-flow
@@ -63,7 +66,7 @@ export function AOSendNodeSidebar() {
     const [action, setAction] = useState("")
     const [dataType, setDataType] = useState<InputTypes>("TEXT")
     const [data, setData] = useState("")
-    const [tags, setTags] = useState<Tag[]>([])
+    const [tags, setTags] = useState<(Tag & { type: InputTypes })[]>([])
     const [newTagKey, setNewTagKey] = useState("")
     const [newTagValue, setNewTagValue] = useState("")
 
@@ -75,6 +78,9 @@ export function AOSendNodeSidebar() {
         setAction(nodeData?.action || "")
         setData(nodeData?.data || "")
         setTags(nodeData?.tags || [])
+        setTargetType(nodeData?.targetType || "TEXT")
+        setActionType(nodeData?.actionType || "TEXT")
+        setDataType(nodeData?.dataType || "TEXT")
     }, [activeNode?.id])
 
     useEffect(() => {
@@ -82,20 +88,14 @@ export function AOSendNodeSidebar() {
         updateNodeData()
     }, [target, action, data, tags])
 
-
-    function valueFromType(value: string, type: InputTypes) {
-        if (type == "TEXT") {
-            return `"${value}"`
-        } else {
-            return value
-        }
-    }
-
     function updateNodeData() {
         const newNodeData: data = {
             target,
+            targetType,
             action,
+            actionType,
             data,
+            dataType,
             tags
         }
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
@@ -109,9 +109,9 @@ export function AOSendNodeSidebar() {
         setTags(nodeData?.tags || [])
     }
 
-    function addTag() {
+    function addTag(type: InputTypes) {
         if (newTagKey && newTagValue) {
-            setTags([...tags, { name: newTagKey, value: newTagValue }])
+            setTags([...tags, { name: newTagKey, value: newTagValue, type: type }])
             setNewTagKey("")
             setNewTagValue("")
         }
@@ -144,7 +144,7 @@ export function AOSendNodeSidebar() {
             placeholder="Input Target"
             defaultValue={target.replaceAll('"', '')}
             value={target.replaceAll('"', '')}
-            onChange={(e) => setTarget(valueFromType(e.target.value, targetType))}
+            onChange={(e) => setTarget(e.target.value)}
         />
 
         <div className="flex mt-4 items-end gap-1 justify-between h-5">
@@ -166,7 +166,7 @@ export function AOSendNodeSidebar() {
             placeholder="Input Action"
             defaultValue={action.replaceAll('"', '')}
             value={action.replaceAll('"', '')}
-            onChange={(e) => setAction(valueFromType(e.target.value, actionType))}
+            onChange={(e) => setAction(e.target.value)}
         />
 
         <div className="flex mt-4 items-end gap-1 justify-between h-5">
@@ -183,20 +183,34 @@ export function AOSendNodeSidebar() {
         </div>
 
         <Input
-            disabled={action.length <= 0}
+            disabled={target.length <= 0}
             className=" bg-yellow-50 border-x-0"
             placeholder="Input Data"
             defaultValue={data.replaceAll('"', '')}
             value={data.replaceAll('"', '')}
-            onChange={(e) => setData(valueFromType(e.target.value, dataType))}
+            onChange={(e) => setData(e.target.value)}
         />
 
         <SmolText className="mt-4">Tags</SmolText>
         {/* Existing tags */}
         {tags.map((tag, index) => (
-            <div key={index} className="flex gap-0.5 items-center">
+            <div key={index} className="grid grid-cols-2 items-center justify-end">
+                <div></div>
+                <Select
+                    value={tag.type as string} defaultValue="TEXT" onValueChange={(value) => setTags(tags.map((t, i) => i == index ? { ...t, type: value as InputTypes } : t))}>
+                    <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit ml-auto">
+                        <SelectValue className="p-0" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="TEXT">Text</SelectItem>
+                        <SelectItem value="VARIABLE">Variable</SelectItem>
+                    </SelectContent>
+                </Select>
+
                 <Input
-                    className="bg-yellow-50 border-x-0 border-r"
+                    data-error={tag.name.length <= 0}
+                    className="bg-yellow-50 border-r data-[error=true]"
+                    placeholder="Name"
                     value={tag.name}
                     onChange={(e) => setTags(tags.map((t, i) => i == index ? { ...t, name: e.target.value } : t))}
                 />
@@ -208,16 +222,16 @@ export function AOSendNodeSidebar() {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="text-lg rounded-none mr-0.5"
+                    className="text-xs rounded-none p-0 h-4 col-span-2"
                     onClick={() => removeTag(index)}
                 >
-                    -
+                    remove
                 </Button>
             </div>
         ))}
 
         {/* New tag input */}
-        <div className="flex gap-0.5 items-center">
+        <div className="flex gap-0.5 items-center mt-2">
             <Input
                 className="bg-yellow-50 border-x-0 border-r"
                 placeholder="Name"
@@ -234,7 +248,7 @@ export function AOSendNodeSidebar() {
                 variant="ghost"
                 size="sm"
                 className="text-lg rounded-none mr-0.5"
-                onClick={addTag}
+                onClick={() => addTag("TEXT")}
             >
                 +
             </Button>
