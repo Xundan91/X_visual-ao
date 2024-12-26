@@ -114,43 +114,36 @@ export function HandlerAddNodeSidebar() {
         <Input className="border-y border-x-0 bg-yellow-50" placeholder="Enter handler name" defaultValue={handlerName} value={handlerName} onChange={(e) => setHandlerName(e.target.value)} />
         {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-yellow-50" /> */}
         {/* dropdown with options to either use default action, custom string action, or write your own checker */}
-        {handlerName.length > 3 && <>
-            <SmolText>Checker Function</SmolText>
-            <select disabled={!handlerName} defaultValue={actionType || "default"} value={actionType || "default"} onChange={(e) => {
-                setActionType(e.target.value as THandlerType)
-                if (e.target.value === "default-action") {
-                    setActionValue(`${handlerName}`)
-                }
-            }}
-                className="p-2 w-full bg-yellow-50 border-y border-x-0">
-                <option value="default" disabled>Select Action</option>
-                <option value="default-action">Action="{handlerName}"</option>
-                <option value="custom-str">Action={"<custom string>"}</option>
-                <option value="custom-fun" disabled>Custom Function</option>
-            </select>
-        </>}
-        {
-            actionType === "custom-str" && <>
-                <SmolText>Custom String</SmolText>
-                <Input className="border-y border-x-0 bg-yellow-50" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} />
-            </>
-        }
-        {
-            actionValue && <>
-                <SmolText>Handler Body</SmolText>
-                <div className="bg-yellow-50 border-y flex flex-col items-start justify-start overflow-clip">
-                    <Button variant="link" className="text-muted-foreground w-full" onClick={openBlocklyEditor}>
-                        <FunctionSquareIcon size={20} /> Edit Block Code
-                    </Button>
-                    {
-                        nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
-                            <pre className="text-xs">
-                                {embedHandler(handlerName, actionValue, nodeData.blocklyXml)}
-                            </pre>
-                        </div>
-                    }
+
+        <SmolText>Action Type</SmolText>
+        <select disabled={!handlerName || handlerName.length < 3} defaultValue={actionType || "default"} value={actionType || "default"} onChange={(e) => {
+            setActionType(e.target.value as THandlerType)
+            if (e.target.value === "default-action") {
+                setActionValue(`${handlerName}`)
+            }
+        }}
+            className="p-2 w-full bg-yellow-50 border-y border-x-0">
+            <option value="default" disabled>Select Action</option>
+            <option value="default-action">Action="{handlerName}"</option>
+            <option value="custom-str">Action={"<custom string>"}</option>
+            <option value="custom-fun" disabled>Custom Function</option>
+        </select>
+
+        <SmolText>Action Value</SmolText>
+        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-yellow-50" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} />
+
+        <SmolText>Handler Body</SmolText>
+        <div className="bg-yellow-50 border-y flex flex-col items-start justify-start overflow-clip">
+            <Button disabled={!actionValue} variant="link" className="text-muted-foreground w-full" onClick={openBlocklyEditor}>
+                <FunctionSquareIcon size={20} /> Edit Block Code
+            </Button>
+            {
+                nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
+                    <pre className="text-xs">
+                        {embedHandler(handlerName, actionValue, nodeData.blocklyXml)}
+                    </pre>
                 </div>
-            </>
-        }
+            }
+        </div>
     </div>
 }

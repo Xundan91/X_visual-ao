@@ -3,7 +3,7 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { CheckIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useBlocklyWorkspace } from "react-blockly"
-import { DEFAULT_XML } from './utils/xml';
+import { DEFAULT_XML, replaceXMLFieldValue } from './utils/xml';
 import { data as HandlerAddData } from '@/nodes/handler-add';
 import { luaGenerator } from 'blockly/lua';
 import { initializeBlocks } from './utils/registry';
@@ -55,11 +55,7 @@ export default function BlocklyComponent() {
     function saveBlocks() {
         if (!xml) return
         // find the field with name="NAME" and replace the value with the handler name
-        const xmlDoc = new DOMParser().parseFromString(xml, "application/xml");
-        const field = xmlDoc.querySelector('field[name="NAME"]');
-        if (field) field.textContent = data.handlerName + "Handler";
-
-        const newXml = new XMLSerializer().serializeToString(xmlDoc)
+        const newXml = replaceXMLFieldValue(xml, "NAME", data.handlerName + "Handler")
 
         dispatchEvent(new CustomEvent("save-blocks", { detail: { xml: newXml } }))
         setEditingNode(false)

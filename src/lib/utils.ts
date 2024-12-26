@@ -1,4 +1,4 @@
-import { xmlToLua } from "@/blockly/utils/xml"
+import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml"
 import { Edge } from "@/edges"
 import { Node } from "@/nodes"
 import { clsx, type ClassValue } from "clsx"
@@ -13,7 +13,7 @@ export function shortAddress(address: string) {
 }
 
 export function embedHandler(name: string, action: string, xml: string) {
-  return `${xmlToLua(xml)}
+  return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name + "Handler"))}
 
 Handlers.add(
   "${name}",

@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import { Loader, MessageSquareShare } from "lucide-react";
 import { keyToNode } from ".";
 import { TNodes } from ".";
+import { useEffect, useState } from "react";
+import { SmolText } from "@/components/right-sidebar";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
+
 
 // data field structure for react-node custom node
 export interface data {
@@ -49,11 +54,65 @@ export default function AOSendNode(props: Node) {
     </div>
 }
 
+type TargetTypes = "TEXT" | "VARIABLE"
 export function AOSendNodeSidebar() {
-    return <div>
-        <div>Target</div>
-        <div>Action</div>
-        <div>Data</div>
-        <div>Tags</div>
+    const [type, setType] = useState<TargetTypes | null>()
+    const [target, setTarget] = useState("")
+    const [action, setAction] = useState("")
+    const [data, setData] = useState("")
+    const [tags, setTags] = useState<Tag[]>([])
+
+    const { activeNode } = useGlobalState()
+
+    useEffect(() => {
+        const nodeData = activeNode?.data as data
+        setTarget(nodeData?.target || "")
+        setAction(nodeData?.action || "")
+        setData(nodeData?.data || "")
+        setTags(nodeData?.tags || [])
+    }, [activeNode?.id])
+
+    function updateNodeData() {
+        const newNodeData: data = {
+            target,
+            action,
+            data,
+            tags
+        }
+        dispatchEvent(new CustomEvent("update-node-data", { detail: { nodeData: newNodeData } }))
+    }
+
+    function discardChanges() {
+        const nodeData = activeNode?.data as data
+        setTarget(nodeData?.target || "")
+        setAction(nodeData?.action || "")
+        setData(nodeData?.data || "")
+        setTags(nodeData?.tags || [])
+    }
+
+    return <div className="flex flex-col gap-0.5">
+        {/* inputs for handler name */}
+
+        <SmolText className="mt-4">Target</SmolText>
+        <div className="flex">
+            <Select value={type as string} defaultValue="-" onValueChange={(value) => setType(value as TargetTypes)}>
+                <SelectTrigger className="rounded-none bg-yellow-50 border-x-0 w-1/3">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem disabled value="-">type</SelectItem>
+                    <SelectItem value="TEXT">Text</SelectItem>
+                    <SelectItem value="VARIABLE">Var</SelectItem>
+                </SelectContent>
+            </Select>
+            <Input
+                disabled={type == null}
+                className=" bg-yellow-50"
+                placeholder="Enter target"
+                defaultValue={target}
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+            />
+        </div>
     </div>
 }

@@ -13,6 +13,15 @@ export const DEFAULT_XML = `<xml xmlns="https://developers.google.com/blockly/xm
     </block>
 </xml>`
 
+export function replaceXMLFieldValue(xmlString: string, fieldName: string, value: string): string {
+    const xmlDoc = new DOMParser().parseFromString(xmlString, "application/xml");
+    const field = xmlDoc.querySelector(`field[name="${fieldName}"]`);
+    if (field) field.textContent = value
+
+    const newXml = new XMLSerializer().serializeToString(xmlDoc)
+    return newXml
+}
+
 export function xmlToLua(xmlString: string): string {
     // Create a headless workspace
     const workspace = new Blockly.Workspace();
