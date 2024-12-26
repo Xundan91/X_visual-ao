@@ -1,6 +1,7 @@
 import { OutputType, useGlobalState } from "@/hooks/useGlobalStore";
 import { ChevronDownIcon, Eraser, TerminalIcon, TrashIcon } from "lucide-react"
 import { useEffect } from "react";
+import Ansi from "ansi-to-react"
 
 export default function Console() {
     const { outputs, consoleRef, clearOutputs } = useGlobalState();
@@ -25,7 +26,7 @@ export default function Console() {
         {/* always make sure the scroll is at the bottom */}
         <div id="console-container" className="overflow-scroll h-full scroll-smooth">
             {outputs.map((output: OutputType, index) => (
-                <div key={index} data-type={output.type} className="text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500">{output.message}</div>
+                <div key={index} data-type={output.type} className="text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500"><Ansi>{output.message}</Ansi></div>
             ))}
             <div className="h-6"></div>
         </div>

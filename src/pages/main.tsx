@@ -7,12 +7,13 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { parseOutupt, runLua } from '@/lib/aos';
 import { embedHandler, getNodesOrdered } from '@/lib/utils';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
-import { data } from '@/nodes/handler-add';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { data as HandlerAddDataType } from '@/nodes/handler-add';
+import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
 
 const defaults = {
   nodes: [
@@ -151,24 +152,46 @@ export default function Main() {
           globals.consoleRef?.current?.resize(25);
         for (const node of list) {
           globals.addRunningNode(node)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          const ndata = node.data as data
-          try {
-            const code = embedHandler(ndata.handlerName, ndata.actionValue, ndata.blocklyXml)
-            console.log("running lua", code)
-            const result = await runLua(code, globals.activeProcess)
-            console.log(result)
-            if (result.Error) {
-              globals.addErrorNode(node)
-              globals.addOutput({ type: "error", message: `[${node.id}] ${result.Error}` })
-            } else {
-              globals.addSuccessNode(node)
-              globals.addOutput({ type: "output", message: `[${node.id}] ${parseOutupt(result) || "[no data returned]"}` })
-            }
-          } catch (e: any) {
-            console.log(e)
-            globals.addErrorNode(node)
-            globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
+          switch (node.type) {
+            case "handler-add":
+              const handlerData = node.data as HandlerAddDataType
+              try {
+                const code = embedHandler(handlerData.handlerName, handlerData.actionValue, handlerData.blocklyXml)
+                console.log("running lua", code)
+                const result = await runLua(code, globals.activeProcess)
+                console.log(result)
+                if (result.Error) {
+                  globals.addErrorNode(node)
+                  globals.addOutput({ type: "error", message: `[${node.id}] ${result.Error}` })
+                } else {
+                  globals.addSuccessNode(node)
+                  globals.addOutput({ type: "output", message: `[${node.id}] [${result.id}] ${parseOutupt(result) || "[no data returned]"}` })
+                }
+              } catch (e: any) {
+                console.log(e)
+                globals.addErrorNode(node)
+                globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
+              }
+              break;
+            case "ao-send":
+              const sendData = node.data as AOSendDataType
+              const code = embedSendFunction(sendData)
+              console.log("running lua", code)
+              try {
+                const result = await runLua(code, globals.activeProcess)
+                console.log(result)
+                globals.addSuccessNode(node)
+                globals.addOutput({ type: "output", message: `[${node.id}] [${result.id}] ${parseOutupt(result) || "[no data returned]"}` })
+              } catch (e: any) {
+                console.log(e)
+                globals.addErrorNode(node)
+                globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
+              }
+              break;
+            default:
+              globals.addRunningNode(node)
+              globals.addOutput({ type: "output", message: `[${node.id}] unknown node type` })
+              break;
           }
         }
 

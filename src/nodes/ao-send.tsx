@@ -80,12 +80,17 @@ export function embedSendFunction(inputs: SendFunctionInputs) {
     const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
 
     // strip first 8 lines of the code
-    return (require("lua-format").Beautify(`Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})
+    try {
+        return (require("lua-format").Beautify(`Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})
 `, {
-        RenameVariables: false,
-        RenameGlobals: false,
-        SolveMath: true
-    }) as string).split("\n").slice(8).join("\n")
+            RenameVariables: false,
+            RenameGlobals: false,
+            SolveMath: true
+        }) as string).split("\n").slice(8).join("\n")
+    } catch (e: any) {
+        console.log(e.message)
+        return e.message as string
+    }
 }
 
 

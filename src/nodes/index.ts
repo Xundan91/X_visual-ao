@@ -9,7 +9,7 @@ export interface Node {
         x: number;
         y: number;
     };
-    data: {} | HandlerAddNodeData;
+    data: {} | HandlerAddNodeData | AOSendNodeData;
     type: TNodes;
 }
 
