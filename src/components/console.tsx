@@ -20,13 +20,12 @@ export default function Console() {
                 <Eraser className="w-4 h-4 cursor-pointer hover:bg-black/10 rounded-sm p-[1px]" onClick={() => clearOutputs()} />
                 <ChevronDownIcon className="w-4 h-4 cursor-pointer hover:bg-black/10 rounded-sm" onClick={() => consoleRef?.current?.collapse()} />
             </div>
-
         </div>
         {/* scrollable div for output list */}
         {/* always make sure the scroll is at the bottom */}
         <div id="console-container" className="overflow-scroll h-full scroll-smooth">
             {outputs.map((output: OutputType, index) => (
-                <div key={index} data-type={output.type} className="text-xs p-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500">{output.message}</div>
+                <div key={index} data-type={output.type} className="text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500">{output.message}</div>
             ))}
             <div className="h-6"></div>
         </div>

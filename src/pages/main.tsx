@@ -4,7 +4,7 @@ import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { runLua } from '@/lib/aos';
+import { parseOutupt, runLua } from '@/lib/aos';
 import { embedHandler, getNodesOrdered } from '@/lib/utils';
 import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { data } from '@/nodes/handler-add';
@@ -158,15 +158,15 @@ export default function Main() {
             console.log(result)
             if (result.Error) {
               globals.addErrorNode(node)
-              globals.addOutput({ type: "error", message: `${node.id}: ${result.Error}` })
+              globals.addOutput({ type: "error", message: `[${node.id}] ${result.Error}` })
             } else {
               globals.addSuccessNode(node)
-              globals.addOutput({ type: "output", message: `${node.id}: ${result.Output}` })
+              globals.addOutput({ type: "output", message: `[${node.id}] ${parseOutupt(result) || "[no data returned]"}` })
             }
           } catch (e: any) {
             console.log(e)
             globals.addErrorNode(node)
-            globals.addOutput({ type: "error", message: `${node.id}: ${e.message}` })
+            globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
           }
         }
 

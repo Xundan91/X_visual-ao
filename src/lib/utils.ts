@@ -13,11 +13,14 @@ export function shortAddress(address: string) {
 }
 
 export function embedHandler(name: string, action: string, xml: string) {
-  return `Handlers.add(
+  return `${xmlToLua(xml)}
+
+Handlers.add(
   "${name}",
   "${action}",
-${xmlToLua(xml).split("\n").map(v => `\t${v}`).join("\n")}
-)`
+  ${name}Handler
+)
+`
 }
 
 export function getNodesOrdered(nodes: any, edges: any): Node[] {

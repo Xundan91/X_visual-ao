@@ -82,3 +82,18 @@ export async function runLua(code: string, process: string, tags?: Tag[]) {
   (result as any).id = message;
   return result;
 }
+
+export function parseOutupt(out: any) {
+  if (!out.Output) return out;
+  const data = out.Output.data;
+  if (typeof data == "string") return data;
+  const { json, output } = data;
+  if (json != "undefined") {
+    return json;
+  }
+  try {
+    return JSON.parse(output);
+  } catch (e) {
+    return output;
+  }
+}

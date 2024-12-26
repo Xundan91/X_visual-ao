@@ -53,7 +53,15 @@ export default function BlocklyComponent() {
     }
 
     function saveBlocks() {
-        dispatchEvent(new CustomEvent("save-blocks", { detail: { xml } }))
+        if (!xml) return
+        // find the field with name="NAME" and replace the value with the handler name
+        const xmlDoc = new DOMParser().parseFromString(xml, "application/xml");
+        const field = xmlDoc.querySelector('field[name="NAME"]');
+        if (field) field.textContent = data.handlerName + "Handler";
+
+        const newXml = new XMLSerializer().serializeToString(xmlDoc)
+
+        dispatchEvent(new CustomEvent("save-blocks", { detail: { xml: newXml } }))
         setEditingNode(false)
     }
 
