@@ -4,6 +4,7 @@ import { keyToNode, Node, Nodes, TNodes } from "@/nodes"
 import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { HandlerAddNodeSidebar } from "@/nodes/handler-add"
+import { AOSendNodeSidebar } from "@/nodes/ao-send"
 
 export function SmolText({ children, className }: { children: string, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
@@ -44,6 +45,8 @@ function NodeData({ activeNode }: { activeNode: Node }) {
             switch (activeNode.type) {
                 case "handler-add":
                     return <HandlerAddNodeSidebar />
+                case "ao-send":
+                    return <AOSendNodeSidebar />
                 default:
                     return <div>Unknown Node</div>
             }

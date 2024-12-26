@@ -177,6 +177,11 @@ export default function Main() {
           globals.toggleNodebar()
         globals.setActiveNode(node)
         break;
+      case "ao-send":
+        if (!globals.nodebarOpen)
+          globals.toggleNodebar()
+        globals.setActiveNode(node)
+        break;
       default:
         globals.setActiveNode(undefined)
 

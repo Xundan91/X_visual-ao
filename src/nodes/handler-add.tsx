@@ -10,13 +10,13 @@ import { xmlToLua } from "@/blockly/utils/xml";
 import { cn, embedHandler } from "@/lib/utils";
 
 // data field structure for react-node custom node
+type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
 export interface data {
     handlerName: string;
     actionType: THandlerType;
     actionValue: string;
     blocklyXml: string;
 }
-type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
 
 // the handler add node for react-flow
 export default function HandlerAddNode(props: Node) {
