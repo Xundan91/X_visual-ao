@@ -2,7 +2,7 @@ import { Handle, Node, Position } from "@xyflow/react"
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Tag } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Loader, MessageSquareShare } from "lucide-react";
+import { Loader, MessageSquareShare, Play } from "lucide-react";
 import { keyToNode } from ".";
 import { TNodes } from ".";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 
 // data field structure for react-node custom node
@@ -58,7 +59,36 @@ export default function AOSendNode(props: Node) {
     </div>
 }
 
+type SendFunctionInputs = {
+    target: string;
+    targetType: InputTypes;
+    action: string;
+    actionType: InputTypes;
+    data: string;
+    dataType: InputTypes;
+    tags: (Tag & { type: InputTypes })[];
+}
+
 type InputTypes = "TEXT" | "VARIABLE"
+export function embedSendFunction(inputs: SendFunctionInputs) {
+    const { target, targetType, action, actionType, data, dataType, tags } = inputs
+
+    const targetCode = targetType == "TEXT" ? `"${target}"` : `${target}`
+    const actionCode = actionType == "TEXT" ? `"${action}"` : `${action}`
+    const dataCode = dataType == "TEXT" ? `"${data}"` : `${data}`
+
+    const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
+
+    // strip first 8 lines of the code
+    return (require("lua-format").Beautify(`Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})
+`, {
+        RenameVariables: false,
+        RenameGlobals: false,
+        SolveMath: true
+    }) as string).split("\n").slice(8).join("\n")
+}
+
+
 export function AOSendNodeSidebar() {
     const [targetType, setTargetType] = useState<InputTypes>("TEXT")
     const [target, setTarget] = useState("")
@@ -253,5 +283,16 @@ export function AOSendNodeSidebar() {
                 +
             </Button>
         </div>
+
+        <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
+        <div className="bg-yellow-50 p-2 text-xs border-y">
+            <Button variant="link" className="text-muted-foreground w-full" onClick={() => toast("TODO")}>
+                <Play size={20} /> Run Code
+            </Button>
+            <pre className="overflow-scroll">
+                {embedSendFunction({ target, targetType, action, actionType, data, dataType, tags })}
+            </pre>
+        </div>
+
     </div>
 }

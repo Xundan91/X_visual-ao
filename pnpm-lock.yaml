@@ -47,6 +47,9 @@ importers:
       dagre:
         specifier: ^0.8.5
         version: 0.8.5
+      lua-format:
+        specifier: ^1.5.2
+        version: 1.5.2
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@18.3.1)
@@ -2737,6 +2740,9 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lua-format@1.5.2:
+    resolution: {integrity: sha512-/MWt8pfA5qY1LNVf+CqRUPn/tGlp1OoTF1JhwyD7Q3qpfNX0UxVGUicpkBVnDsqoEtBTb/gJPy8ca3Jw0Lsq3Q==}
 
   lucide-react@0.468.0:
     resolution: {integrity: sha512-6koYRhnM2N0GGZIdXzSeiNwguv1gt/FAjZOiPl76roBi3xKEXa4WmfpxgQwTTL4KipXjefrnf3oV4IsYhi4JFA==}
@@ -6945,6 +6951,8 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lua-format@1.5.2: {}
 
   lucide-react@0.468.0(react@18.3.1):
     dependencies:
