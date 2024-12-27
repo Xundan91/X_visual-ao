@@ -10,16 +10,38 @@ import Terminal from "@/components/console";
 import { useEffect, useRef } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { useGlobalState } from "@/hooks/useGlobalStore";
+import { getResults } from "@/lib/aos";
 
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
     const { setConsoleRef } = useGlobalState();
+    const { activeProcess, addOutput } = useGlobalState();
 
     useEffect(() => {
         if (consoleRef.current) {
             setConsoleRef(consoleRef);
         }
     }, [consoleRef]);
+
+    useEffect(() => {
+        if (!activeProcess) return clearInterval(localStorage.getItem("intervalId") as string)
+
+        const intervalId = setInterval(async () => {
+            const res = await getResults(activeProcess, localStorage.getItem("cursor") || "")
+            localStorage.setItem("cursor", res.cursor)
+            if (res.results.length > 5) return
+            res.results.forEach(result => {
+                console.log(result)
+                if (result.Output.print && result.Output.data)
+                    addOutput({ type: "output", message: result.Output.data as string })
+            })
+        }, 1000) as unknown as string
+        localStorage.setItem("intervalId", intervalId)
+
+        return () => {
+            clearInterval(intervalId)
+        }
+    }, [activeProcess])
 
     return <div className="flex border h-screen">
         <ResizablePanelGroup direction="horizontal">
