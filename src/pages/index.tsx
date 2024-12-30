@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { getResults } from "@/lib/aos";
+import { toast } from "sonner";
+import Ansi from "ansi-to-react";
 
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
@@ -33,10 +35,12 @@ export default function Index() {
             if (res.results.length > 5) return
             res.results.forEach(result => {
                 console.log(result)
-                if (result.Output.print && result.Output.data)
+                if (result.Output.print && result.Output.data) {
                     addOutput({ type: "output", message: result.Output.data as string })
+                    toast.message(<><Ansi>{result.Output.data as string}</Ansi></>, { style: { backgroundColor: "whitesmoke" } })
+                }
             })
-        }, 1000) as unknown as string
+        }, 2000) as unknown as string
         localStorage.setItem("intervalId", intervalId)
 
         return () => {
