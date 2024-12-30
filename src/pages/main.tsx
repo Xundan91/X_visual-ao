@@ -26,7 +26,7 @@ const defaults = {
 }
 const ignoreChangesForNodes = ["start"]
 
-export default function Main() {
+export default function Main({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
 
@@ -162,15 +162,15 @@ export default function Main() {
                 console.log(result)
                 if (result.Error) {
                   globals.addErrorNode(node)
-                  globals.addOutput({ type: "error", message: `[${node.id}] ${result.Error}` })
+                  globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
                 } else {
                   globals.addSuccessNode(node)
-                  globals.addOutput({ type: "output", message: `[${node.id}] [${result.id}] ${parseOutupt(result) || "[no data returned]"}` })
+                  globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}]` })
                 }
               } catch (e: any) {
                 console.log(e)
                 globals.addErrorNode(node)
-                globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
+                globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
               }
               break;
             case "ao-send":
@@ -181,16 +181,16 @@ export default function Main() {
                 const result = await runLua(code, globals.activeProcess)
                 console.log(result)
                 globals.addSuccessNode(node)
-                globals.addOutput({ type: "output", message: `[${node.id}] [${result.id}] ${parseOutupt(result) || "[no data returned]"}` })
+                globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
               } catch (e: any) {
                 console.log(e)
                 globals.addErrorNode(node)
-                globals.addOutput({ type: "error", message: `[${node.id}] ${e.message}` })
+                globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
               }
               break;
             default:
               globals.addRunningNode(node)
-              globals.addOutput({ type: "output", message: `[${node.id}] unknown node type` })
+              globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
               break;
           }
         }
@@ -215,7 +215,7 @@ export default function Main() {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="w-full h-[calc(100%-20px)]">
       <div className="h-5 flex items-center px-1 border-b text-xs">
         {globals.activeProcess && <>
           <BoxIcon size={14} className='mr-1' strokeWidth={1.2} />{globals.activeProcess}
@@ -237,7 +237,7 @@ export default function Main() {
       }
 
       <ReactFlow
-        className='!h-[calc(100vh-20px)]'
+        style={{ height: `calc(calc(100vh-20px)-${heightPerc}%) !important` }}
         nodeTypes={Nodes as any}
         edgeTypes={Edges}
         nodes={globals.activeProcess ? nodes :

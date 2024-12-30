@@ -25,9 +25,12 @@ export default function Console() {
         {/* scrollable div for output list */}
         {/* always make sure the scroll is at the bottom */}
         <div id="console-container" className="overflow-scroll h-full scroll-smooth">
-            {outputs.map((output: OutputType, index) => (
-                <div key={index} data-type={output.type} className="text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500"><Ansi>{output.message}</Ansi></div>
-            ))}
+            {outputs.map((output: OutputType, index) => <>
+                <div key={index} data-type={output.type} className="flex items-center gap-0.5 whitespace-nowrap text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500">
+                    <div className="text-muted-foreground">{output.preMessage}</div><Ansi>{output.message}</Ansi>
+                </div>
+            </>
+            )}
             <div className="h-6"></div>
         </div>
     </div>

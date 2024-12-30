@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/resizable"
 import Main from "./main";
 import Terminal from "@/components/console";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { getResults } from "@/lib/aos";
@@ -15,7 +15,8 @@ import { getResults } from "@/lib/aos";
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
     const { setConsoleRef } = useGlobalState();
-    const { activeProcess, addOutput } = useGlobalState();
+    const { activeProcess, addOutput, nodebarOpen } = useGlobalState();
+    const [consoleSize, setConsoleSize] = useState(0);
 
     useEffect(() => {
         if (consoleRef.current) {
@@ -51,13 +52,14 @@ export default function Index() {
             <ResizableHandle />
             <ResizablePanel>
                 {/* <Main /> */}
-                <ResizablePanelGroup direction="vertical">
+                <ResizablePanelGroup data-nodebaropen={nodebarOpen} direction="vertical" className="data-[nodebaropen=true]:!w-[calc(100%-269px)] transition-all duration-200">
                     <ResizablePanel>
-                        <Main />
+                        {/* console size to whole number */}
+                        <Main heightPerc={Math.round(consoleSize)} />
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel ref={consoleRef} minSize={5} maxSize={50} collapsedSize={0} defaultSize={0} collapsible
-                        onCollapse={() => console.log("collapse")} onExpand={() => console.log("expand")} >
+                        onResize={(current, prev) => { setConsoleSize(current) }}>
                         <Terminal />
                     </ResizablePanel>
                 </ResizablePanelGroup>

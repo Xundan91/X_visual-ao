@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { parseOutupt, runLua } from "@/lib/aos";
+import Ansi from "ansi-to-react";
+import Link from "next/link";
 
 
 // data field structure for react-node custom node
@@ -104,8 +107,11 @@ export function AOSendNodeSidebar() {
     const [tags, setTags] = useState<(Tag & { type: InputTypes })[]>([])
     const [newTagKey, setNewTagKey] = useState("")
     const [newTagValue, setNewTagValue] = useState("")
+    const [runningCode, setRunningCode] = useState(false)
+    const [output, setOutput] = useState("")
+    const [outputId, setOutputId] = useState("")
 
-    const { activeNode } = useGlobalState()
+    const { activeNode, activeProcess, addOutput } = useGlobalState()
 
     useEffect(() => {
         const nodeData = activeNode?.data as data
@@ -158,7 +164,29 @@ export function AOSendNodeSidebar() {
         setTags(newTags)
     }
 
-    return <div className="flex flex-col gap-0.5">
+    async function runSendMessage() {
+        const code = embedSendFunction({ target, targetType, action, actionType, data, dataType, tags })
+        console.log("running", code)
+        setRunningCode(true)
+        setOutput("")
+        setOutputId("")
+        try {
+            const result = await runLua(code, activeProcess)
+            console.log(result)
+            const resStr = parseOutupt(result)
+            setOutput(resStr)
+            setOutputId(result.id)
+            // addOutput({ type: "output", message: `${resStr}`, preMessage: `[${activeNode?.id}]` })
+        } catch (e: any) {
+            setOutput(e.message)
+            setOutputId("")
+            // addOutput({ type: "error", message: `${e.message}`, preMessage: `[${activeNode?.id}]` })
+        } finally {
+            setRunningCode(false)
+        }
+    }
+
+    return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
 
         <div className="flex mt-4 items-end gap-1 justify-between h-5">
@@ -291,11 +319,18 @@ export function AOSendNodeSidebar() {
 
         <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
         <div className="bg-yellow-50 p-2 text-xs border-y">
-            <Button variant="link" className="text-muted-foreground w-full" onClick={() => toast("TODO")}>
-                <Play size={20} /> Run Code
+            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={runSendMessage}>
+                {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Send Message</>}
             </Button>
             <pre className="overflow-scroll">
                 {embedSendFunction({ target, targetType, action, actionType, data, dataType, tags })}
+            </pre>
+        </div>
+
+        <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
+        <div className="bg-yellow-50 p-2 text-xs border-y">
+            <pre className="overflow-scroll">
+                <Ansi className="text-xs">{output || "..."}</Ansi>
             </pre>
         </div>
 

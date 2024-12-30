@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { HandlerAddNodeSidebar } from "@/nodes/handler-add"
 import { AOSendNodeSidebar } from "@/nodes/ao-send"
 
-export function SmolText({ children, className }: { children: string, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
+export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
 }
 
@@ -38,19 +38,23 @@ function AvailableNodes() {
 // the right sidebar when a node is selected
 function NodeData({ activeNode }: { activeNode: Node }) {
     return <div>
-        <div className="p-2 pb-0">{keyToNode(activeNode.type)}</div>
-        <SmolText className="pt-0 pb-2.5">{activeNode.id}</SmolText>
+        <div className="h-14">
+            <div className="p-2 pb-0">{keyToNode(activeNode.type)}</div>
+            <SmolText className="pt-0 pb-2.5">{activeNode.id}</SmolText>
+        </div>
         <hr />
-        {(() => {
-            switch (activeNode.type) {
-                case "handler-add":
-                    return <HandlerAddNodeSidebar />
-                case "ao-send":
-                    return <AOSendNodeSidebar />
-                default:
-                    return <div>Unknown Node</div>
-            }
-        })()}
+        <div className="h-[calc(100vh-56px)] overflow-y-scroll">
+            {(() => {
+                switch (activeNode.type) {
+                    case "handler-add":
+                        return <HandlerAddNodeSidebar />
+                    case "ao-send":
+                        return <AOSendNodeSidebar />
+                    default:
+                        return <div>Unknown Node</div>
+                }
+            })()}
+        </div>
     </div>
 }
 
@@ -59,7 +63,7 @@ export function RightSidebar() {
     const { nodebarOpen, activeNode } = useGlobalState()
 
     return (
-        <div data-nodebaropen={nodebarOpen} className="w-[250px] bg-white h-screen z-20 data-[nodebaropen=false]:w-0 transition-all duration-200 border-l">
+        <div data-nodebaropen={nodebarOpen} className="w-[269px] bg-white h-screen z-20 data-[nodebaropen=false]:w-0 transition-all duration-200 border-l">
             {activeNode ? <NodeData activeNode={activeNode} /> : <AvailableNodes />}
         </div>
     )
