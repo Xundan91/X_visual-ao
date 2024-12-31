@@ -62,7 +62,7 @@ export default function BlocklyComponent() {
     }
 
     return <>
-        <div className='w-full absolute top-16 pr-8 z-40 max-w-[90vw] flex gap-1 items-center justify-end'>
+        <div className='w-fit absolute right-[5vw] top-16 pr-8 z-40 max-w-[90vw] flex gap-1 items-center justify-end'>
             <Button variant="secondary" className="!bg-transparent border-[#cfcfcf] border-[2.5px] hover:border-destructive text-[#cfcfcf] hover:text-destructive rounded-full p-0 !aspect-square" onClick={discardBlocks}><XIcon strokeWidth={3} /></Button>
             <Button variant="secondary" className="!bg-transparent border-[#cfcfcf] border-[2.5px] hover:border-green-500 text-[#cfcfcf] hover:text-green-500 rounded-full p-0 !aspect-square" onClick={saveBlocks}><CheckIcon strokeWidth={3} /></Button>
         </div>
