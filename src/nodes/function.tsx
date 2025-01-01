@@ -6,7 +6,7 @@ import { keyToNode, TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
-import { xmlToLua } from "@/blockly/utils/xml";
+import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
 import { cn, embedFunction, embedHandler } from "@/lib/utils";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
@@ -84,11 +84,13 @@ export function FunctionNodeSidebar() {
     useEffect(() => {
         if (!functionName) return
 
+        const newXml = replaceXMLFieldValue(nodeData?.blocklyXml, "NAME", functionName)
+
         // update the node data in react-flow
         const newNodeData: data = {
             functionName,
             runOnAdd,
-            blocklyXml: nodeData?.blocklyXml || ""
+            blocklyXml: newXml
         }
 
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))

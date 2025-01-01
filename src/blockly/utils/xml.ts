@@ -9,7 +9,7 @@ export const DEFAULT_XML = `<xml xmlns="https://developers.google.com/blockly/xm
         <mutation>
             <arg name="msg" varid="msg"></arg>
         </mutation>
-        <field name="NAME"><HANDLER_NAME></field>
+        <field name="NAME"><FUNC_NAME></field>
     </block>
 </xml>`
 

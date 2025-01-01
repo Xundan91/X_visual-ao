@@ -4,21 +4,30 @@ import { CheckIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useBlocklyWorkspace } from "react-blockly"
 import { DEFAULT_XML, replaceXMLFieldValue } from './utils/xml';
-import { data as HandlerAddData } from '@/nodes/handler-add';
 import { luaGenerator } from 'blockly/lua';
 import { initializeBlocks } from './utils/registry';
 import { getToolboxConfiguration } from './toolbox';
+import { data as HandlerAddData } from '@/nodes/handler-add';
+import { data as FunctionData } from '@/nodes/function';
 import "./blocks"
-
 
 initializeBlocks()
 export default function BlocklyComponent() {
     const { activeNode } = useGlobalState()
     console.log(activeNode)
-    const data = activeNode?.data as HandlerAddData
-    // const [xmlV, setXmlV] = useState(data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", "MyHandler"))
-
+    const data = activeNode?.data as HandlerAddData & FunctionData
+    console.log(data.blocklyXml)
     const blocklyRef = useRef(null);
+
+    let xml_ = data.blocklyXml
+    switch (activeNode?.type) {
+        case "handler-add":
+            xml_ = replaceXMLFieldValue(xml_, "NAME", data.handlerName + "Handler")
+            break
+        case "function":
+            xml_ = replaceXMLFieldValue(xml_, "NAME", data.functionName)
+            break
+    }
 
     const { workspace, xml } = useBlocklyWorkspace({
         ref: blocklyRef,
@@ -38,7 +47,7 @@ export default function BlocklyComponent() {
 
         },
         toolboxConfiguration: getToolboxConfiguration(),
-        initialXml: data.blocklyXml || DEFAULT_XML.replace("<HANDLER_NAME>", data.handlerName + "Handler"),
+        initialXml: xml_ || DEFAULT_XML.replace("<FUNC_NAME>", "func"),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
             console.log(luaGenerator.workspaceToCode(workspace))
@@ -54,10 +63,20 @@ export default function BlocklyComponent() {
 
     function saveBlocks() {
         if (!xml) return
-        // find the field with name="NAME" and replace the value with the handler name
-        const newXml = replaceXMLFieldValue(xml, "NAME", data.handlerName + "Handler")
+        // find the field with name="FUNC_NAME" and replace the value with the handler name
+        console.log(xml)
+        let name = "func"
+        switch (activeNode?.type) {
+            case "handler-add":
+                name = data.handlerName + "Handler"
+                break
+            case "function":
+                name = data.functionName
+                break
+        }
+        const newXml = replaceXMLFieldValue(xml, "NAME", name)
 
-        dispatchEvent(new CustomEvent("save-blocks", { detail: { xml: newXml } }))
+        dispatchEvent(new CustomEvent("save-blocks", { detail: { id: activeNode?.id, xml: newXml } }))
         setEditingNode(false)
     }
 

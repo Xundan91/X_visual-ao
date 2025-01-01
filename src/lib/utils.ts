@@ -13,6 +13,7 @@ export function shortAddress(address: string) {
 }
 
 export function embedHandler(name: string, action: string, xml: string) {
+  console.log(xml)
   return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name + "Handler"))}
 
 return Handlers.add(
