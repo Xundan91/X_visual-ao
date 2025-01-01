@@ -25,6 +25,13 @@ const block: BlockRegistration = {
     toolbox: {
         type,
         kind: "block",
+        inputs: {
+            Value: {
+                shadow: {
+                    type: "text"
+                }
+            }
+        }
     }
 };
 

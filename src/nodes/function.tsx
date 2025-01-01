@@ -109,9 +109,10 @@ export function FunctionNodeSidebar() {
         setEditingNode(true)
     }
 
-    async function runHandler() {
+    async function runFunction() {
         setRunningCode(true)
-        const code = embedFunction(functionName, blocklyXml, runOnAdd)
+        const data = activeNode?.data as data
+        const code = embedFunction(functionName, data?.blocklyXml || "", runOnAdd)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -157,7 +158,7 @@ export function FunctionNodeSidebar() {
         </Button>
         <SmolText>Function Definition</SmolText>
         <div className="bg-yellow-50 border-y flex flex-col items-start justify-start overflow-clip">
-            <Button disabled={!functionName || functionName.length < 1 || runningCode} variant="link" className="text-muted-foreground w-full my-2" onClick={runHandler}>
+            <Button disabled={!functionName || functionName.length < 1 || runningCode} variant="link" className="text-muted-foreground w-full my-2" onClick={runFunction}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Code</>}
             </Button>
             {

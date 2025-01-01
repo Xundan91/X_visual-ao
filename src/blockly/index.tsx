@@ -19,15 +19,6 @@ export default function BlocklyComponent() {
     console.log(data.blocklyXml)
     const blocklyRef = useRef(null);
 
-    let xml_ = data.blocklyXml
-    switch (activeNode?.type) {
-        case "handler-add":
-            xml_ = replaceXMLFieldValue(xml_, "NAME", data.handlerName + "Handler")
-            break
-        case "function":
-            xml_ = replaceXMLFieldValue(xml_, "NAME", data.functionName)
-            break
-    }
 
     const { workspace, xml } = useBlocklyWorkspace({
         ref: blocklyRef,
@@ -47,7 +38,7 @@ export default function BlocklyComponent() {
 
         },
         toolboxConfiguration: getToolboxConfiguration(),
-        initialXml: xml_ || DEFAULT_XML.replace("<FUNC_NAME>", "func"),
+        initialXml: data.blocklyXml || DEFAULT_XML.replace("<FUNC_NAME>", activeNode?.type == "handler-add" ? data.handlerName + "Handler" : data.functionName),
         onWorkspaceChange(workspace) {
             // console.log("workspace changed", workspace)
             console.log(luaGenerator.workspaceToCode(workspace))
@@ -65,16 +56,7 @@ export default function BlocklyComponent() {
         if (!xml) return
         // find the field with name="FUNC_NAME" and replace the value with the handler name
         console.log(xml)
-        let name = "func"
-        switch (activeNode?.type) {
-            case "handler-add":
-                name = data.handlerName + "Handler"
-                break
-            case "function":
-                name = data.functionName
-                break
-        }
-        const newXml = replaceXMLFieldValue(xml, "NAME", name)
+        const newXml = replaceXMLFieldValue(xml, "NAME", activeNode?.type == "handler-add" ? data.handlerName + "Handler" : data.functionName)
 
         dispatchEvent(new CustomEvent("save-blocks", { detail: { id: activeNode?.id, xml: newXml } }))
         setEditingNode(false)
