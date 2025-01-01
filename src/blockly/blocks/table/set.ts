@@ -5,7 +5,7 @@ import * as Lua from 'blockly/lua';
 const type = "table_set"
 const block: BlockRegistration = {
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.setInputsInline(true);

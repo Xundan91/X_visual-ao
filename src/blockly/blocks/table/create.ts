@@ -6,7 +6,7 @@ import * as Blockly from 'blockly';
 const type = "table_create"
 const block: BlockRegistration = {
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.appendDummyInput()

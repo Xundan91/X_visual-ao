@@ -1,3 +1,5 @@
+import "./lua/print"
+
 import "./ao/ao-id"
 import "./ao/send"
 

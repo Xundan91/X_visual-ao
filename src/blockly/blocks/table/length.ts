@@ -5,7 +5,7 @@ import * as Lua from 'blockly/lua';
 const type = "table_length"
 const block: BlockRegistration = {
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.setOutput(true, 'Number');

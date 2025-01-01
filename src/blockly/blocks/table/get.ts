@@ -5,7 +5,7 @@ import * as Blockly from 'blockly';
 const type = "table_get"
 const block: BlockRegistration = {
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.setOutput(true, null);

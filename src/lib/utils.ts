@@ -23,6 +23,13 @@ return Handlers.add(
 `
 }
 
+export function embedFunction(name: string, xml: string, run: boolean) {
+  return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name))}
+
+${run ? `return ${name}()` : ""}
+`
+}
+
 export function getNodesOrdered(nodes: any, edges: any): Node[] {
   // make a list of connected nodes in order between start and add
   let edge: Edge = edges[0]

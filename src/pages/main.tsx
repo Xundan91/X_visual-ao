@@ -6,7 +6,7 @@ import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { parseOutupt, runLua } from '@/lib/aos';
 import { embedHandler, getNodesOrdered } from '@/lib/utils';
-import { Node, Nodes, NodeSizes, TNodes } from '@/nodes';
+import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
@@ -134,83 +134,74 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
 
   async function onNodeClick(e: any, node: Node) {
     if (globals.flowIsRunning) return
-    switch (node.type) {
-      case "add":
-        if (!globals.nodebarOpen)
-          globals.toggleNodebar()
-        globals.setActiveNode(undefined)
-        break;
-      case "start":
-        if (globals.nodebarOpen)
-          globals.toggleNodebar()
-        globals.setActiveNode(undefined)
-        // iterate over nodes and run them one by one
-        const list = getNodesOrdered(nodes, edges)
-        globals.setFlowIsRunning(true)
-        globals.resetNodes()
-        if (globals.consoleRef?.current?.isCollapsed())
-          globals.consoleRef?.current?.resize(25);
-        for (const node of list) {
-          globals.addRunningNode(node)
-          switch (node.type) {
-            case "handler-add":
-              const handlerData = node.data as HandlerAddDataType
-              try {
-                const code = embedHandler(handlerData.handlerName, handlerData.actionValue, handlerData.blocklyXml)
-                console.log("running lua", code)
-                const result = await runLua(code, globals.activeProcess)
-                console.log(result)
-                if (result.Error) {
-                  globals.addErrorNode(node)
-                  globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
-                } else {
-                  globals.addSuccessNode(node)
-                  globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}]` })
-                }
-              } catch (e: any) {
-                console.log(e)
-                globals.addErrorNode(node)
-                globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-              }
-              break;
-            case "ao-send":
-              const sendData = node.data as AOSendDataType
-              const code = embedSendFunction(sendData)
-              console.log("running lua", code)
-              try {
-                const result = await runLua(code, globals.activeProcess)
-                console.log(result)
-                globals.addSuccessNode(node)
-                globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
-              } catch (e: any) {
-                console.log(e)
-                globals.addErrorNode(node)
-                globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-              }
-              break;
-            default:
-              globals.addRunningNode(node)
-              globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
-              break;
+
+    if (node.type === "start") {
+      if (globals.nodebarOpen)
+        globals.toggleNodebar()
+      globals.setActiveNode(undefined)
+      // iterate over nodes and run them one by one
+      const list = getNodesOrdered(nodes, edges)
+      globals.setFlowIsRunning(true)
+      globals.resetNodes()
+      if (globals.consoleRef?.current?.isCollapsed())
+        globals.consoleRef?.current?.resize(25);
+      for (const node of list) {
+        globals.addRunningNode(node)
+        if (node.type === "handler-add") {
+          const handlerData = node.data as HandlerAddDataType
+          try {
+            const code = embedHandler(handlerData.handlerName, handlerData.actionValue, handlerData.blocklyXml)
+            console.log("running lua", code)
+            const result = await runLua(code, globals.activeProcess)
+            console.log(result)
+            if (result.Error) {
+              globals.addErrorNode(node)
+              globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
+            } else {
+              globals.addSuccessNode(node)
+              globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}]` })
+            }
+          } catch (e: any) {
+            console.log(e)
+            globals.addErrorNode(node)
+            globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
           }
         }
+        else if (node.type === "ao-send") {
+          const sendData = node.data as AOSendDataType
+          const code = embedSendFunction(sendData)
+          console.log("running lua", code)
+          try {
+            const result = await runLua(code, globals.activeProcess)
+            console.log(result)
+            globals.addSuccessNode(node)
+            globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
+          } catch (e: any) {
+            console.log(e)
+            globals.addErrorNode(node)
+            globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
+          }
+        }
+        else {
+          globals.addRunningNode(node)
+          globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
+        }
+      }
 
-        globals.setFlowIsRunning(false)
-        break;
-      case "handler-add":
-        if (!globals.nodebarOpen)
-          globals.toggleNodebar()
-        globals.setActiveNode(node)
-        break;
-      case "ao-send":
-        if (!globals.nodebarOpen)
-          globals.toggleNodebar()
-        globals.setActiveNode(node)
-        break;
-      default:
-        globals.setActiveNode(undefined)
-
-
+      globals.setFlowIsRunning(false)
+    }
+    else if (node.type === "add") {
+      if (!globals.nodebarOpen)
+        globals.toggleNodebar()
+      globals.setActiveNode(undefined)
+    }
+    else if (Object.keys(customNodes).includes(node.type)) {
+      if (!globals.nodebarOpen)
+        globals.toggleNodebar()
+      globals.setActiveNode(node)
+    }
+    else {
+      globals.setActiveNode(undefined)
     }
   }
 

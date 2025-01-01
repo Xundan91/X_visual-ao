@@ -32,7 +32,7 @@ export function LeftSidebar() {
     useEffect(() => {
         if (!activeProcess) return
 
-        toast.success(`Active process set to ${shortAddress(activeProcess)}`, { style: { backgroundColor: "white" } })
+        toast(`Active process set to ${shortAddress(activeProcess)}`, { style: { backgroundColor: "white" } })
     }, [activeProcess])
 
     return (

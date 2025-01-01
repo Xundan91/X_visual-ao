@@ -37,7 +37,7 @@ export default function Index() {
                 console.log(result)
                 if (result.Output.print && result.Output.data) {
                     addOutput({ type: "output", message: result.Output.data as string })
-                    toast.message(<><Ansi>{result.Output.data as string}</Ansi></>, { style: { backgroundColor: "whitesmoke" } })
+                    toast(<pre className="max-h-[269px] overflow-scroll"><Ansi>{result.Output.data as string}</Ansi></pre>, { style: { backgroundColor: "whitesmoke" } })
                 }
             })
         }, 2000) as unknown as string

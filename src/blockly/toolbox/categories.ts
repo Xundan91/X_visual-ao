@@ -11,9 +11,15 @@ export function getCategories() {
     return [
         {
             kind: "category",
-            name: "Lua Tables",
+            name: "Lua",
+            categorystyle: "procedure_category",
+            contents: getCategoryBlocks("Lua")
+        },
+        {
+            kind: "category",
+            name: "Tables",
             categorystyle: "list_category",
-            contents: getCategoryBlocks("Lua Tables")
+            contents: getCategoryBlocks("Tables")
         },
         {
             kind: "category",

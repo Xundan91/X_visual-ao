@@ -8,7 +8,7 @@ const type = "TABLE"
 const block: BlockRegistration = {
     hidden: true,
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.setOutput(true, "TABLE");

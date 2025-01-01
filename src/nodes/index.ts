@@ -3,6 +3,7 @@ import AddNode from "./add";
 import AnnotationNode from "./annotation";
 import HandlerAddNode, { data as HandlerAddNodeData } from "./handler-add";
 import AOSendNode, { data as AOSendNodeData } from "./ao-send";
+import FunctionNode from "./function";
 export interface Node {
     id: string;
     position: {
@@ -13,12 +14,17 @@ export interface Node {
     type: TNodes;
 }
 
+export const customNodes = {
+    "handler-add": HandlerAddNode,
+    "ao-send": AOSendNode,
+    function: FunctionNode,
+}
+
 const Nodes = {
     start: StartNode,
     add: AddNode,
     annotation: AnnotationNode,
-    "handler-add": HandlerAddNode,
-    "ao-send": AOSendNode,
+    ...customNodes,
 }
 
 type TNodes = keyof typeof Nodes
@@ -29,6 +35,7 @@ const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
     annotation: { width: 128, height: 56 },
     "handler-add": { width: 112, height: 112 },
     "ao-send": { width: 112, height: 112 },
+    function: { width: 112, height: 112 },
 }
 
 export function keyToNode(key: TNodes): string {
@@ -37,6 +44,8 @@ export function keyToNode(key: TNodes): string {
             return "Add Handler";
         case "ao-send":
             return "Send Message";
+        case "function":
+            return "Lua Function";
         default:
             return "";
     }

@@ -12,10 +12,6 @@ const defaultCategories = [
                 kind: 'block',
             },
             {
-                type: 'controls_ifelse',
-                kind: 'block',
-            },
-            {
                 type: 'logic_compare',
                 kind: 'block',
                 fields: {

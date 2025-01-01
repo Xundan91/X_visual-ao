@@ -5,6 +5,7 @@ import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { HandlerAddNodeSidebar } from "@/nodes/handler-add"
 import { AOSendNodeSidebar } from "@/nodes/ao-send"
+import { FunctionNodeSidebar } from "@/nodes/function"
 
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
@@ -50,8 +51,10 @@ function NodeData({ activeNode }: { activeNode: Node }) {
                         return <HandlerAddNodeSidebar />
                     case "ao-send":
                         return <AOSendNodeSidebar />
+                    case "function":
+                        return <FunctionNodeSidebar />
                     default:
-                        return <div>Unknown Node</div>
+                        return <div className="text-red-500 text-xs text-center py-2">Unknown Node<br /> Please check @components/right-sidebar.tsx</div>
                 }
             })()}
         </div>

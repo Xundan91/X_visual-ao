@@ -7,7 +7,7 @@ const type = "key_value"
 const block: BlockRegistration = {
     hidden: true,
     type,
-    category: 'Lua Tables',
+    category: 'Tables',
     block: {
         init: function (this: Block) {
             this.appendValueInput("key")
