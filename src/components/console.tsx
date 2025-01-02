@@ -29,13 +29,13 @@ export default function Console() {
             {outputs.map((output: OutputType, index) => <>
                 <Dialog key={index}>
                     <DialogTrigger data-type={output.type} className="flex items-center gap-0.5 whitespace-nowrap text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500 hover:bg-black/5">
-                        <Ansi>{output.message}</Ansi>
+                        <Ansi>{output.message.toString()}</Ansi>
                     </DialogTrigger>
                     <DialogContent className="max-w-[70vw] bg-white text-sm">
                         <DialogHeader>
                             <div className="font-semibold">{output.preMessage || "Output"}</div>
                         </DialogHeader>
-                        <pre className="max-h-[50vh] overflow-scroll"><Ansi>{output.message}</Ansi></pre>
+                        <pre className="max-h-[50vh] overflow-scroll"><Ansi>{output.message.toString()}</Ansi></pre>
                     </DialogContent>
                 </Dialog>
                 {/* <div key={index} data-type={output.type} className="flex items-center gap-0.5 whitespace-nowrap text-xs px-0.5 font-mono data-[type=output]:text-black data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500">

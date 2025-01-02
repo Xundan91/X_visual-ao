@@ -115,8 +115,9 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
             globals.setActiveNode(node_)
             console.log("node updated", node_)
             return node_
+          } else {
+            return node
           }
-          return node
         })
       })
     }

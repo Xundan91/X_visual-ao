@@ -84,7 +84,7 @@ export function FunctionNodeSidebar() {
     useEffect(() => {
         if (!functionName) return
 
-        const newXml = replaceXMLFieldValue(nodeData?.blocklyXml, "NAME", functionName)
+        const newXml = nodeData?.blocklyXml ? replaceXMLFieldValue(nodeData?.blocklyXml, "NAME", functionName) : ""
 
         // update the node data in react-flow
         const newNodeData: data = {
@@ -100,7 +100,6 @@ export function FunctionNodeSidebar() {
     function openBlocklyEditor() {
         nodeData.functionName = functionName
         nodeData.runOnAdd = runOnAdd
-        nodeData.blocklyXml = blocklyXml
         if (activeNode?.id) {
             setActiveNode({ ...activeNode, data: nodeData, id: activeNode.id })
         }

@@ -7,16 +7,17 @@ import { DEFAULT_XML, replaceXMLFieldValue } from './utils/xml';
 import { luaGenerator } from 'blockly/lua';
 import { initializeBlocks } from './utils/registry';
 import { getToolboxConfiguration } from './toolbox';
+import * as Blockly from "blockly"
 import { data as HandlerAddData } from '@/nodes/handler-add';
 import { data as FunctionData } from '@/nodes/function';
 import "./blocks"
 
 initializeBlocks()
 export default function BlocklyComponent() {
-    const { activeNode } = useGlobalState()
+    const { activeNode, setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()
     console.log(activeNode)
     const data = activeNode?.data as HandlerAddData & FunctionData
-    console.log(data.blocklyXml)
+    console.log("init xml", data.blocklyXml)
     const blocklyRef = useRef(null);
 
 
@@ -46,7 +47,6 @@ export default function BlocklyComponent() {
         },
     });
     console.log(getToolboxConfiguration())
-    const { setEditingNode, nodebarOpen, toggleNodebar } = useGlobalState()
 
     function discardBlocks() {
         setEditingNode(false)
