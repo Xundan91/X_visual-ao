@@ -12,25 +12,6 @@ export function shortAddress(address: string) {
   return `${address.slice(0, 5)}...${address.slice(-5)}`
 }
 
-export function embedHandler(name: string, action: string, xml: string) {
-  console.log(xml)
-  return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name + "Handler"))}
-
-return Handlers.add(
-  "${name}",
-  "${action}",
-  ${name}Handler
-)
-`
-}
-
-export function embedFunction(name: string, xml: string, run: boolean) {
-  return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name))}
-
-${run ? `return ${name}()` : ""}
-`
-}
-
 export function getNodesOrdered(nodes: any, edges: any): Node[] {
   // make a list of connected nodes in order between start and add
   let edge: Edge = edges[0]

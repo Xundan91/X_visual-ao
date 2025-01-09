@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
-import { cn, embedFunction, embedHandler } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
@@ -18,6 +18,13 @@ export interface data {
     functionName: string;
     runOnAdd: boolean;
     blocklyXml: string;
+}
+
+export function embedFunction(name: string, xml: string, run: boolean) {
+    return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name))}
+
+${run ? `return ${name}()` : ""}
+`
 }
 
 // the handler add node for react-flow

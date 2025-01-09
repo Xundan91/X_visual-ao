@@ -6,8 +6,8 @@ import { keyToNode, TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
-import { xmlToLua } from "@/blockly/utils/xml";
-import { cn, embedHandler } from "@/lib/utils";
+import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
+import { cn } from "@/lib/utils";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
@@ -19,6 +19,18 @@ export interface data {
     actionType: THandlerType;
     actionValue: string;
     blocklyXml: string;
+}
+
+export function embedHandler(name: string, action: string, xml: string) {
+    console.log(xml)
+    return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name + "Handler"))}
+
+return Handlers.add(
+  "${name}",
+  "${action}",
+  ${name}Handler
+)
+`
 }
 
 // the handler add node for react-flow
