@@ -55,7 +55,7 @@ export default function FunctionNode(props: Node) {
             iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />
         }
         <CodeIcon size={30} strokeWidth={1} />
-        <div>{keyToNode(props.type as TNodes)}</div>
+        <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
     </div>
