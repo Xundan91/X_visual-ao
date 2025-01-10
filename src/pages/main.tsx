@@ -7,7 +7,7 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { parseOutupt, runLua } from '@/lib/aos';
 import { getNodesOrdered } from '@/lib/utils';
 import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
-import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow } from '@xyflow/react';
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
@@ -28,6 +28,12 @@ const defaults = {
 const ignoreChangesForNodes = ["start"]
 
 export default function Main({ heightPerc }: { heightPerc?: number }) {
+  return <ReactFlowProvider>
+    <Flow heightPerc={heightPerc} />
+  </ReactFlowProvider>
+}
+
+function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
   const { setCenter, setViewport } = useReactFlow();

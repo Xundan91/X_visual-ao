@@ -65,9 +65,9 @@ export default function Index() {
                 <ResizablePanelGroup data-nodebaropen={nodebarOpen} direction="vertical" className="data-[nodebaropen=true]:!w-[calc(100%-269px)] transition-all duration-200">
                     <ResizablePanel>
                         {/* console size to whole number */}
-                        <ReactFlowProvider>
-                            <Main heightPerc={Math.round(consoleSize)} />
-                        </ReactFlowProvider>
+                        {/* <ReactFlowProvider>
+                        </ReactFlowProvider> */}
+                        <Main heightPerc={Math.round(consoleSize)} />
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel ref={consoleRef} minSize={5} maxSize={50} collapsedSize={0} defaultSize={0} collapsible
