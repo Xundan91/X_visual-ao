@@ -13,6 +13,8 @@ import { useGlobalState } from "@/hooks/useGlobalStore";
 import { getResults } from "@/lib/aos";
 import { toast } from "sonner";
 import Ansi from "ansi-to-react";
+import { ConnectButton } from "arweave-wallet-kit";
+import { ReactFlowProvider } from "@xyflow/react";
 
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
@@ -48,9 +50,13 @@ export default function Index() {
         }
     }, [activeProcess])
 
-    return <div className="flex border h-screen">
+    return <div className="flex flex-col border h-screen">
+        <div className="border-b bg-white flex justify-between items-center p-2">
+            <div className="px-2 text-lg">Visual AO</div>
+            <ConnectButton />
+        </div>
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel maxSize={30} minSize={15} defaultSize={20}>
+            <ResizablePanel maxSize={40} minSize={15} defaultSize={25}>
                 <LeftSidebar />
             </ResizablePanel>
             <ResizableHandle />
@@ -59,7 +65,9 @@ export default function Index() {
                 <ResizablePanelGroup data-nodebaropen={nodebarOpen} direction="vertical" className="data-[nodebaropen=true]:!w-[calc(100%-269px)] transition-all duration-200">
                     <ResizablePanel>
                         {/* console size to whole number */}
-                        <Main heightPerc={Math.round(consoleSize)} />
+                        <ReactFlowProvider>
+                            <Main heightPerc={Math.round(consoleSize)} />
+                        </ReactFlowProvider>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel ref={consoleRef} minSize={5} maxSize={50} collapsedSize={0} defaultSize={0} collapsible

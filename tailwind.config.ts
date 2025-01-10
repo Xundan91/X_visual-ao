@@ -11,6 +11,10 @@ const config: Config = {
 	],
 	theme: {
 		extend: {
+			fontFamily: {
+				dmSans: ["DM Sans", "sans-serif"],
+				robotoMono: ["Roboto Mono", "monospace"],
+			},
 			colors: {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',

@@ -156,7 +156,7 @@ export function HandlerAddNodeSidebar() {
                 setActionValue(`${handlerName}`)
             }
         }}
-            className="p-2 w-full bg-yellow-50 border-y border-x-0">
+            className="p-2 w-full bg-yellow-50 border-y border-x-0 text-sm">
             <option value="default" disabled>Select Action</option>
             <option value="default-action">Action="{handlerName}"</option>
             <option value="custom-str">Action={"<custom string>"}</option>

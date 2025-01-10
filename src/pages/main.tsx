@@ -7,7 +7,7 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { parseOutupt, runLua } from '@/lib/aos';
 import { getNodesOrdered } from '@/lib/utils';
 import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
-import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange } from '@xyflow/react';
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
@@ -30,6 +30,7 @@ const ignoreChangesForNodes = ["start"]
 export default function Main({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
+  const { setCenter, setViewport } = useReactFlow();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(defaults.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
@@ -51,6 +52,11 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
       setNodes(defaults.nodes);
       setEdges(defaults.edges);
     }
+
+
+    const { width, height } = document.querySelector('.react-flow')?.getBoundingClientRect() || { width: 0, height: 0 };
+    setCenter(width / 2, height / 2, { duration: 500, zoom: 1 });
+
   }, [globals.activeProcess]);
 
   useEffect(() => {
@@ -75,11 +81,14 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
           const currentNodeSize = NodeSizes[type as TNodes];
 
           if (lastNode.type === "add") {
+            globals.setActiveNode({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
             nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
           } else {
+            globals.setActiveNode({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
             nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
           }
           nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
+
           return [...nodes];
         })
         const lastEdge = edges.pop(); // edge from the add node
@@ -89,7 +98,7 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
         edges.push({ id: edge2Id, source: newId, target: "add", type: "dashed" });
         return [...edges];
       })
-      globals.toggleNodebar()
+      // globals.toggleNodebar()
     }
 
     function onUpdateNodeDataEvent(e: CustomEvent) {
@@ -215,6 +224,7 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
       globals.setActiveNode(undefined)
     }
     else if (Object.keys(customNodes).includes(node.type)) {
+      setCenter(node.position.x + 200, node.position.y + 200, { duration: 500, zoom: 1 });
       if (!globals.nodebarOpen)
         globals.toggleNodebar()
       globals.setActiveNode(node)
@@ -271,7 +281,7 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
         }}
       >
         {/* <FlowPanel /> */}
-        <Background variant={BackgroundVariant.Dots} bgColor="#fef9f2" />
+        <Background variant={BackgroundVariant.Dots} bgColor="#f2f2f2" />
         <MiniMap />
         <Controls />
       </ReactFlow>

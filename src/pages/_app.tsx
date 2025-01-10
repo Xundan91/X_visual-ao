@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }: AppProps) {
     }}
     theme={{
       displayTheme: "light",
-      radius: "none"
+      radius: "minimal"
     }}
   >
     <Component {...pageProps} />
