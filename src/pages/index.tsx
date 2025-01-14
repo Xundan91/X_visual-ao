@@ -56,7 +56,7 @@ export default function Index() {
             <ConnectButton />
         </div>
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel maxSize={40} minSize={15} defaultSize={25}>
+            <ResizablePanel maxSize={40} minSize={15} defaultSize={25} className="overflow-visible">
                 <LeftSidebar />
             </ResizablePanel>
             <ResizableHandle />

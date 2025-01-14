@@ -2,7 +2,7 @@ import { useGlobalState } from "@/hooks/useGlobalStore"
 import { findMyPIDs, spawnProcess } from "@/lib/aos"
 import { shortAddress } from "@/lib/utils"
 import { ConnectButton, useActiveAddress } from "arweave-wallet-kit"
-import { ChevronLeft, ChevronRight, CopyIcon, Inbox, Plug, PlusIcon, RefreshCw, TerminalSquare, X, Loader2, Loader } from "lucide-react"
+import { ChevronLeft, ChevronRight, CopyIcon, Inbox, Plug, PlusIcon, RefreshCw, TerminalSquare, X, Loader2, Loader, CheckIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -26,19 +26,36 @@ import { Input } from "./ui/input"
 
 function Process({ processId, name, loading }: { processId: string, name?: string, loading?: boolean }) {
     const { activeProcess, setActiveProcess } = useGlobalState()
+    const [copied, setCopied] = useState(false)
 
-    return <div data-active={activeProcess === processId} className={`text-sm font-medium tracking-wider flex justify-between cursor-pointer data-[active=false]:hover:bg-[#dedede]/30 items-center px-4 py-0.5 data-[active=true]:bg-[#dedede]`} onClick={() => !loading && setActiveProcess(processId)}>
-        <div className="truncate overflow-clip mr-auto">
+
+    useEffect(() => {
+        if (copied) {
+            setTimeout(() => setCopied(false), 1000)
+        }
+    }, [copied])
+
+    return <div data-active={activeProcess === processId} className={`text-sm font-medium  w-full tracking-wider h-9 flex justify-between cursor-pointer data-[active=false]:hover:bg-[#dedede]/30 items-center px-4 py-0.5 data-[active=true]:bg-[#dedede]`} onClick={() => !loading && setActiveProcess(processId)}>
+        <div className="truncate mr-auto overflow-hidden w-fit">
             {loading ? (
                 <div className="flex items-center gap-2">
                     <Loader size={18} strokeWidth={1.3} className="animate-spin" />
                 </div>
             ) : name}
         </div>
-        <div className="font-robotoMono text-sm">#{processId.slice(0, 6)}</div>
-        <div className="pl-2">
-            <Button variant="ghost" size="icon" className="p-0 m-0">
-                <CopyIcon size={10} strokeWidth={1.3} />
+        <div className="font-robotoMono text-sm w-fit whitespace-nowrap">#{processId.slice(0, 6)}</div>
+        <div className="pl-2 relative">
+            <Button variant="ghost" size="icon" className="m-0 hover:bg-muted-foreground/30 h-6 w-6" onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(processId)
+                setCopied(true)
+            }}>
+                {/* <CopyIcon size={6} fontSize={6} strokeWidth={1.5} className="p-0.5" />
+                {copied && <div className="text-xs font-robotoMono bg-black text-white absolute left-9 z-20">copied!</div>} */}
+                {
+                    copied ? <CheckIcon size={6} fontSize={6} strokeWidth={1.5} className="p-0.5 rounded-full bg-green-600 text-white" />
+                        : <CopyIcon size={6} fontSize={6} strokeWidth={1.5} className="p-0.5" />
+                }
             </Button>
         </div>
     </div>
