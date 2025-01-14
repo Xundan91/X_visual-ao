@@ -205,7 +205,7 @@ export function AOSendNodeSidebar() {
             <SmolText className="h-4 p-0">Target</SmolText>
             <Button
                 variant="outline"
-                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
                 onClick={() => handleTypeToggle(targetType, setTargetType, "targetType")}
             >
                 {targetType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
@@ -224,7 +224,7 @@ export function AOSendNodeSidebar() {
             <SmolText className="h-4 p-0">Action</SmolText>
             <Button
                 variant="outline"
-                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
                 onClick={() => handleTypeToggle(actionType, setActionType, "actionType")}
             >
                 {actionType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
@@ -244,7 +244,7 @@ export function AOSendNodeSidebar() {
             <SmolText className="h-4 p-0">Data</SmolText>
             <Button
                 variant="outline"
-                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
                 onClick={() => handleTypeToggle(dataType, setDataType, "dataType")}
             >
                 {dataType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
@@ -267,7 +267,7 @@ export function AOSendNodeSidebar() {
                 <div></div>
                 <Button
                     variant="outline"
-                    className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground ml-auto"
+                    className="flex items-center justify-center gap-1 rounded-none relative right-2 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground ml-auto"
                     onClick={() => setTags(tags.map((t, i) => i == index ? { ...t, type: t.type == "TEXT" ? "VARIABLE" : "TEXT" } : t))}
                 >
                     {tag.type == "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
