@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
+import NodeContainer from "./common/node";
 
 
 // data field structure for react-node custom node
@@ -28,37 +29,16 @@ export interface data {
 
 // the handler add node for react-flow
 export default function AOSendNode(props: Node) {
-    const { activeNode, runningNodes, successNodes, errorNodes } = useGlobalState()
-    const data = props.data as unknown as data
 
 
-    // order of preference for applying classes is selected > running > success > error
-    const iAmSelected = activeNode?.id === props.id
-    const iAmError = !!errorNodes.find(node => node.id == props.id)
-    const iAmSuccess = !iAmError && !!successNodes.find(node => node.id == props.id)
-    const iAmRunning = !iAmError && !iAmSuccess && !!runningNodes.find(node => node.id == props.id)
-    // running - yellow
-    // success - green
-    // error - red
-    // selected - blue  
-
-    return <div data-selected={iAmSelected}
-        data-running={iAmRunning}
-        data-success={iAmSuccess}
-        data-error={iAmError}
-
-        className={cn(`bg-white border data-[selected=true]:!border-black p-2 border-black/30 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28 relative`,
-            `data-[running=true]:bg-yellow-50 data-[success=true]:bg-green-50 data-[error=true]:bg-red-50`,
-            `data-[selected=true]:border-black data-[running=true]:border-yellow-500 data-[success=true]:border-green-500 data-[error=true]:border-red-500`,
-        )}>
-        {
-            iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />
-        }
+    return <NodeContainer {...props} >
         <MessageSquareShare size={30} strokeWidth={1} />
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
-    </div>
+    </NodeContainer>
+
+
 }
 
 type SendFunctionInputs = {
@@ -233,7 +213,7 @@ export function AOSendNodeSidebar() {
         </div>
 
         <Input
-            className=" bg-yellow-50 border-x-0"
+            className=" bg-muted border-x-0"
             placeholder="Input Target"
             defaultValue={target.replaceAll('"', '')}
             value={target.replaceAll('"', '')}
@@ -253,7 +233,7 @@ export function AOSendNodeSidebar() {
 
         <Input
             disabled={target.length <= 0}
-            className=" bg-yellow-50 border-x-0"
+            className=" bg-muted border-x-0"
             placeholder="Input Action"
             defaultValue={action.replaceAll('"', '')}
             value={action.replaceAll('"', '')}
@@ -273,7 +253,7 @@ export function AOSendNodeSidebar() {
 
         <Input
             disabled={target.length <= 0}
-            className=" bg-yellow-50 border-x-0"
+            className=" bg-muted border-x-0"
             placeholder="Input Data"
             defaultValue={data.replaceAll('"', '')}
             value={data.replaceAll('"', '')}
@@ -295,13 +275,13 @@ export function AOSendNodeSidebar() {
 
                 <Input
                     data-error={tag.name.length <= 0}
-                    className="bg-yellow-50 border-r data-[error=true]"
+                    className="bg-muted border-r data-[error=true]"
                     placeholder="Name"
                     value={tag.name}
                     onChange={(e) => setTags(tags.map((t, i) => i == index ? { ...t, name: e.target.value } : t))}
                 />
                 <Input
-                    className="bg-yellow-50"
+                    className="bg-muted"
                     value={tag.value}
                     onChange={(e) => setTags(tags.map((t, i) => i == index ? { ...t, value: e.target.value } : t))}
                 />
@@ -319,13 +299,13 @@ export function AOSendNodeSidebar() {
         {/* New tag input */}
         <div className="flex gap-0.5 items-center mt-2">
             <Input
-                className="bg-yellow-50 border-x-0 border-r"
+                className="bg-muted border-x-0 border-r"
                 placeholder="Name"
                 value={newTagKey}
                 onChange={(e) => setNewTagKey(e.target.value)}
             />
             <Input
-                className="bg-yellow-50"
+                className="bg-muted"
                 placeholder="Value"
                 value={newTagValue}
                 onChange={(e) => setNewTagValue(e.target.value)}
@@ -341,7 +321,7 @@ export function AOSendNodeSidebar() {
         </div>
 
         <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
-        <div className="bg-yellow-50 p-2 text-xs border-y">
+        <div className="bg-muted p-2 text-xs border-y">
             <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={runSendMessage}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Send Message</>}
             </Button>
@@ -351,7 +331,7 @@ export function AOSendNodeSidebar() {
         </div>
 
         <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
-        <div className="bg-yellow-50 p-2 text-xs border-y">
+        <div className="bg-muted p-2 text-xs border-y">
             <pre className="overflow-scroll">
                 <Ansi className="text-xs">{output || "..."}</Ansi>
             </pre>

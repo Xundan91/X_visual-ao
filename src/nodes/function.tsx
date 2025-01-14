@@ -12,6 +12,7 @@ import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
+import NodeContainer from "./common/node";
 
 // data field structure for react-node custom node
 export interface data {
@@ -29,36 +30,13 @@ ${run ? `return ${name}()` : ""}
 
 // the handler add node for react-flow
 export default function FunctionNode(props: Node) {
-    const { activeNode, runningNodes, successNodes, errorNodes } = useGlobalState()
-    const data = props.data as unknown as data
 
-    // order of preference for applying classes is selected > running > success > error
-    const iAmSelected = activeNode?.id === props.id
-    const iAmError = !!errorNodes.find(node => node.id == props.id)
-    const iAmSuccess = !iAmError && !!successNodes.find(node => node.id == props.id)
-    const iAmRunning = !iAmError && !iAmSuccess && !!runningNodes.find(node => node.id == props.id)
-    // running - yellow
-    // success - green
-    // error - red
-    // selected - blue  
-
-    return <div data-selected={iAmSelected}
-        data-running={iAmRunning}
-        data-success={iAmSuccess}
-        data-error={iAmError}
-
-        className={cn(`bg-white border data-[selected=true]:!border-black p-2 border-black/30 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28 relative`,
-            `data-[running=true]:bg-yellow-50 data-[success=true]:bg-green-50 data-[error=true]:bg-red-50`,
-            `data-[selected=true]:border-black data-[running=true]:border-yellow-500 data-[success=true]:border-green-500 data-[error=true]:border-red-500`,
-        )}>
-        {
-            iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />
-        }
+    return <NodeContainer {...props}>
         <CodeIcon size={30} strokeWidth={1} />
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
-    </div>
+    </NodeContainer>
 }
 
 // the handler add node sidebar component
@@ -135,15 +113,15 @@ export function FunctionNodeSidebar() {
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
         <SmolText className="mt-2">Name of the function</SmolText>
-        <Input className="border-y border-x-0 bg-yellow-50" placeholder="Enter function name" defaultValue={functionName} value={functionName} onChange={(e) => setFunctionName(e.target.value)} />
-        {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-yellow-50" /> */}
+        <Input className="border-y border-x-0 bg-muted" placeholder="Enter function name" defaultValue={functionName} value={functionName} onChange={(e) => setFunctionName(e.target.value)} />
+        {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-muted" /> */}
         {/* dropdown with options to either use default action, custom string action, or write your own checker */}
 
         {/* <SmolText>Action Type</SmolText>
         <select disabled={!functionName || functionName.length < 3} defaultValue={runOnAdd ? "default" : "custom"} value={runOnAdd ? "default" : "custom"} onChange={(e) => {
             setRunOnAdd(e.target.value === "default")
         }}
-            className="p-2 w-full bg-yellow-50 border-y border-x-0">
+            className="p-2 w-full bg-muted border-y border-x-0">
             <option value="default" disabled>Select Action</option>
             <option value="default-action">Action="{functionName}"</option>
             <option value="custom-str">Action={"<custom string>"}</option>
@@ -151,7 +129,7 @@ export function FunctionNodeSidebar() {
         </select> */}
 
         {/* <SmolText>Action Value</SmolText>
-        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-yellow-50" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} /> */}
+        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-muted" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} /> */}
 
         <div className="flex items-center mt-2">
             <SmolText className="pb-1.5">Run On Add</SmolText>
@@ -163,7 +141,7 @@ export function FunctionNodeSidebar() {
             <FunctionSquareIcon size={20} /> Edit Block Code
         </Button>
         <SmolText>Function Definition</SmolText>
-        <div className="bg-yellow-50 border-y flex flex-col items-start justify-start overflow-clip">
+        <div className="bg-muted border-y flex flex-col items-start justify-start overflow-clip">
             <Button disabled={!functionName || functionName.length < 1 || runningCode} variant="link" className="text-muted-foreground w-full my-2" onClick={runFunction}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Code</>}
             </Button>
@@ -177,7 +155,7 @@ export function FunctionNodeSidebar() {
         </div>
 
         <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
-        <div className="bg-yellow-50 p-2 text-xs border-y">
+        <div className="bg-muted p-2 text-xs border-y">
             <pre className="overflow-scroll">
                 <Ansi className="text-xs">{output || "..."}</Ansi>
             </pre>
