@@ -1,4 +1,4 @@
-import { CommonTags, GOLD_SKY_GQL } from "./constants";
+import { AOModule, AOScheduler, CommonTags, GOLD_SKY_GQL } from "./constants";
 import { connect, createDataItemSigner } from "@permaweb/aoconnect";
 import { createDataItemSigner as nodeCDIS } from "@permaweb/aoconnect/node";
 import { Tag } from "./types";
@@ -37,9 +37,9 @@ function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?
           {name: "Variant", values: ["ao.TN.1"]},
           {name: "Data-Protocol", values: ["ao"]},
           ${pName ? `{name: "Name", values: ["${pName}"], match: FUZZY_OR}` : ""}
-         ],
-        sort: HEIGHT_DESC,
-        first: ${length || 11},
+        ],
+        sort: INGESTED_AT_DESC,
+        first: ${length || 10},
         ${cursor ? `after: "${cursor}"` : ""}
         )
         {
@@ -114,4 +114,25 @@ export function parseOutupt(out: any) {
   } catch (e) {
     return output;
   }
+}
+
+export async function spawnProcess(name?: string, tags?: Tag[], newProcessModule?: string) {
+  const ao = connect();
+
+  if (tags) {
+    tags = [...CommonTags, ...tags];
+  } else {
+    tags = CommonTags;
+  }
+  tags = name ? [...tags, { name: "Name", value: name }] : tags;
+  tags = [...tags, { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' }];
+
+  const result = await ao.spawn({
+    module: newProcessModule ? newProcessModule : AOModule,
+    scheduler: AOScheduler,
+    tags,
+    signer: (window.arweaveWallet as any)?.signDataItem ? createDataItemSigner(window.arweaveWallet) : nodeCDIS(window.arweaveWallet),
+  });
+
+  return result;
 }

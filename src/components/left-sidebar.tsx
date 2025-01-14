@@ -1,5 +1,5 @@
 import { useGlobalState } from "@/hooks/useGlobalStore"
-import { findMyPIDs } from "@/lib/aos"
+import { findMyPIDs, spawnProcess } from "@/lib/aos"
 import { shortAddress } from "@/lib/utils"
 import { ConnectButton, useActiveAddress } from "arweave-wallet-kit"
 import { ChevronLeft, ChevronRight, CopyIcon, Inbox, Plug, PlusIcon, RefreshCw, TerminalSquare, X, Loader2, Loader } from "lucide-react"
@@ -54,6 +54,16 @@ export function LeftSidebar() {
 
     const [newProcessName, setNewProcessName] = useState("")
     const [connectProcessId, setConnectProcessId] = useState("")
+    const [spawning, setSpawning] = useState(false)
+
+    async function refreshProcesses() {
+        setLoading(true)
+        setCursorHistory([])
+        setCurrentCursorIndex(-1)
+        setProcesses([])
+        await myProcesses()
+        setLoading(false)
+    }
 
     async function myProcesses(nextCursor?: string, isPrevious: boolean = false) {
         setLoading(true)
@@ -74,11 +84,11 @@ export function LeftSidebar() {
         myProcesses()
     }, [address])
 
-    useEffect(() => {
-        if (!activeProcess) return
+    // useEffect(() => {
+    // if (!activeProcess) return
 
-        toast(`Active process set to ${shortAddress(activeProcess)}`, { style: { backgroundColor: "white" } })
-    }, [activeProcess])
+    // toast(`Active process set to ${shortAddress(activeProcess)}`, { style: { backgroundColor: "white" } })
+    // }, [activeProcess])
 
     const handlePreviousPage = () => {
         if (currentCursorIndex > 0) {
@@ -98,9 +108,21 @@ export function LeftSidebar() {
         }
     }
 
-    async function spawnProcess(e: React.MouseEvent<HTMLButtonElement>) {
+    async function spawnProcess_(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault()
         console.log("spawnProcess", newProcessName)
+
+        setSpawning(true)
+        try {
+            const newp = await spawnProcess(newProcessName)
+            setActiveProcess(newp)
+            toast(`Switched to new process ${shortAddress(newp)}. It may take some time to appear in your processes.`, { style: { backgroundColor: "white", fontWeight: "bold" } })
+        } catch (e: any) {
+            return toast.success("Failed to spawn process. " + e.message, { style: { backgroundColor: "white" } })
+        } finally {
+            setSpawning(false)
+        }
+
         const cancelButton = document.getElementById("new-process-cancel")
         cancelButton?.click()
     }
@@ -112,6 +134,7 @@ export function LeftSidebar() {
             return toast("Invalid process ID", { style: { backgroundColor: "white" } })
 
         setActiveProcess(connectProcessId)
+        toast(`Connected to process ${shortAddress(connectProcessId)}`, { style: { backgroundColor: "white" } })
         const cancelButton = document.getElementById("connect-process-cancel")
         cancelButton?.click()
     }
@@ -121,7 +144,7 @@ export function LeftSidebar() {
 
             <div className="p-0 flex flex-col">
                 <div className="p-4 flex text-sm items-center gap-2 font-robotoMono tracking-tight">MY PROCESSES
-                    {/* <Button variant="ghost" onClick={myProcesses}><RefreshCw size={10} strokeWidth={1.3} /></Button> */}
+                    <Button variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 mr-2.5 w-fit p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -148,7 +171,9 @@ export function LeftSidebar() {
                                 <div className=" px-4 pb-4 flex flex-col gap-2">
                                     <div>Enter your process name</div>
                                     <Input placeholder="Process Name" className="rounded-md" onChange={(e) => setNewProcessName((e.target.value as string).trim())} />
-                                    <AlertDialogAction className="w-fit" onClick={spawnProcess}>create</AlertDialogAction>
+                                    <AlertDialogAction disabled={spawning} className="w-fit" onClick={spawnProcess_}>
+                                        {spawning ? <Loader size={10} strokeWidth={1.3} className="animate-spin" /> : "create"}
+                                    </AlertDialogAction>
                                 </div>
                             </AlertDialogContent>
                         </AlertDialog>
