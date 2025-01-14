@@ -2,13 +2,12 @@ import { Handle, Node, Position } from "@xyflow/react"
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Tag } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Loader, MessageSquareShare, Play } from "lucide-react";
+import { Loader, MessageSquareShare, MousePointerClick, Play, RotateCwSquare } from "lucide-react";
 import { keyToNode } from ".";
 import { TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { parseOutupt, runLua } from "@/lib/aos";
@@ -114,6 +113,7 @@ export function AOSendNodeSidebar() {
     const { activeNode, activeProcess, addOutput } = useGlobalState()
 
     useEffect(() => {
+        if (!activeNode) return
         const nodeData = activeNode?.data as data
         setTarget(nodeData?.target || "")
         setAction(nodeData?.action || "")
@@ -130,6 +130,7 @@ export function AOSendNodeSidebar() {
     }, [target, action, data, tags])
 
     function updateNodeData() {
+        if (!activeNode) return
         const newNodeData: data = {
             target,
             targetType,
@@ -143,6 +144,7 @@ export function AOSendNodeSidebar() {
     }
 
     function discardChanges() {
+        if (!activeNode) return
         const nodeData = activeNode?.data as data
         setTarget(nodeData?.target || "")
         setAction(nodeData?.action || "")
@@ -159,12 +161,14 @@ export function AOSendNodeSidebar() {
     }
 
     function removeTag(index: number) {
+        if (!activeNode) return
         const newTags = [...tags]
         newTags.splice(index, 1)
         setTags(newTags)
     }
 
     async function runSendMessage() {
+        if (!activeNode) return
         const code = embedSendFunction({ target, targetType, action, actionType, data, dataType, tags })
         console.log("running", code)
         setRunningCode(true)
@@ -186,20 +190,46 @@ export function AOSendNodeSidebar() {
         }
     }
 
+    function handleTypeToggle(
+        currentType: InputTypes,
+        setType: (type: InputTypes) => void,
+        field: keyof data
+    ) {
+        const newType = currentType === "TEXT" ? "VARIABLE" : "TEXT"
+        setType(newType)
+        if (!activeNode) return
+
+        const newNodeData: data = {
+            target,
+            targetType,
+            action,
+            actionType,
+            data,
+            dataType,
+            tags
+        }
+        newNodeData[field] = newType as any
+
+        dispatchEvent(new CustomEvent("update-node-data", {
+            detail: {
+                id: activeNode.id,
+                data: newNodeData
+            }
+        }))
+    }
+
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
 
-        <div className="flex mt-4 items-end gap-1 justify-between h-5">
-            <SmolText className="h-4 p-0 pl-2">Target</SmolText>
-            <Select value={targetType as string} defaultValue="TEXT" onValueChange={(value) => setTargetType(value as InputTypes)}>
-                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
-                    <SelectValue className="p-0" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="TEXT">Text</SelectItem>
-                    <SelectItem value="VARIABLE">Variable</SelectItem>
-                </SelectContent>
-            </Select>
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Target</SmolText>
+            <Button
+                variant="outline"
+                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(targetType, setTargetType, "targetType")}
+            >
+                {targetType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
+            </Button>
         </div>
 
         <Input
@@ -210,17 +240,15 @@ export function AOSendNodeSidebar() {
             onChange={(e) => setTarget(e.target.value)}
         />
 
-        <div className="flex mt-4 items-end gap-1 justify-between h-5">
-            <SmolText className="h-4 p-0 pl-2">Action</SmolText>
-            <Select value={actionType as string} defaultValue="TEXT" onValueChange={(value) => setActionType(value as InputTypes)}>
-                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
-                    <SelectValue className="p-0" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="TEXT">Text</SelectItem>
-                    <SelectItem value="VARIABLE">Variable</SelectItem>
-                </SelectContent>
-            </Select>
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Action</SmolText>
+            <Button
+                variant="outline"
+                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(actionType, setActionType, "actionType")}
+            >
+                {actionType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
+            </Button>
         </div>
 
         <Input
@@ -232,17 +260,15 @@ export function AOSendNodeSidebar() {
             onChange={(e) => setAction(e.target.value)}
         />
 
-        <div className="flex mt-4 items-end gap-1 justify-between h-5">
-            <SmolText className="h-4 p-0 pl-2">Data</SmolText>
-            <Select value={dataType as string} defaultValue="TEXT" onValueChange={(value) => setDataType(value as InputTypes)}>
-                <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit">
-                    <SelectValue className="p-0" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="TEXT">Text</SelectItem>
-                    <SelectItem value="VARIABLE">Variable</SelectItem>
-                </SelectContent>
-            </Select>
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Data</SmolText>
+            <Button
+                variant="outline"
+                className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(dataType, setDataType, "dataType")}
+            >
+                {dataType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
+            </Button>
         </div>
 
         <Input
@@ -259,16 +285,13 @@ export function AOSendNodeSidebar() {
         {tags.map((tag, index) => (
             <div key={index} className="grid grid-cols-2 items-center justify-end">
                 <div></div>
-                <Select
-                    value={tag.type as string} defaultValue="TEXT" onValueChange={(value) => setTags(tags.map((t, i) => i == index ? { ...t, type: value as InputTypes } : t))}>
-                    <SelectTrigger className="rounded-none shadow-none border-0 text-xs h-4 p-0 pr-2 w-fit ml-auto">
-                        <SelectValue className="p-0" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="TEXT">Text</SelectItem>
-                        <SelectItem value="VARIABLE">Variable</SelectItem>
-                    </SelectContent>
-                </Select>
+                <Button
+                    variant="outline"
+                    className="rounded text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-dashed text-muted-foreground ml-auto"
+                    onClick={() => setTags(tags.map((t, i) => i == index ? { ...t, type: t.type == "TEXT" ? "VARIABLE" : "TEXT" } : t))}
+                >
+                    {tag.type == "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
+                </Button>
 
                 <Input
                     data-error={tag.name.length <= 0}
