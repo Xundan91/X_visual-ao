@@ -63,6 +63,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     const { width, height } = document.querySelector('.react-flow')?.getBoundingClientRect() || { width: 0, height: 0 };
     setCenter(width / 2, height / 2, { duration: 500, zoom: 1 });
 
+    globals.resetNodes()
   }, [globals.activeProcess]);
 
   useEffect(() => {

@@ -46,11 +46,14 @@ function Process({ processId, name, loading }: { processId: string, name?: strin
 
 export function LeftSidebar() {
     const address = useActiveAddress()
-    const { activeProcess } = useGlobalState()
+    const { activeProcess, setActiveProcess } = useGlobalState()
     const [processes, setProcesses] = useState<{ cursor: string, id: string, name: string }[]>([])
     const [loading, setLoading] = useState(false)
     const [cursorHistory, setCursorHistory] = useState<string[]>([])
     const [currentCursorIndex, setCurrentCursorIndex] = useState(-1)
+
+    const [newProcessName, setNewProcessName] = useState("")
+    const [connectProcessId, setConnectProcessId] = useState("")
 
     async function myProcesses(nextCursor?: string, isPrevious: boolean = false) {
         setLoading(true)
@@ -95,6 +98,24 @@ export function LeftSidebar() {
         }
     }
 
+    async function spawnProcess(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault()
+        console.log("spawnProcess", newProcessName)
+        const cancelButton = document.getElementById("new-process-cancel")
+        cancelButton?.click()
+    }
+
+    async function connectProcess(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault()
+        console.log("connectProcess", connectProcessId)
+        if (connectProcessId.length != 43)
+            return toast("Invalid process ID", { style: { backgroundColor: "white" } })
+
+        setActiveProcess(connectProcessId)
+        const cancelButton = document.getElementById("connect-process-cancel")
+        cancelButton?.click()
+    }
+
     return (
         <>
 
@@ -117,17 +138,17 @@ export function LeftSidebar() {
                                 <Button variant="ghost" className="h-5 rounded-none hover:bg-white bg-white hover:scale-[101%] transition-all duration-100"><TerminalSquare size={10} strokeWidth={1.5} /> CREATE A NEW PROCESS</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="bg-white p-0">
+                                {/* NEW PROCESS */}
                                 <AlertDialogHeader className="border-b p-2 px-4 flex flex-row justify-between items-center">
                                     <AlertDialogTitle>Create a Process</AlertDialogTitle>
-                                    <AlertDialogCancel className="border-none shadow-none">
+                                    <AlertDialogCancel className="border-none shadow-none" id="new-process-cancel">
                                         <X size={10} strokeWidth={1.3} />
                                     </AlertDialogCancel>
                                 </AlertDialogHeader>
                                 <div className=" px-4 pb-4 flex flex-col gap-2">
                                     <div>Enter your process name</div>
-                                    <Input placeholder="Process Name" className="rounded-md" />
-                                    {/* <AlertDialogCancel>Cancel</AlertDialogCancel> */}
-                                    <AlertDialogAction className="w-fit">create</AlertDialogAction>
+                                    <Input placeholder="Process Name" className="rounded-md" onChange={(e) => setNewProcessName((e.target.value as string).trim())} />
+                                    <AlertDialogAction className="w-fit" onClick={spawnProcess}>create</AlertDialogAction>
                                 </div>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -135,11 +156,19 @@ export function LeftSidebar() {
                             <AlertDialogTrigger>
                                 <Button variant="ghost" className="h-5 rounded-none hover:bg-white bg-white hover:scale-[101%] transition-all duration-100"><Plug size={10} strokeWidth={1.5} className=" rotate-45" /> CONNECT TO A PROCESS</Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white">
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogContent className="bg-white p-0">
+                                {/* CONNECT TO A PROCESS */}
+                                <AlertDialogHeader className="border-b p-2 px-4 flex flex-row justify-between items-center">
+                                    <AlertDialogTitle>Enter Process ID?</AlertDialogTitle>
+                                    <AlertDialogCancel className="border-none shadow-none" id="connect-process-cancel">
+                                        <X size={10} strokeWidth={1.3} />
+                                    </AlertDialogCancel>
                                 </AlertDialogHeader>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <div className=" px-4 pb-4 flex flex-col gap-2">
+                                    <div>Enter your process ID</div>
+                                    <Input placeholder="Process ID" className="rounded-md" onChange={(e) => setConnectProcessId((e.target.value as string).trim())} />
+                                    <AlertDialogAction className="w-fit" onClick={connectProcess}>connect</AlertDialogAction>
+                                </div>
                             </AlertDialogContent>
                         </AlertDialog>
                     </DropdownMenuContent>
