@@ -7,6 +7,7 @@ import { Edge } from "@xyflow/react";
 import { useState } from "react";
 import { PingTemplate } from "@/templates";
 import { useGlobalState } from "@/hooks/useGlobalStore";
+import { toast } from "sonner";
 
 interface Template {
     name: string,
@@ -25,9 +26,11 @@ const t: Template = {
 
 export default function TopBar() {
     const [templates, setTemplates] = useState<Template[]>([t])
+    const [dialogOpen, setDialogOpen] = useState(false)
     const globalState = useGlobalState()
 
     async function importTemplate(template: Template) {
+        if (!globalState.activeProcess) return toast.error("No active process")
         // Ask for confirmation before importing
         const confirmed = window.confirm(
             "Importing this template will overwrite your current flow. Are you sure you want to continue?"
@@ -45,23 +48,26 @@ export default function TopBar() {
         window.dispatchEvent(event);
 
         // Close the dialog after importing
-        if (globalState.activeProcess) {
-            // Save to localStorage
-            localStorage.setItem(
-                `${globalState.activeProcess}-flow`,
-                JSON.stringify({ nodes: template.nodes, edges: template.edges })
-            );
-        } else {
-            console.warn("No active process selected");
-        }
+        // if (globalState.activeProcess) {
+        //     // Save to localStorage
+        //     localStorage.setItem(
+        //         `${globalState.activeProcess}-flow`,
+        //         JSON.stringify({ nodes: template.nodes, edges: template.edges })
+        //     );
+        // } else {
+        //     console.warn("No active process selected");
+        // }
+
+        // Close the dialog
+        setDialogOpen(false);
     }
 
     return <div className="border-b bg-white flex justify-between items-center p-2">
         <div className="px-2 text-lg">Visual AO</div>
         <div className="flex items-center gap-2">
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger disabled={!globalState.activeProcess}>
-                    <Button disabled={!globalState.activeProcess} variant="ghost" className="h-12 rounded-xl"><AppWindowMac />Tempaltes</Button>
+                    <Button disabled={!globalState.activeProcess} variant="ghost" className="h-12 rounded-xl"><AppWindowMac />Templates</Button>
                 </DialogTrigger>
                 <DialogContent className="!bg-white">
                     <DialogHeader>

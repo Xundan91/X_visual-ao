@@ -15,6 +15,7 @@ import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { data as HandlerAddDataType, embedHandler } from '@/nodes/handler-add';
 import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
 import { data as AOFunctionDataType, embedFunction } from "@/nodes/function"
+import { toast } from 'sonner';
 
 const defaults = {
   nodes: [
@@ -160,6 +161,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       const { nodes: templateNodes, edges: templateEdges } = e.detail;
       setNodes(templateNodes);
       setEdges(templateEdges);
+      toast.success("Imported Template")
     }
 
     window.addEventListener("import-template", onImportTemplate as EventListener);
