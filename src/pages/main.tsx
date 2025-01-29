@@ -161,7 +161,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       const { nodes: templateNodes, edges: templateEdges } = e.detail;
       setNodes(templateNodes);
       setEdges(templateEdges);
-      toast.success("Imported Template")
+      toast.success("Imported Template", { style: { backgroundColor: "white" } })
     }
 
     window.addEventListener("import-template", onImportTemplate as EventListener);

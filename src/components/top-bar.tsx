@@ -16,16 +16,16 @@ interface Template {
     edges: Edge[]
 }
 
-const t: Template = {
-    name: "Test",
-    description: "Sample template",
+const pp: Template = {
+    name: "Ping Pong",
+    description: "Simple Ping-Pong handler",
     nodes: PingTemplate.nodes,
     edges: PingTemplate.edges
 }
 
 
 export default function TopBar() {
-    const [templates, setTemplates] = useState<Template[]>([t])
+    const [templates, setTemplates] = useState<Template[]>([pp])
     const [dialogOpen, setDialogOpen] = useState(false)
     const globalState = useGlobalState()
 
@@ -77,13 +77,21 @@ export default function TopBar() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    {
-                        templates.map((template, _) => {
-                            return <Button key={_} onClick={() => importTemplate(template)}>
-                                {template.name} - {template.nodes.length} Nodes
-                            </Button>
-                        })
-                    }
+                    <div className="flex flex-col gap-1">
+                        {
+                            templates.map((template, _) => {
+                                return <div key={_} className="flex justify-between items-center hover:bg-muted/30 px-1 rounded-md">
+                                    <div>
+                                        <div className="font-semibold">{template.name}</div>
+                                        <div className="text-muted-foreground text-sm">{template.description}</div>
+                                    </div>
+                                    <Button key={_} variant="ghost" onClick={() => importTemplate(template)}>
+                                        import {template.nodes.length} nodes
+                                    </Button>
+                                </div>
+                            })
+                        }
+                    </div>
 
                     <DialogFooter>
                     </DialogFooter>
