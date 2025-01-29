@@ -26,6 +26,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dagre": "^0.8.5",
+    "intro.js": "^7.2.0",
+    "intro.js-react": "^1.0.0",
     "lua-format": "^1.5.2",
     "lucide-react": "^0.468.0",
     "next": "14.2.20",

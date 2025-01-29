@@ -42,6 +42,11 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
 
   useEffect(() => {
+    console.log("nodes", JSON.stringify(nodes))
+    console.log("edges", JSON.stringify(edges))
+  }, [nodes, edges])
+
+  useEffect(() => {
     globals.setActiveProcess("")
     globals.setActiveNode(undefined)
     if (globals.nodebarOpen)
@@ -149,6 +154,19 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       window.removeEventListener("save-blocks", onBlocklySaveEvent as EventListener)
     }
   }, [globals.activeNode])
+
+  useEffect(() => {
+    function onImportTemplate(e: CustomEvent) {
+      const { nodes: templateNodes, edges: templateEdges } = e.detail;
+      setNodes(templateNodes);
+      setEdges(templateEdges);
+    }
+
+    window.addEventListener("import-template", onImportTemplate as EventListener);
+    return () => {
+      window.removeEventListener("import-template", onImportTemplate as EventListener);
+    }
+  }, []);
 
   async function onNodeClick(e: any, node: Node) {
     if (globals.flowIsRunning) return

@@ -66,7 +66,7 @@ export function RightSidebar() {
     const { nodebarOpen, activeNode } = useGlobalState()
 
     return (
-        <div data-nodebaropen={nodebarOpen} className="w-[269px] !bg-[#fefefe] h-screen z-20 data-[nodebaropen=false]:w-0 transition-all duration-200 border-l">
+        <div data-nodebaropen={nodebarOpen} className="w-[269px] !bg-[#fefefe] h-screen z-20 data-[nodebaropen=false]:!w-0 transition-all duration-200 border-l">
             {activeNode ? <NodeData activeNode={activeNode} /> : <AvailableNodes />}
         </div>
     )

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Arrow } from "@radix-ui/react-dropdown-menu"
 import { Input } from "./ui/input"
+import { tutorial } from "@/tutorial"
 
 
 function Process({ processId, name, loading }: { processId: string, name?: string, loading?: boolean }) {
@@ -161,12 +162,11 @@ export function LeftSidebar() {
 
             <div className="p-0 flex flex-col">
                 <div className="p-4 flex text-sm items-center gap-2 font-robotoMono tracking-tight">MY PROCESSES
-                    <Button variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 mr-2.5 w-fit p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
+                    <Button disabled={loading || !address} variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 mr-2.5 w-fit p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        {/* <Button variant="outline">Open</Button> */}
-                        <Button variant="outline" className=" mx-4 mb-4 text-sm shadow-none !bg-[#ECEFEF] border-[#D6D7DC] rounded-s-md hover:scale-[101%] transition-all duration-100">
+                <DropdownMenu onOpenChange={(open) => { open && tutorial().nextStep() }}>
+                    <DropdownMenuTrigger asChild disabled={!address}>
+                        <Button disabled={!address} variant="outline" id="add-process-button" className="mx-4 mb-4 text-sm shadow-none !bg-[#ECEFEF] border-[#D6D7DC] rounded-s-md hover:scale-[101%] transition-all duration-100">
                             <PlusIcon size={10} strokeWidth={1.3} />
                             <div className="text-sm tracking-tight">ADD PROCESS</div>
                         </Button>
@@ -174,7 +174,7 @@ export function LeftSidebar() {
                     <DropdownMenuContent side="right" className="p-0 border-none flex flex-col py-3 gap-2">
                         <Arrow className=" fill-white" />
                         <AlertDialog>
-                            <AlertDialogTrigger>
+                            <AlertDialogTrigger id="new-process-button">
                                 <Button variant="ghost" className="h-5 rounded-none hover:bg-white bg-white hover:scale-[101%] transition-all duration-100"><TerminalSquare size={10} strokeWidth={1.5} /> CREATE A NEW PROCESS</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="bg-white p-0">
