@@ -11,7 +11,7 @@ const block: BlockRegistration = {
     block: {
         init: function (this: Block) {
             this.appendDummyInput("Value")
-                .appendField("run lua")
+                .appendField("execute")
                 .appendField(new Blockly.FieldTextInput("return ao.id"), "Value");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
