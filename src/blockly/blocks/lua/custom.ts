@@ -25,17 +25,7 @@ const block: BlockRegistration = {
     },
     toolbox: {
         type,
-        kind: "block",
-        // inputs: {
-        //     Value: {
-        //         shadow: {
-        //             type: "text",
-        //             fields: {
-        //                 TEXT: "return ao.id"
-        //             }
-        //         }
-        //     }
-        // }
+        kind: "block"
     }
 };
 
