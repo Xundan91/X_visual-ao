@@ -27,7 +27,7 @@ export default function BlocklyComponent() {
             readOnly: false,
             renderer: "thrasos",
             oneBasedIndex: true,
-            theme: "material",
+            // theme: "material",
             comments: false,
             grid: {
                 snap: true,
