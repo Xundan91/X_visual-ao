@@ -12,7 +12,7 @@ const block: BlockRegistration = {
         init: function (this: Block) {
             this.appendDummyInput("Value")
                 .appendField("run lua")
-                .appendField(new Blockly.FieldTextInput(""), "Value")
+                .appendField(new Blockly.FieldTextInput("return ao.id"), "Value");
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(230);
@@ -26,13 +26,16 @@ const block: BlockRegistration = {
     toolbox: {
         type,
         kind: "block",
-        inputs: {
-            Value: {
-                shadow: {
-                    type: "text"
-                }
-            }
-        }
+        // inputs: {
+        //     Value: {
+        //         shadow: {
+        //             type: "text",
+        //             fields: {
+        //                 TEXT: "return ao.id"
+        //             }
+        //         }
+        //     }
+        // }
     }
 };
 
