@@ -103,12 +103,14 @@ export function FunctionNodeSidebar() {
             const r = parseOutupt(result)
             setOutput(r)
             setOutputId(result.id)
+            console.log("output", r)
         } catch (e: any) {
             setOutput(e.message)
         } finally {
             setRunningCode(false)
         }
     }
+
 
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
@@ -157,7 +159,7 @@ export function FunctionNodeSidebar() {
         <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
         <div className="bg-muted p-2 text-xs border-y">
             <pre className="overflow-scroll">
-                <Ansi className="text-xs">{output || "..."}</Ansi>
+                {output ? <Ansi className="text-xs">{output}</Ansi> : <div className="text-muted-foreground">...</div>}
             </pre>
         </div>
     </div>

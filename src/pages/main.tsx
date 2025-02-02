@@ -4,7 +4,7 @@ import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { parseOutupt, runLua } from '@/lib/aos';
+import { installPackage, parseOutupt, runLua } from '@/lib/aos';
 import { getNodesOrdered } from '@/lib/utils';
 import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider } from '@xyflow/react';
@@ -15,6 +15,7 @@ import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { data as HandlerAddDataType, embedHandler } from '@/nodes/handler-add';
 import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
 import { data as AOFunctionDataType, embedFunction } from "@/nodes/function"
+import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/install-package"
 import { toast } from 'sonner';
 
 const defaults = {
@@ -43,8 +44,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
 
   useEffect(() => {
-    console.log("nodes", JSON.stringify(nodes))
-    console.log("edges", JSON.stringify(edges))
+    // console.log("nodes", JSON.stringify(nodes))
+    // console.log("edges", JSON.stringify(edges))
   }, [nodes, edges])
 
   useEffect(() => {
@@ -170,6 +171,23 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     }
   }, []);
 
+  async function runCodeAndAddOutput(node: Node, code: string) {
+    try {
+      const result = await runLua(code, globals.activeProcess)
+      if (result.Error) {
+        globals.addErrorNode(node)
+        globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
+      } else {
+        globals.addSuccessNode(node)
+        globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
+      }
+    } catch (e: any) {
+      console.log(e)
+      globals.addErrorNode(node)
+      globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
+    }
+  }
+
   async function onNodeClick(e: any, node: Node) {
     if (globals.flowIsRunning) return
 
@@ -185,61 +203,38 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.consoleRef?.current?.resize(25);
       for (const node of list) {
         globals.addRunningNode(node)
-        switch (node.type) {
-          case "handler-add": {
-            const handlerData = node.data as HandlerAddDataType
-            try {
+        try {
+          switch (node.type) {
+            case "handler-add": {
+              const handlerData = node.data as HandlerAddDataType
               const code = embedHandler(handlerData.handlerName, handlerData.actionValue, handlerData.blocklyXml)
-              console.log("running lua", code)
-              const result = await runLua(code, globals.activeProcess)
-              console.log(result)
-              if (result.Error) {
-                globals.addErrorNode(node)
-                globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
-              } else {
-                globals.addSuccessNode(node)
-                globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}]` })
-              }
-            } catch (e: any) {
-              console.log(e)
-              globals.addErrorNode(node)
-              globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
+              await runCodeAndAddOutput(node, code)
+            } break;
+            case "ao-send": {
+              const sendData = node.data as AOSendDataType
+              const code = embedSendFunction(sendData)
+              await runCodeAndAddOutput(node, code)
+            } break;
+            case "function": {
+              const funcData = node.data as AOFunctionDataType
+              const code = embedFunction(funcData.functionName, funcData.blocklyXml, funcData.runOnAdd)
+              await runCodeAndAddOutput(node, code)
+            } break;
+            case "install-package": {
+              const installData = node.data as InstallPackageDataType
+              const code = embedInstallPackageFunction(installData.installedPackages)
+              await runCodeAndAddOutput(node, code)
+            } break;
+            default: {
+              globals.addRunningNode(node)
+              globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
             }
-          } break;
-          case "ao-send": {
-            const sendData = node.data as AOSendDataType
-            const code = embedSendFunction(sendData)
-            console.log("running lua", code)
-            try {
-              const result = await runLua(code, globals.activeProcess)
-              console.log(result)
-              globals.addSuccessNode(node)
-              globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
-            } catch (e: any) {
-              console.log(e)
-              globals.addErrorNode(node)
-              globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-            }
-          } break;
-          case "function": {
-            const funcData = node.data as AOFunctionDataType
-            const code = embedFunction(funcData.functionName, funcData.blocklyXml, funcData.runOnAdd)
-            console.log("running lua", code)
-            try {
-              const result = await runLua(code, globals.activeProcess)
-              console.log(result)
-              globals.addSuccessNode(node)
-              globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}]` })
-            } catch (e: any) {
-              console.log(e)
-              globals.addErrorNode(node)
-              globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-            }
-          } break;
-          default: {
-            globals.addRunningNode(node)
-            globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
           }
+        } catch (e: any) {
+          console.log(e)
+          globals.addErrorNode(node)
+          globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
+          globals.setFlowIsRunning(false)
         }
       }
 

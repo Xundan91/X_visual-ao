@@ -1,7 +1,9 @@
-import "./lua/print"
-import "./lua/exec"
 import "./ao/send"
 import "./ao/vars"
+
+import "./lua/print"
+import "./lua/exec"
+import "./lua/exec-return"
 
 import "./table/table"
 import "./table/key-value"

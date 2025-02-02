@@ -1,5 +1,5 @@
-import { AOModule, AOScheduler, CommonTags, GOLD_SKY_GQL } from "./constants";
-import { connect, createDataItemSigner } from "@permaweb/aoconnect";
+import { AOModule, AOScheduler, CommonTags, GOLD_SKY_GQL, APM_ID, APM_INSTALLER } from "./constants";
+import { connect, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { createDataItemSigner as nodeCDIS } from "@permaweb/aoconnect/node";
 import { Tag } from "./types";
 
@@ -58,7 +58,7 @@ function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?
 }
 
 
-export async function runLua(code: string, process: string, tags?: Tag[]) {
+export async function runLua(code: string, process: string, tags?: Tag[], dryRun?: boolean) {
   const ao = connect();
 
   if (tags) {
@@ -69,17 +69,26 @@ export async function runLua(code: string, process: string, tags?: Tag[]) {
 
   tags = [...tags, { name: "Action", value: "Eval" }];
 
+  if (dryRun) {
+    const message = await ao.dryrun({
+      process,
+      data: code,
+      tags,
+    });
+    return { ...message, id: "dryrun" };
+  } else {
 
-  const message = await ao.message({
-    process,
-    data: code,
-    signer: (window.arweaveWallet as any)?.signDataItem ? createDataItemSigner(window.arweaveWallet) : nodeCDIS(window.arweaveWallet),
-    tags,
-  });
+    const message = await ao.message({
+      process,
+      data: code,
+      signer: (window.arweaveWallet as any)?.signDataItem ? createDataItemSigner(window.arweaveWallet) : nodeCDIS(window.arweaveWallet),
+      tags,
+    });
 
-  const result = await ao.result({ process, message });
+    const result = await ao.result({ process, message });
 
-  return { ...result, id: message };
+    return { ...result, id: message };
+  }
 }
 
 export async function getResults(process: string, cursor = "") {
@@ -102,7 +111,11 @@ export async function getResults(process: string, cursor = "") {
 }
 
 export function parseOutupt(out: any) {
-  if (!out.Output) return out;
+  if (!out.Output) {
+    if (out.Error)
+      return out.Error;
+    return out;
+  }
   const data = out.Output.data;
   if (typeof data == "string") return data;
   const { json, output } = data;
@@ -135,4 +148,40 @@ export async function spawnProcess(name?: string, tags?: Tag[], newProcessModule
   });
 
   return result;
+}
+
+
+/// APM
+
+export async function installAPM(process: string) {
+  const code = await fetch(APM_INSTALLER).then(res => res.text());
+  const result = await runLua(code, process);
+  const parsed = parseOutupt(result);
+  return parsed;
+}
+
+
+export async function searchPackages(search: string) {
+  if (!search) {
+    const packages = await runLua(search, APM_ID, [{ name: "Action", value: "APM.Popular" }], true)
+    if (packages.Messages.length > 0) {
+      return JSON.parse(packages.Messages[0].Data)
+    } else {
+      return parseOutupt(packages)
+    }
+  }
+  const packages = await runLua(search, APM_ID, [{ name: "Action", value: "APM.Search" }], true)
+  if (packages.Messages.length > 0) {
+    return JSON.parse(packages.Messages[0].Data)
+  } else {
+    return parseOutupt(packages)
+  }
+}
+
+export async function installPackage(name: string, process: string) {
+  const code = `apm.install("${name}")`
+  console.log(code);
+  const result = await runLua(code, process);
+  const parsed = parseOutupt(result);
+  return parsed;
 }
