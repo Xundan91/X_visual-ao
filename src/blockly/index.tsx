@@ -46,6 +46,7 @@ export default function BlocklyComponent() {
             // console.log(workspace.getToolbox())
         },
     });
+
     console.log(getToolboxConfiguration())
 
     function discardBlocks() {

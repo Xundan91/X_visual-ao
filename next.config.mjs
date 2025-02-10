@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  transpilePackages: ["react-blockly"]
+  transpilePackages: ["react-blockly"],
+  images: {
+    unoptimized: true
+  }
 };
 
 export default nextConfig;

@@ -5,7 +5,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <title>VAO</title>
+        <title>Visual AO</title>
       </Head>
       <ThemeProvider
         attribute="class"
