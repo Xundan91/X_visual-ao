@@ -9,6 +9,8 @@ import { PingTemplate } from "@/templates";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { toast } from "sonner";
 import Image from "next/image";
+import vaoLogo from "@/assets/logo.svg"
+
 interface Template {
     name: string,
     description: string,
@@ -64,7 +66,7 @@ export default function TopBar() {
 
     return <div className="border-b bg-white flex justify-between items-center p-2">
         <div className="px-2 text-lg">
-            <Image src="/logo.svg" alt="Visual AO" width={150} height={32} />
+            <Image src={vaoLogo} alt="Visual AO" width={150} height={32} />
         </div>
         <div className="flex items-center gap-2">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
