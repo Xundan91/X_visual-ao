@@ -4,7 +4,7 @@ import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { installPackage, parseOutupt, runLua } from '@/lib/aos';
+import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
 import { getNodesOrdered } from '@/lib/utils';
 import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider } from '@xyflow/react';
@@ -171,20 +171,37 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     }
   }, []);
 
+  async function justRunCode(code: string) {
+    try {
+      const result = await runLua(code, globals.activeProcess)
+      if (result.Error) {
+        return false
+      } else {
+        return true
+      }
+    } catch (e: any) {
+      console.log(e)
+      return false
+    }
+  }
+
   async function runCodeAndAddOutput(node: Node, code: string) {
     try {
       const result = await runLua(code, globals.activeProcess)
       if (result.Error) {
         globals.addErrorNode(node)
         globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
+        return false
       } else {
         globals.addSuccessNode(node)
         globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
+        return true
       }
     } catch (e: any) {
       console.log(e)
       globals.addErrorNode(node)
       globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
+      return false
     }
   }
 
@@ -222,8 +239,25 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
             } break;
             case "install-package": {
               const installData = node.data as InstallPackageDataType
+              const res = await installAPM(globals.activeProcess)
+              console.log(res)
               const code = embedInstallPackageFunction(installData.installedPackages)
-              await runCodeAndAddOutput(node, code)
+              let tries = 0
+              while (true) {
+                const done = await justRunCode(code)
+                if (done) {
+                  globals.addSuccessNode(node)
+                  globals.addOutput({ type: "output", message: `installed packages`, preMessage: `[${node.id}]` })
+                  break;
+                } else {
+                  tries++
+                  if (tries > 5) {
+                    globals.addErrorNode(node)
+                    globals.addOutput({ type: "error", message: `failed to install packages`, preMessage: `[${node.id}]` })
+                    break;
+                  }
+                }
+              }
             } break;
             default: {
               globals.addRunningNode(node)
