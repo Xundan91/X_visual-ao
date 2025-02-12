@@ -78,6 +78,10 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     setCenter(width / 2, height / 2, { duration: 500, zoom: 1 });
 
     globals.resetNodes()
+
+    globals.setActiveNode(undefined)
+    if (globals.nodebarOpen)
+      globals.toggleNodebar()
   }, [globals.activeProcess]);
 
   useEffect(() => {
@@ -190,6 +194,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   }
 
   async function runCodeAndAddOutput(node: Node, code: string) {
+    console.log("running", code)
     try {
       const result = await runLua(code, globals.activeProcess)
       if (result.Error) {

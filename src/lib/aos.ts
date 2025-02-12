@@ -111,6 +111,7 @@ export async function getResults(process: string, cursor = "") {
 }
 
 export function parseOutupt(out: any) {
+  console.log(out)
   if (!out.Output) {
     if (out.Error)
       return out.Error;
@@ -119,7 +120,7 @@ export function parseOutupt(out: any) {
   const data = out.Output.data;
   if (typeof data == "string") return data;
   const { json, output } = data;
-  if (json != "undefined") {
+  if (json != undefined) {
     return json;
   }
   try {

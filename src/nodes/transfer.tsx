@@ -74,7 +74,7 @@ export function TransferNodeSidebar() {
     const [quantityType, setQuantityType] = useState<InputTypes>("TEXT")
     const [recipient, setRecipient] = useState("")
     const [recipientType, setRecipientType] = useState<InputTypes>("TEXT")
-    const [denomination, setDenomination] = useState(12)
+    const [denomination, setDenomination] = useState<number>(12)
     const { editingNode, setEditingNode, nodebarOpen, toggleNodebar, activeNode, setActiveNode, activeProcess } = useGlobalState()
     const [output, setOutput] = useState("")
     const [outputId, setOutputId] = useState("")
@@ -86,6 +86,7 @@ export function TransferNodeSidebar() {
         setTokenSelection(nodeData?.tokenSelection || "")
         setToken(nodeData?.token || "")
         setTokenType(nodeData?.tokenType || "TEXT")
+        setDenomination(nodeData?.denomination || 12)
         setQuantity(nodeData?.quantity || "0")
         setQuantityType(nodeData?.quantityType || "TEXT")
         setRecipient(nodeData?.to || "")
@@ -100,6 +101,18 @@ export function TransferNodeSidebar() {
             toggleNodebar()
         }
     }, [editingNode, nodebarOpen])
+
+    useEffect(() => {
+        if (!token) return
+
+        (async () => {
+            const res = await runLua("", token, [{ name: "Action", value: "Info" }], true)
+
+            const denom = res.Messages[0].Tags.find((tag: any) => tag.name === "Denomination")?.value
+            console.log(denom)
+            if (denom) setDenomination(Number(denom))
+        })()
+    }, [token])
 
     useEffect(() => {
         if (!tokenSelection) return
@@ -117,7 +130,7 @@ export function TransferNodeSidebar() {
 
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
 
-    }, [tokenSelection, tokenType, quantity, quantityType, recipient, recipientType])
+    }, [tokenSelection, tokenType, quantity, quantityType, recipient, recipientType, denomination])
 
     type InputField = keyof Pick<data, "tokenType" | "quantityType" | "toType">;
 
@@ -203,6 +216,7 @@ export function TransferNodeSidebar() {
                 onChange={(e) => setToken(e.target.value)}
             />
             <Button
+                disabled={tokenSelection !== "other"}
                 variant="outline"
                 className="flex items-center justify-center gap-1 rounded-none !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
                 onClick={() => handleTypeToggle(tokenType, setTokenType, "tokenType")}
