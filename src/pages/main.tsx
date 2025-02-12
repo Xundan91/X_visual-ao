@@ -22,9 +22,6 @@ const defaults = {
   nodes: [
     { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
     { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
-  ],
-  edges: [
-    { id: "start-add", source: "start", target: "add", type: "dashed" },
   ]
 }
 const ignoreChangesForNodes = ["start"]
@@ -41,12 +38,24 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const { setCenter, setViewport } = useReactFlow();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(defaults.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(defaults.edges);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
+  // Generate edges whenever nodes change
   useEffect(() => {
-    // console.log("nodes", JSON.stringify(nodes))
-    // console.log("edges", JSON.stringify(edges))
-  }, [nodes, edges])
+    const newEdges: Edge[] = [];
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const source = nodes[i].id;
+      const target = nodes[i + 1].id;
+      const edgeType = target === "add" ? "dashed" : "default";
+      newEdges.push({
+        id: `${source}-${target}`,
+        source,
+        target,
+        type: edgeType
+      });
+    }
+    setEdges(newEdges);
+  }, [nodes]);
 
   useEffect(() => {
     globals.setActiveProcess("")
@@ -58,14 +67,11 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   useEffect(() => {
     const storedData = localStorage.getItem(`${globals.activeProcess}-flow`);
     if (storedData) {
-      const { nodes, edges } = JSON.parse(storedData);
+      const { nodes } = JSON.parse(storedData);
       setNodes(nodes);
-      setEdges(edges);
     } else {
       setNodes(defaults.nodes);
-      setEdges(defaults.edges);
     }
-
 
     const { width, height } = document.querySelector('.react-flow')?.getBoundingClientRect() || { width: 0, height: 0 };
     setCenter(width / 2, height / 2, { duration: 500, zoom: 1 });
@@ -75,44 +81,40 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
   useEffect(() => {
     if (!globals.activeProcess) return;
-    if (nodes !== defaults.nodes || edges !== defaults.edges) {
-      const data = { nodes, edges };
+    if (nodes !== defaults.nodes) {
+      const data = { nodes };
       localStorage.setItem(`${globals.activeProcess}-flow`, JSON.stringify(data));
     }
-  }, [nodes, edges, globals.activeProcess]);
+  }, [nodes, globals.activeProcess]);
 
   useEffect(() => {
+    function onUpdateNodesEvent(e: CustomEvent) {
+      const { nodes } = e.detail;
+      setNodes(nodes)
+    }
+
     function onAddNodeEvent(e: CustomEvent) {
       const type = e.detail.type;
       let newId = "";
-      setEdges(edges => {
-        setNodes(nodes => {
-          newId = `node-${nodes.length + 1}`;
-          const lastNode = nodes.pop();
-          if (!lastNode) return [...nodes];
+      setNodes(nodes => {
+        newId = `node-${nodes.length + 1}`;
+        const lastNode = nodes.pop();
+        if (!lastNode) return [...nodes];
 
-          const lastNodeSize = NodeSizes[lastNode.type as TNodes];
-          const currentNodeSize = NodeSizes[type as TNodes];
+        const lastNodeSize = NodeSizes[lastNode.type as TNodes];
+        const currentNodeSize = NodeSizes[type as TNodes];
 
-          if (lastNode.type === "add") {
-            globals.setActiveNode({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
-            nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
-          } else {
-            globals.setActiveNode({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
-            nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
-          }
-          nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
+        if (lastNode.type === "add") {
+          globals.setActiveNode({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
+          nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
+        } else {
+          globals.setActiveNode({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
+          nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
+        }
+        nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
 
-          return [...nodes];
-        })
-        const lastEdge = edges.pop(); // edge from the add node
-        const edge1Id = `${lastEdge?.source}-${newId}`;
-        const edge2Id = `${newId}-add`;
-        edges.push({ id: edge1Id, source: lastEdge?.source as string, target: newId, type: "default" });
-        edges.push({ id: edge2Id, source: newId, target: "add", type: "dashed" });
-        return [...edges];
-      })
-      // globals.toggleNodebar()
+        return [...nodes];
+      });
     }
 
     function onUpdateNodeDataEvent(e: CustomEvent) {
@@ -149,19 +151,20 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     window.addEventListener("add-node", onAddNodeEvent as EventListener);
     window.addEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
     window.addEventListener("save-blocks", onBlocklySaveEvent as EventListener)
+    window.addEventListener("update-nodes", onUpdateNodesEvent as EventListener)
 
     return () => {
       window.removeEventListener("add-node", onAddNodeEvent as EventListener);
       window.removeEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
       window.removeEventListener("save-blocks", onBlocklySaveEvent as EventListener)
+      window.removeEventListener("update-nodes", onUpdateNodesEvent as EventListener)
     }
   }, [globals.activeNode])
 
   useEffect(() => {
     function onImportTemplate(e: CustomEvent) {
-      const { nodes: templateNodes, edges: templateEdges } = e.detail;
+      const { nodes: templateNodes } = e.detail;
       setNodes(templateNodes);
-      setEdges(templateEdges);
       toast.success("Imported Template", { style: { backgroundColor: "white" } })
     }
 
@@ -319,17 +322,12 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         nodes={globals.activeProcess ? nodes :
           [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
         edges={edges}
+        onNodeClick={onNodeClick as any}
         onNodesChange={(e: NodeChange[]) => {
           // prevent deletion
           const e_ = e.filter(e__ => e__.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes((e__ as any).id))
           onNodesChange(e_ as any)
         }}
-        onEdgesChange={(e: EdgeChange[]) => {
-          // prevent deletion
-          const e_ = e.filter(e__ => e__.type !== "remove")
-          onEdgesChange(e_ as any)
-        }}
-        onNodeClick={onNodeClick as any}
         onPaneClick={() => {
           globals.setActiveNode(undefined)
           if (globals.nodebarOpen)
