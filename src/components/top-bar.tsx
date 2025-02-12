@@ -90,7 +90,7 @@ export default function TopBar() {
                                         <div className="text-muted-foreground text-sm">{template.description}</div>
                                     </div>
                                     <Button key={_} variant="ghost" onClick={() => importTemplate(template)}>
-                                        import {template.nodes.length} nodes
+                                        import {template.nodes.length - 2} nodes
                                     </Button>
                                 </div>
                             })

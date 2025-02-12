@@ -5,6 +5,7 @@ import HandlerAddNode, { data as HandlerAddNodeData } from "./handler-add";
 import AOSendNode, { data as AOSendNodeData } from "./ao-send";
 import FunctionNode from "./function";
 import InstallPackageNode from "./install-package";
+import TransferNode from "./transfer";
 export interface Node {
     id: string;
     position: {
@@ -20,6 +21,7 @@ export const customNodes = {
     "ao-send": AOSendNode,
     function: FunctionNode,
     "install-package": InstallPackageNode,
+    transfer: TransferNode,
 }
 
 const Nodes = {
@@ -39,6 +41,7 @@ const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
     "ao-send": { width: 112, height: 112 },
     function: { width: 112, height: 112 },
     "install-package": { width: 112, height: 112 },
+    transfer: { width: 112, height: 112 },
 }
 
 export function keyToNode(key: TNodes): string {
@@ -51,6 +54,8 @@ export function keyToNode(key: TNodes): string {
             return "Lua Function";
         case "install-package":
             return "Install Packages";
+        case "transfer":
+            return "Transfer Token";
         default:
             return "";
     }

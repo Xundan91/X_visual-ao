@@ -7,7 +7,7 @@ import { HandlerAddNodeSidebar } from "@/nodes/handler-add"
 import { AOSendNodeSidebar } from "@/nodes/ao-send"
 import { FunctionNodeSidebar } from "@/nodes/function"
 import { InstallPackageNodeSidebar } from "@/nodes/install-package"
-
+import { TransferNodeSidebar } from "@/nodes/transfer"
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
 }
@@ -56,6 +56,8 @@ function NodeData({ activeNode }: { activeNode: Node }) {
                         return <FunctionNodeSidebar />
                     case "install-package":
                         return <InstallPackageNodeSidebar />
+                    case "transfer":
+                        return <TransferNodeSidebar />
                     default:
                         return <div className="text-red-500 text-xs text-center py-2">Unknown Node<br /> Please check @components/right-sidebar.tsx</div>
                 }

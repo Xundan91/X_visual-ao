@@ -23,7 +23,9 @@ import {
 import { Arrow } from "@radix-ui/react-dropdown-menu"
 import { Input } from "./ui/input"
 import { tutorial } from "@/tutorial"
-
+import { AppVersion } from "@/lib/constants"
+import { execSync } from "child_process"
+import Link from "next/link"
 
 function Process({ processId, name, loading }: { processId: string, name?: string, loading?: boolean }) {
     const { activeProcess, setActiveProcess } = useGlobalState()
@@ -262,6 +264,7 @@ export function LeftSidebar() {
                         <ChevronRight size={10} strokeWidth={1.3} />
                     </Button>
                 </div>
+                <div className="absolute bottom-1 left-2 text-xs text-muted-foreground text-center">v{AppVersion} - <Link href={`https://github.com/ankushKun/visual-ao/commit/${process.env.commitHash}`} target="_blank" className="hover:underline">{process.env.commitHash}</Link></div>
             </div>
         </>
     )

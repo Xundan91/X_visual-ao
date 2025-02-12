@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { useGlobalState } from "@/hooks/useGlobalStore"
 import { cn } from "@/lib/utils"
 import { Node, useReactFlow } from "@xyflow/react"
-import { ArrowLeft, ArrowRight, Edit, Loader, MoveLeft, MoveRight, Play, Trash } from "lucide-react"
+import { Loader, MoveLeft, MoveRight, Trash } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 interface NodeContainerProps extends PropsWithChildren<Node> {
