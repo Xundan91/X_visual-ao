@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { useGlobalState } from "@/hooks/useGlobalStore"
 import { cn } from "@/lib/utils"
 import { Node, useReactFlow } from "@xyflow/react"
-import { ArrowLeft, ArrowRight, Edit, Loader, Play, Trash } from "lucide-react"
+import { ArrowLeft, ArrowRight, Edit, Loader, MoveLeft, MoveRight, Play, Trash } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 interface NodeContainerProps extends PropsWithChildren<Node> {
@@ -111,7 +111,7 @@ export default function NodeContainer(props: NodeContainerProps) {
                         title="Move left"
                         className="p-2 h-7 w-7"
                     >
-                        <ArrowLeft size={16} />
+                        <MoveLeft size={16} />
                     </Button>
                     <Button
                         disabled={thisNode().index >= getNodes().length - 2}
@@ -120,7 +120,7 @@ export default function NodeContainer(props: NodeContainerProps) {
                         title="Move right"
                         className="p-2 h-7 w-7"
                     >
-                        <ArrowRight size={16} />
+                        <MoveRight size={16} />
                     </Button>
                     {/* <button
                         onClick={() => props.onRunFromHere?.(props.id)}
