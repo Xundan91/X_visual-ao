@@ -170,10 +170,12 @@ export function AOSendNodeSidebar() {
         }
     }
 
+    type InputField = keyof Pick<data, "targetType" | "actionType" | "dataType">;
+
     function handleTypeToggle(
         currentType: InputTypes,
         setType: (type: InputTypes) => void,
-        field: keyof data
+        field: InputField
     ) {
         const newType = currentType === "TEXT" ? "VARIABLE" : "TEXT"
         setType(newType)

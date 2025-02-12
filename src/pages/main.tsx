@@ -16,6 +16,7 @@ import { data as HandlerAddDataType, embedHandler } from '@/nodes/handler-add';
 import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
 import { data as AOFunctionDataType, embedFunction } from "@/nodes/function"
 import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/install-package"
+import { data as TransferDataType, embedTransferFunction } from '@/nodes/transfer';
 import { toast } from 'sonner';
 
 const defaults = {
@@ -262,9 +263,14 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
                 }
               }
             } break;
+            case "transfer": {
+              const transferData = node.data as TransferDataType
+              const code = embedTransferFunction(transferData.token, transferData.tokenType, transferData.quantity, transferData.denomination, transferData.quantityType, transferData.to, transferData.toType)
+              await runCodeAndAddOutput(node, code)
+            } break;
             default: {
               globals.addRunningNode(node)
-              globals.addOutput({ type: "output", message: `unknown node type`, preMessage: `[${node.id}]` })
+              globals.addOutput({ type: "warning", message: `unknown node type (check main.tsx)`, preMessage: `[${node.id}]` })
             }
           }
         } catch (e: any) {

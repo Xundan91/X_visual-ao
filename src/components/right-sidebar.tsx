@@ -13,26 +13,31 @@ export function SmolText({ children, className }: { children: React.ReactNode, c
 }
 
 // a single node in the list
-function NodeTemplate({ name, Icon }: { name: TNodes, Icon: LucideIcon }) {
+function NodeTemplate({ name, Icon, disabled }: { name: TNodes, Icon: LucideIcon, disabled?: boolean }) {
     function addThisNode() {
+        if (disabled) return
         dispatchEvent(new CustomEvent("add-node", { detail: { type: name } }))
     }
 
-    return <div className="flex items-center gap-2 hover:bg-black/10 p-2 cursor-pointer" onClick={addThisNode}>
+    return <div data-disabled={disabled} className="flex items-center gap-2 hover:bg-black/10 data-[disabled=true]:text-muted-foreground p-2 cursor-pointer data-[disabled=true]:cursor-default" onClick={addThisNode}>
         <Icon size={22} />
-        <div className="truncate">{keyToNode(name)}</div>
+        <div className="truncate">{keyToNode(name) || name} {disabled && "(coming soon)"}</div>
     </div>
 }
 
 // the list that appears in right sidebar on clicking add-node
 function AvailableNodes() {
     const hidden = ["add", "start", "annotation"]
+    const todo = ["Create Token", "Check Balance", "Spawn Process"]
 
     return <>
         <div className="p-2">Available Nodes</div>
         <div className="p-0">
             {
                 (Object.keys(Nodes).filter(v => !hidden.includes(v)) as TNodes[]).map((nodeKey: TNodes, index) => <NodeTemplate key={index} name={nodeKey} Icon={CodeIcon} />)
+            }
+            {
+                todo.map((t, i) => <NodeTemplate key={i} name={t as TNodes} Icon={CodeIcon} disabled />)
             }
         </div></>
 }

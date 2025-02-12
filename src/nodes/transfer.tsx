@@ -13,13 +13,21 @@ import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
 import NodeContainer from "./common/node";
+import { MousePointerClick } from "lucide-react";
 
 // data field structure for react-node custom node
 export interface data {
     token: string;
+    tokenSelection: string;
+    tokenType: InputTypes;
     quantity: string;
+    quantityType: InputTypes;
+    denomination: number;
     to: string;
+    toType: InputTypes;
 }
+
+type InputTypes = "TEXT" | "VARIABLE"
 
 export const TokenOptions = {
     AO: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc",
@@ -28,13 +36,17 @@ export const TokenOptions = {
     wUSDC: "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ",
 }
 
-export function embedTransferFunction(token: string, quantity: string, to: string) {
+export function embedTransferFunction(token: string, tokenType: InputTypes, quantity: string, denomination: number, quantityType: InputTypes, to: string, toType: InputTypes) {
+    const tokenCode = tokenType === "TEXT" ? `"${token}"` : `${token}`
+    const quantityCode = quantityType === "TEXT" ? `"${(Number(quantity) * Math.pow(10, denomination)).toFixed(0)}"` : `${quantity}`
+    const toCode = toType === "TEXT" ? `"${to}"` : `${to}`
+
     return `
 Send({
-    Target = "${token}",
+    Target = ${tokenCode},
     Action = "Transfer",
-    To = "${to}",
-    Quantity = "${quantity}"
+    Recipient = ${toCode},
+    Quantity = ${quantityCode}
 })
 `
 }
@@ -56,9 +68,13 @@ export default function TransferNode(props: Node) {
 // the handler add node sidebar component
 export function TransferNodeSidebar() {
     const [tokenSelection, setTokenSelection] = useState("")
+    const [tokenType, setTokenType] = useState<InputTypes>("TEXT")
     const [token, setToken] = useState("")
     const [quantity, setQuantity] = useState("")
-    const [to, setTo] = useState("")
+    const [quantityType, setQuantityType] = useState<InputTypes>("TEXT")
+    const [recipient, setRecipient] = useState("")
+    const [recipientType, setRecipientType] = useState<InputTypes>("TEXT")
+    const [denomination, setDenomination] = useState(12)
     const { editingNode, setEditingNode, nodebarOpen, toggleNodebar, activeNode, setActiveNode, activeProcess } = useGlobalState()
     const [output, setOutput] = useState("")
     const [outputId, setOutputId] = useState("")
@@ -67,9 +83,13 @@ export function TransferNodeSidebar() {
 
     useEffect(() => {
         const nodeData = activeNode?.data as data
-        setTokenSelection(nodeData?.token || "")
+        setTokenSelection(nodeData?.tokenSelection || "")
+        setToken(nodeData?.token || "")
+        setTokenType(nodeData?.tokenType || "TEXT")
         setQuantity(nodeData?.quantity || "0")
-        setTo(nodeData?.to || "")
+        setQuantityType(nodeData?.quantityType || "TEXT")
+        setRecipient(nodeData?.to || "")
+        setRecipientType(nodeData?.toType || "TEXT")
     }, [activeNode?.id])
 
     useEffect(() => {
@@ -84,21 +104,56 @@ export function TransferNodeSidebar() {
     useEffect(() => {
         if (!tokenSelection) return
 
-        // update the node data in react-flow
         const newNodeData: data = {
             token: tokenSelection,
+            tokenSelection,
+            tokenType,
             quantity,
-            to
+            quantityType,
+            denomination,
+            to: recipient,
+            toType: recipientType
         }
 
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
 
-    }, [tokenSelection, quantity, to])
+    }, [tokenSelection, tokenType, quantity, quantityType, recipient, recipientType])
+
+    type InputField = keyof Pick<data, "tokenType" | "quantityType" | "toType">;
+
+    function handleTypeToggle(
+        currentType: InputTypes,
+        setType: (type: InputTypes) => void,
+        field: InputField
+    ) {
+        const newType = currentType === "TEXT" ? "VARIABLE" : "TEXT"
+        setType(newType)
+        if (!activeNode) return
+
+        const newNodeData: data = {
+            token,
+            tokenSelection,
+            tokenType,
+            quantity,
+            quantityType,
+            denomination,
+            to: recipient,
+            toType: recipientType
+        }
+        newNodeData[field] = newType
+
+        dispatchEvent(new CustomEvent("update-node-data", {
+            detail: {
+                id: activeNode.id,
+                data: newNodeData
+            }
+        }))
+    }
 
     async function sendTokens() {
         setRunningCode(true)
         const data = activeNode?.data as data
-        const code = embedTransferFunction(tokenSelection, quantity, to)
+        const code = embedTransferFunction(tokenSelection, tokenType, quantity, denomination, quantityType, recipient, recipientType)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -121,10 +176,13 @@ export function TransferNodeSidebar() {
             setTokenSelection(e.target.value)
             if (e.target.value === "other") {
                 setToken("")
+                setTokenType("TEXT")
             } else {
                 const tokenProcess = e.target.value
                 console.log(tokenProcess)
                 setToken(tokenProcess)
+                setTokenType("TEXT")
+                setDenomination(12)
             }
         }}
             className="p-2 w-full bg-muted border-y border-x-0 text-sm">
@@ -133,30 +191,68 @@ export function TransferNodeSidebar() {
                 <option key={tokenName} value={TokenOptions[tokenName as keyof typeof TokenOptions]}>{tokenName}</option>
             ))}
             <option value="other">Other</option>
-            {/* <option value="default-action">Action="{handlerName}"</option>
-            <option value="custom-str">Action={"<custom string>"}</option>
-            <option value="custom-fun" disabled>Custom Function</option> */}
+
         </select>
-        <Input className="border-y border-x-0 bg-muted" disabled={tokenSelection !== "other"} placeholder="Enter token address" defaultValue={token} value={token} onChange={(e) => setToken(e.target.value)} />
-        {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-muted" /> */}
-        {/* dropdown with options to either use default action, custom string action, or write your own checker */}
+        <div className="flex items-end gap-1 justify-between">
+            <Input
+                className="border-y border-x-0 bg-muted"
+                disabled={tokenSelection !== "other"}
+                placeholder="Enter token address"
+                defaultValue={token}
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+            />
+            <Button
+                variant="outline"
+                className="flex items-center justify-center gap-1 rounded-none !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(tokenType, setTokenType, "tokenType")}
+            >
+                {tokenType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
+            </Button>
+        </div>
 
-        {/* <SmolText>Action Type</SmolText>
-        <select disabled={!functionName || functionName.length < 3} defaultValue={runOnAdd ? "default" : "custom"} value={runOnAdd ? "default" : "custom"} onChange={(e) => {
-            setRunOnAdd(e.target.value === "default")
-        }}
-            className="p-2 w-full bg-muted border-y border-x-0">
-            <option value="default" disabled>Select Action</option>
-            <option value="default-action">Action="{functionName}"</option>
-            <option value="custom-str">Action={"<custom string>"}</option>
-            <option value="custom-fun" disabled>Custom Function</option>
-        </select> */}
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Recipient</SmolText>
+            <Button
+                variant="outline"
+                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(recipientType, setRecipientType, "toType")}
+            >
+                {recipientType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
+            </Button>
+        </div>
+        <Input
+            className="border-y border-x-0 bg-muted"
+            placeholder="Enter recipient address"
+            defaultValue={recipient}
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+        />
 
-        {/* <SmolText>Action Value</SmolText>
-        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-muted" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} /> */}
-
-        <SmolText className="mt-2">Quantity</SmolText>
-        <Input type="number" className="border-y border-x-0 bg-muted" placeholder="Enter quantity" defaultValue={quantity} value={quantity} onChange={(e) => { if (Number(e.target.value) >= 0) setQuantity(e.target.value) }} />
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Quantity</SmolText>
+            <Button
+                variant="outline"
+                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
+                onClick={() => handleTypeToggle(quantityType, setQuantityType, "quantityType")}
+            >
+                {quantityType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
+            </Button>
+        </div>
+        <Input
+            type={quantityType === "TEXT" ? "number" : "text"}
+            className="border-y border-x-0 bg-muted"
+            placeholder="Enter quantity"
+            defaultValue={quantity}
+            value={quantity}
+            onChange={(e) => {
+                if (quantityType === "TEXT") {
+                    if (Number(e.target.value) >= 0) setQuantity(e.target.value)
+                } else {
+                    setQuantity(e.target.value)
+                }
+            }}
+        />
 
         <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
         <div className="bg-muted p-2 text-xs border-y">
@@ -164,7 +260,7 @@ export function TransferNodeSidebar() {
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Send Tokens</>}
             </Button>
             <pre className="overflow-scroll">
-                {embedTransferFunction(token, quantity, to)}
+                {embedTransferFunction(token, tokenType, quantity, denomination, quantityType, recipient, recipientType)}
             </pre>
         </div>
 
