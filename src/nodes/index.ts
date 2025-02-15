@@ -6,6 +6,7 @@ import AOSendNode, { data as AOSendNodeData } from "./ao-send";
 import FunctionNode from "./function";
 import InstallPackageNode from "./install-package";
 import TransferNode from "./transfer";
+import CreateTokenNode from "./token";
 export interface Node {
     id: string;
     position: {
@@ -22,6 +23,7 @@ export const customNodes = {
     function: FunctionNode,
     "install-package": InstallPackageNode,
     transfer: TransferNode,
+    "create-token": CreateTokenNode
 }
 
 const Nodes = {
@@ -42,6 +44,7 @@ const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
     function: { width: 112, height: 112 },
     "install-package": { width: 112, height: 112 },
     transfer: { width: 112, height: 112 },
+    "create-token": { width: 112, height: 112 }
 }
 
 export function keyToNode(key: TNodes): string {
@@ -56,6 +59,8 @@ export function keyToNode(key: TNodes): string {
             return "Install Packages";
         case "transfer":
             return "Transfer Token";
+        case "create-token":
+            return "Create Token"
         default:
             return "";
     }

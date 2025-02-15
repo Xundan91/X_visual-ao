@@ -17,6 +17,7 @@ import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
 import { data as AOFunctionDataType, embedFunction } from "@/nodes/function"
 import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/install-package"
 import { data as TransferDataType, embedTransferFunction } from '@/nodes/transfer';
+import { data as CreateTokenDataType, embedCreateTokenCode } from '@/nodes/token';
 import { toast } from 'sonner';
 
 const defaults = {
@@ -271,6 +272,11 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
             case "transfer": {
               const transferData = node.data as TransferDataType
               const code = embedTransferFunction(transferData.token, transferData.tokenType, transferData.quantity, transferData.denomination, transferData.quantityType, transferData.to, transferData.toType)
+              await runCodeAndAddOutput(node, code)
+            } break;
+            case "create-token": {
+              const createTokenData = node.data as CreateTokenDataType
+              const code = embedCreateTokenCode(createTokenData.name, createTokenData.ticker, createTokenData.totalSupply, createTokenData.denomination, createTokenData.logo, createTokenData.overwrite)
               await runCodeAndAddOutput(node, code)
             } break;
             default: {

@@ -11,7 +11,7 @@ interface NodeContainerProps extends PropsWithChildren<Node> {
 }
 
 export default function NodeContainer(props: NodeContainerProps) {
-    const { activeNode, runningNodes, successNodes, errorNodes } = useGlobalState()
+    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode } = useGlobalState()
     const { getNode, getNodes, setCenter } = useReactFlow()
 
     // order of preference for applying classes is selected > running > success > error
@@ -96,6 +96,7 @@ export default function NodeContainer(props: NodeContainerProps) {
         const newNodes = [...getNodes()]
         newNodes.splice(index, 1)
 
+        setActiveNode(undefined)
         dispatchEvent(new CustomEvent("update-nodes", { detail: { nodes: newNodes } }))
     }
 

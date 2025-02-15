@@ -71,7 +71,7 @@ export function LeftSidebar() {
     const [loading, setLoading] = useState(false)
     const [cursorHistory, setCursorHistory] = useState<string[]>([])
     const [currentCursorIndex, setCurrentCursorIndex] = useState(-1)
-
+    const [searchTerm, setSearchTerm] = useState("")
     const [newProcessName, setNewProcessName] = useState("")
     const [connectProcessId, setConnectProcessId] = useState("")
     const [spawning, setSpawning] = useState(false)
@@ -81,14 +81,15 @@ export function LeftSidebar() {
         setCursorHistory([])
         setCurrentCursorIndex(-1)
         setProcesses([])
+        setSearchTerm("")
         await myProcesses()
         setLoading(false)
     }
 
-    async function myProcesses(nextCursor?: string, isPrevious: boolean = false) {
+    async function myProcesses(nextCursor?: string, isPrevious: boolean = false, search = "") {
         setLoading(true)
         try {
-            const result = await findMyPIDs(address, 10, nextCursor)
+            const result = await findMyPIDs(address, 10, nextCursor, search)
             setProcesses(result)
 
             if (!isPrevious && nextCursor) {
@@ -101,8 +102,8 @@ export function LeftSidebar() {
     }
 
     useEffect(() => {
-        myProcesses()
-    }, [address])
+        myProcesses("", false, searchTerm)
+    }, [address, searchTerm])
 
     // useEffect(() => {
     // if (!activeProcess) return
@@ -114,17 +115,17 @@ export function LeftSidebar() {
         if (currentCursorIndex > 0) {
             const previousCursor = cursorHistory[currentCursorIndex - 1]
             setCurrentCursorIndex(prev => prev - 1)
-            myProcesses(previousCursor, true)
+            myProcesses(previousCursor, true, searchTerm)
         } else {
             // First page
-            myProcesses(undefined, true)
+            myProcesses(undefined, true, searchTerm)
             setCurrentCursorIndex(-1)
         }
     }
 
     const handleNextPage = () => {
         if (processes.length === 10) {
-            myProcesses(processes[processes.length - 1].cursor)
+            myProcesses(processes[processes.length - 1].cursor, false, searchTerm)
         }
     }
 
@@ -165,6 +166,15 @@ export function LeftSidebar() {
             <div className="p-0 flex flex-col">
                 <div className="p-4 flex text-sm items-center gap-2 font-robotoMono tracking-tight">MY PROCESSES
                     <Button disabled={loading || !address} variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 mr-2.5 w-fit p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
+                </div>
+                <div className="px-4">
+                    <Input
+                        placeholder="Search Processes"
+                        defaultValue={searchTerm}
+                        value={searchTerm}
+                        className="mb-4 rounded-md mx-auto bg-white border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+                        onChange={(e) => setSearchTerm(e.target.value.trim())}
+                    />
                 </div>
                 <DropdownMenu onOpenChange={(open) => { open && tutorial().nextStep() }}>
                     <DropdownMenuTrigger asChild disabled={!address}>
@@ -220,6 +230,13 @@ export function LeftSidebar() {
                 {/* <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" />
                 <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" name="testaddasdasdasdasdasdasdasdasasd1" />
                 <Process processId="ib3jhE532TrzYQP5Weg5IigW97fLGzYYpqkUNjhm1Vg" name="Process 3" /> */}
+                {searchTerm ? (
+                    <div className="font-semibold ml-4 mb-2">
+                        <span className="font-normal">Search Results for: </span>
+                        <span className="font-bold">"{searchTerm}"</span>
+                    </div>
+                ) : null}
+
                 {loading ? (
                     <>
                         {[...Array(10)].map((_, index) => (
@@ -232,7 +249,7 @@ export function LeftSidebar() {
                         ))}
                     </>
                 ) : processes.length == 0 ? (
-                    <div className="text-sm text-center text-gray-500 flex items-center justify-center gap-2">
+                    <div className="text-sm text-center text-gray-500 flex items-center justify-center gap-2 border rounded-lg mx-4 p-6 border-dashed">
                         <Inbox size={25} strokeWidth={1.3} />
                         No processes found
                     </div>
