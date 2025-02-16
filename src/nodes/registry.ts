@@ -1,15 +1,16 @@
 import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins } from "lucide-react";
 
 // Import your node components and (if available) sidebar editors
-import StartNode from "@/nodes/start";
-import AddNode from "./add";
-import AnnotationNode from "./annotation";
-import HandlerAddNode, { HandlerAddNodeSidebar } from "./core/handler-add";
-import AOSendNode, { AOSendNodeSidebar } from "./core/ao-send";
-import FunctionNode, { FunctionNodeSidebar } from "./core/function";
-import InstallPackageNode, { InstallPackageNodeSidebar } from "./core/install-package";
-import TransferNode, { TransferNodeSidebar } from "./core/transfer";
-import CreateTokenNode, { CreateTokenNodeSidebar } from "./core/token";
+import StartNode from "@/nodes/common/start";
+import AddNode from "@/nodes/common/add";
+import AnnotationNode from "@/nodes/common/annotation";
+
+import HandlerAddNode, { HandlerAddNodeSidebar } from "@/nodes/core/handler-add";
+import AOSendNode, { AOSendNodeSidebar } from "@/nodes/core/ao-send";
+import FunctionNode, { FunctionNodeSidebar } from "@/nodes/core/function";
+import InstallPackageNode, { InstallPackageNodeSidebar } from "@/nodes/core/install-package";
+import TransferNode, { TransferNodeSidebar } from "@/nodes/core/transfer";
+import CreateTokenNode, { CreateTokenNodeSidebar } from "@/nodes/core/token";
 
 // Define a configuration interface for a node:
 export interface NodeConfig {

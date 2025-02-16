@@ -1,6 +1,4 @@
-import { PlusIcon } from "lucide-react";
-import { Handle, Node, Position } from "@xyflow/react"
-import { Button } from "@/components/ui/button";
+import { Node } from "@xyflow/react"
 
 export default function AnnotationNode(props: Node) {
     return <div className='w-[40vw] h-14'>
