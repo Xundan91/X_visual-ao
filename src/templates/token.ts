@@ -1,0 +1,5 @@
+import { Node } from "@xyflow/react";
+
+const nodes: Node[] = [{ "id": "start", "position": { "x": 50, "y": 50 }, "data": {}, "type": "start" }, { "id": "node-3", "position": { "x": 200, "y": 100 }, "type": "create-token", "data": { "name": "MyCoolCoin", "ticker": "MCC", "totalSupply": 10000, "denomination": 0, "logo": "", "overwrite": false }, "measured": { "width": 112, "height": 112 }, "selected": true }, { "id": "node-4", "position": { "x": 448, "y": 100 }, "type": "transfer", "data": { "tokenProcess": "ao.id", "tokenSelection": "other", "tokenType": "VARIABLE", "quantity": "2", "quantityType": "TEXT", "denomination": 0, "to": "Owner", "toType": "VARIABLE" }, "measured": { "width": 112, "height": 112 }, "selected": false }, { "id": "add", "position": { "x": 696, "y": 100 }, "data": {}, "type": "add", "measured": { "width": 48, "height": 48 } }]
+
+export { nodes }

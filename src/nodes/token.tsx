@@ -40,7 +40,7 @@ export function embedCreateTokenCode(name = "Points Coin", ticker = "PNTS", tota
     if (!name) name = "Points Coin"
     if (!ticker) ticker = "PNTS"
     if (!totalSupply) totalSupply = 10_000
-    if (!denomination) denomination = 12
+    if (!denomination && denomination != 0) denomination = 12
     if (!logo) logo = "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY"
 
     return `${token.init(name, ticker, denomination, totalSupply, logo)}
@@ -91,7 +91,7 @@ export function CreateTokenNodeSidebar() {
         setName(nodeData?.name || "")
         setTicker(nodeData?.ticker || "")
         setTotalSupply(nodeData?.totalSupply || 10_000)
-        setDenomination(nodeData?.denomination || 12)
+        setDenomination(nodeData?.denomination == 0 ? 0 : nodeData?.denomination || 12)
         setLogo(nodeData?.logo || "")
         setOverwrite(nodeData?.overwrite || false)
     }, [activeNode?.id])
@@ -213,8 +213,8 @@ export function CreateTokenNodeSidebar() {
                 type="number"
                 value={denomination}
                 onChange={(e) => {
-                    if (Number(e.target.value) >= 1) setDenomination(Number(e.target.value))
-                    else setDenomination(1)
+                    if (Number(e.target.value) >= 0) setDenomination(Number(e.target.value))
+                    else setDenomination(0)
                 }}
             />
         </div>

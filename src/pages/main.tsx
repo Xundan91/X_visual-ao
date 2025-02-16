@@ -271,7 +271,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
             } break;
             case "transfer": {
               const transferData = node.data as TransferDataType
-              const code = embedTransferFunction(transferData.token, transferData.tokenType, transferData.quantity, transferData.denomination, transferData.quantityType, transferData.to, transferData.toType)
+              const code = embedTransferFunction(transferData.tokenProcess == "ao.id" ? `"${globals.activeProcess}"` : transferData.tokenProcess, transferData.tokenType, transferData.quantity, transferData.denomination, transferData.quantityType, transferData.to, transferData.toType)
               await runCodeAndAddOutput(node, code)
             } break;
             case "create-token": {

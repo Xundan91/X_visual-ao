@@ -29,7 +29,7 @@ function NodeTemplate({ name, Icon, disabled }: { name: TNodes, Icon: LucideIcon
 // the list that appears in right sidebar on clicking add-node
 function AvailableNodes() {
     const hidden = ["add", "start", "annotation"]
-    const todo = ["Create Token", "Check Balance", "Spawn Process"]
+    const todo = ["Check Balance", "Spawn Process"]
 
     return <>
         <div className="p-2">Available Nodes</div>

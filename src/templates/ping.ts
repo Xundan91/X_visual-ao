@@ -1,6 +1,5 @@
-import { Edge, Node } from "@xyflow/react";
+import { Node } from "@xyflow/react";
 
 const nodes: Node[] = [{ "id": "start", "position": { "x": 50, "y": 50 }, "data": {}, "type": "start" }, { "id": "node-3", "position": { "x": 200, "y": 100 }, "type": "handler-add", "data": { "handlerName": "Ping", "actionType": "default-action", "actionValue": "Ping", "blocklyXml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable id=\"msg\">msg</variable></variables><block type=\"procedures_defnoreturn\" id=\"xyz\" x=\"63\" y=\"63\"><mutation><arg name=\"msg\" varid=\"msg\"/></mutation><field name=\"NAME\">PingHandler</field><statement name=\"STACK\"><block type=\"lua_print\" id=\"|n!J;O@xZo@pK9+mr7e/\"><value name=\"Value\"><shadow type=\"text\" id=\"EcXi~lO#N4oA/mE*G#j1\"><field name=\"TEXT\">Pong</field></shadow></value></block></statement></block></xml>" }, "measured": { "width": 112, "height": 112 } }, { "id": "node-4", "position": { "x": 448, "y": 100 }, "type": "ao-send", "data": { "target": "ao.id", "targetType": "VARIABLE", "action": "Ping", "actionType": "TEXT", "data": "", "dataType": "TEXT", "tags": [] }, "measured": { "width": 112, "height": 112 } }, { "id": "add", "position": { "x": 696, "y": 100 }, "data": {}, "type": "add", "measured": { "width": 48, "height": 48 } }]
-const edges: Edge[] = [{ "id": "start-node-3", "source": "start", "target": "node-3", "type": "default" }, { "id": "node-3-node-4", "source": "node-3", "target": "node-4", "type": "default" }, { "id": "node-4-add", "source": "node-4", "target": "add", "type": "dashed" }]
 
-export { nodes, edges } 
+export { nodes } 

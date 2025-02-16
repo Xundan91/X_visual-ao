@@ -3,31 +3,16 @@ import { Button } from "./ui/button";
 import { AppWindowMac } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Node } from "@xyflow/react";
-import { Edge } from "@xyflow/react";
 import { useState } from "react";
-import { PingTemplate } from "@/templates";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { toast } from "sonner";
 import Image from "next/image";
 import vaoLogo from "@/assets/logo.svg"
+import { Template, templates } from "@/templates";
 
-interface Template {
-    name: string,
-    description: string,
-    nodes: Node[],
-    edges: Edge[]
-}
-
-const pp: Template = {
-    name: "Ping Pong",
-    description: "Simple Ping-Pong handler",
-    nodes: PingTemplate.nodes,
-    edges: PingTemplate.edges
-}
 
 
 export default function TopBar() {
-    const [templates, setTemplates] = useState<Template[]>([pp])
     const [dialogOpen, setDialogOpen] = useState(false)
     const globalState = useGlobalState()
 
@@ -43,8 +28,7 @@ export default function TopBar() {
         // Create and dispatch custom event with template data
         const event = new CustomEvent("import-template", {
             detail: {
-                nodes: template.nodes,
-                edges: template.edges
+                nodes: template.nodes
             }
         });
         window.dispatchEvent(event);
@@ -81,10 +65,10 @@ export default function TopBar() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-4">
                         {
                             templates.map((template, _) => {
-                                return <div key={_} className="flex justify-between items-center hover:bg-muted/30 px-1 rounded-md">
+                                return <div key={_} className="flex justify-between items-center hover:bg-muted/50 px-1 rounded-md">
                                     <div>
                                         <div className="font-semibold">{template.name}</div>
                                         <div className="text-muted-foreground text-sm">{template.description}</div>

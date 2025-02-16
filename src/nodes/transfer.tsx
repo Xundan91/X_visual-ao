@@ -17,7 +17,7 @@ import { MousePointerClick } from "lucide-react";
 
 // data field structure for react-node custom node
 export interface data {
-    token: string;
+    tokenProcess: string;
     tokenSelection: string;
     tokenType: InputTypes;
     quantity: string;
@@ -69,7 +69,7 @@ export default function TransferNode(props: Node) {
 export function TransferNodeSidebar() {
     const [tokenSelection, setTokenSelection] = useState("")
     const [tokenType, setTokenType] = useState<InputTypes>("TEXT")
-    const [token, setToken] = useState("")
+    const [tokenProcess, setTokenProcess] = useState("")
     const [quantity, setQuantity] = useState("")
     const [quantityType, setQuantityType] = useState<InputTypes>("TEXT")
     const [recipient, setRecipient] = useState("")
@@ -84,7 +84,7 @@ export function TransferNodeSidebar() {
     useEffect(() => {
         const nodeData = activeNode?.data as data
         setTokenSelection(nodeData?.tokenSelection || "")
-        setToken(nodeData?.token || "")
+        setTokenProcess(nodeData?.tokenProcess || "")
         setTokenType(nodeData?.tokenType || "TEXT")
         setDenomination(nodeData?.denomination || 12)
         setQuantity(nodeData?.quantity || "0")
@@ -103,23 +103,29 @@ export function TransferNodeSidebar() {
     }, [editingNode, nodebarOpen])
 
     useEffect(() => {
-        if (!token) return
+        if (!tokenProcess) return
+
 
         (async () => {
+            console.log("tokenProcess", tokenProcess)
+            let token = tokenProcess
+
+            if (tokenProcess == "ao.id") token = activeProcess
             const res = await runLua("", token, [{ name: "Action", value: "Info" }], true)
 
+            if (res.Messages.length == 0) return
             const denom = res.Messages[0].Tags.find((tag: any) => tag.name === "Denomination")?.value
             console.log(denom)
             if (denom) setDenomination(Number(denom))
         })()
-    }, [token])
+    }, [tokenProcess])
 
     useEffect(() => {
         if (!tokenSelection) return
 
         const newNodeData: data = {
-            token: tokenSelection,
-            tokenSelection,
+            tokenProcess: tokenProcess,
+            tokenSelection: tokenSelection,
             tokenType,
             quantity,
             quantityType,
@@ -130,7 +136,7 @@ export function TransferNodeSidebar() {
 
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
 
-    }, [tokenSelection, tokenType, quantity, quantityType, recipient, recipientType, denomination])
+    }, [tokenSelection, tokenType, quantity, quantityType, recipient, recipientType, denomination, tokenProcess])
 
     type InputField = keyof Pick<data, "tokenType" | "quantityType" | "toType">;
 
@@ -144,7 +150,7 @@ export function TransferNodeSidebar() {
         if (!activeNode) return
 
         const newNodeData: data = {
-            token,
+            tokenProcess: tokenProcess,
             tokenSelection,
             tokenType,
             quantity,
@@ -166,7 +172,7 @@ export function TransferNodeSidebar() {
     async function sendTokens() {
         setRunningCode(true)
         const data = activeNode?.data as data
-        const code = embedTransferFunction(tokenSelection, tokenType, quantity, denomination, quantityType, recipient, recipientType)
+        const code = embedTransferFunction(tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess, tokenType, quantity, denomination, quantityType, recipient, recipientType)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -188,12 +194,12 @@ export function TransferNodeSidebar() {
         <select defaultValue={tokenSelection || "default"} value={tokenSelection || "default"} onChange={(e) => {
             setTokenSelection(e.target.value)
             if (e.target.value === "other") {
-                setToken("")
+                setTokenProcess("")
                 setTokenType("TEXT")
             } else {
                 const tokenProcess = e.target.value
                 console.log(tokenProcess)
-                setToken(tokenProcess)
+                setTokenProcess(tokenProcess)
                 setTokenType("TEXT")
                 setDenomination(12)
             }
@@ -211,9 +217,8 @@ export function TransferNodeSidebar() {
                 className="border-y border-x-0 bg-muted"
                 disabled={tokenSelection !== "other"}
                 placeholder="Enter token address"
-                defaultValue={token}
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
+                value={tokenProcess}
+                onChange={(e) => setTokenProcess(e.target.value)}
             />
             <Button
                 disabled={tokenSelection !== "other"}
@@ -274,7 +279,7 @@ export function TransferNodeSidebar() {
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Send Tokens</>}
             </Button>
             <pre className="overflow-scroll">
-                {embedTransferFunction(token, tokenType, quantity, denomination, quantityType, recipient, recipientType)}
+                {embedTransferFunction(tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess, tokenType, quantity, denomination, quantityType, recipient, recipientType)}
             </pre>
         </div>
 
