@@ -7,6 +7,9 @@ import FunctionNode from "./function";
 import InstallPackageNode from "./install-package";
 import TransferNode from "./transfer";
 import CreateTokenNode from "./token";
+import { DownloadCloud, FunctionSquareIcon, MessageSquareShare, Send, Coins, Workflow } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { CodeIcon } from "lucide-react";
 export interface Node {
     id: string;
     position: {
@@ -17,13 +20,23 @@ export interface Node {
     type: TNodes;
 }
 
-export const customNodes = {
+// New nodeIconMapping constant for sidebar and flow nodes:
+const NodeIconMapping: Partial<Record<TNodes, LucideIcon>> = {
+    "handler-add": Workflow,
+    "ao-send": MessageSquareShare,
+    "function": FunctionSquareIcon,
+    "install-package": DownloadCloud,
+    "transfer": Send,
+    "create-token": Coins,
+};
+
+const customNodes = {
     "handler-add": HandlerAddNode,
     "ao-send": AOSendNode,
     function: FunctionNode,
     "install-package": InstallPackageNode,
+    "create-token": CreateTokenNode,
     transfer: TransferNode,
-    "create-token": CreateTokenNode
 }
 
 const Nodes = {
@@ -43,11 +56,11 @@ const NodeSizes: { [key in TNodes]: { width: number, height: number } } = {
     "ao-send": { width: 112, height: 112 },
     function: { width: 112, height: 112 },
     "install-package": { width: 112, height: 112 },
+    "create-token": { width: 112, height: 112 },
     transfer: { width: 112, height: 112 },
-    "create-token": { width: 112, height: 112 }
 }
 
-export function keyToNode(key: TNodes): string {
+function keyToNode(key: TNodes): string {
     switch (key) {
         case "handler-add":
             return "Add Handler";
@@ -66,4 +79,4 @@ export function keyToNode(key: TNodes): string {
     }
 }
 
-export { Nodes, type TNodes, NodeSizes };
+export { Nodes, type TNodes, NodeSizes, NodeIconMapping, keyToNode, customNodes };

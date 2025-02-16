@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
-import { cn } from "@/lib/utils";
+
 import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import NodeContainer from "./common/node";
+import { NodeIconMapping } from ".";
 
 // data field structure for react-node custom node
 type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
@@ -36,8 +37,9 @@ return Handlers.add(
 
 // the handler add node for react-flow
 export default function HandlerAddNode(props: Node) {
+    const Icon = NodeIconMapping[props.type as TNodes]
     return <NodeContainer {...props}>
-        <CodeIcon size={30} strokeWidth={1} />
+        {Icon && <Icon size={30} strokeWidth={1} />}
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />

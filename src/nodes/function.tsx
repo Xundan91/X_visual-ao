@@ -13,6 +13,7 @@ import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
 import NodeContainer from "./common/node";
+import { NodeIconMapping } from ".";
 
 // data field structure for react-node custom node
 export interface data {
@@ -30,9 +31,9 @@ ${run ? `return ${name}()` : ""}
 
 // the handler add node for react-flow
 export default function FunctionNode(props: Node) {
-
+    const Icon = NodeIconMapping[props.type as TNodes]
     return <NodeContainer {...props}>
-        <CodeIcon size={30} strokeWidth={1} />
+        {Icon && <Icon size={30} strokeWidth={1} />}
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />

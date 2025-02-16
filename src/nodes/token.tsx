@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, Coins, FunctionSquareIcon, Icon, Loader, Play, Plu
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes } from ".";
+import { keyToNode, TNodes, NodeIconMapping } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -59,12 +59,9 @@ return "Token Overwritten 👍"` : `return "Token created 👍"`}`
 
 // the handler add node for react-flow
 export default function CreateTokenNode(props: Node) {
-
+    const Icon = NodeIconMapping[props.type as TNodes]
     return <NodeContainer {...props}>
-        <div className=" w-10 h-10 flex items-center justify-center">
-            <Coins size={30} strokeWidth={1} className="" />
-            {/* <Send size={25} strokeWidth={1} className="absolute -top-2 -right-2" /> */}
-        </div>
+        {Icon && <Icon size={30} strokeWidth={1} />}
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />

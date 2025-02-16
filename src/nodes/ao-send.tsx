@@ -3,7 +3,7 @@ import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Tag } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Loader, MessageSquareShare, MousePointerClick, Play, RotateCwSquare } from "lucide-react";
-import { keyToNode } from ".";
+import { keyToNode, NodeIconMapping } from ".";
 import { TNodes } from ".";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
@@ -29,10 +29,9 @@ export interface data {
 
 // the handler add node for react-flow
 export default function AOSendNode(props: Node) {
-
-
+    const Icon = NodeIconMapping[props.type as TNodes]
     return <NodeContainer {...props} >
-        <MessageSquareShare size={30} strokeWidth={1} />
+        {Icon && <Icon size={30} strokeWidth={1} />}
         <div className="text-center">{keyToNode(props.type as TNodes)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
