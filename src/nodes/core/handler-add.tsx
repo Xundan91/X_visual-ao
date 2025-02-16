@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, FunctionSquareIcon, Icon, Loader, Play, PlusIcon, 
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes } from ".";
+import { keyToNode, TNodes } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,12 @@ import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
-import NodeContainer from "./common/node";
-import { NodeIconMapping } from ".";
+import NodeContainer from "../common/node";
+import { NodeIconMapping } from "..";
 
 // data field structure for react-node custom node
 type THandlerType = "" | "default-action" | "custom-str" | "custom-fun"
+
 export interface data {
     handlerName: string;
     actionType: THandlerType;
@@ -124,12 +125,12 @@ export function HandlerAddNodeSidebar() {
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
         <SmolText className="mt-2">Name of the handler</SmolText>
-        <Input className="border-y border-x-0 bg-muted" placeholder="Enter handler name" defaultValue={handlerName} value={handlerName} onChange={(e) => setHandlerName(e.target.value)} />
+        <Input className="border-y border-x-0 bg-muted" placeholder="Enter handler name" value={handlerName} onChange={(e) => setHandlerName(e.target.value)} />
         {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-muted" /> */}
         {/* dropdown with options to either use default action, custom string action, or write your own checker */}
 
         <SmolText>Action Type</SmolText>
-        <select disabled={!handlerName || handlerName.length < 3} defaultValue={actionType || "default"} value={actionType || "default"} onChange={(e) => {
+        <select disabled={!handlerName || handlerName.length < 3} value={actionType || "default"} onChange={(e) => {
             setActionType(e.target.value as THandlerType)
             if (e.target.value === "default-action") {
                 setActionValue(`${handlerName}`)
@@ -143,7 +144,7 @@ export function HandlerAddNodeSidebar() {
         </select>
 
         <SmolText>Action Value</SmolText>
-        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-muted" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} />
+        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-muted" placeholder="Enter custom string" value={actionValue} onChange={(e) => setActionValue(e.target.value)} />
 
         <Button disabled={!actionValue} variant="link" className="text-muted-foreground w-full mt-4" onClick={openBlocklyEditor}>
             <FunctionSquareIcon size={20} /> Edit Block Code

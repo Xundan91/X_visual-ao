@@ -4,12 +4,12 @@ import { keyToNode, Node, Nodes, TNodes } from "@/nodes"
 import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
-import { HandlerAddNodeSidebar } from "@/nodes/handler-add"
-import { AOSendNodeSidebar } from "@/nodes/ao-send"
-import { FunctionNodeSidebar } from "@/nodes/function"
-import { InstallPackageNodeSidebar } from "@/nodes/install-package"
-import { TransferNodeSidebar } from "@/nodes/transfer"
-import { CreateTokenNodeSidebar } from "@/nodes/token"
+import { HandlerAddNodeSidebar } from "@/nodes/core/handler-add"
+import { AOSendNodeSidebar } from "@/nodes/core/ao-send"
+import { FunctionNodeSidebar } from "@/nodes/core/function"
+import { InstallPackageNodeSidebar } from "@/nodes/core/install-package"
+import { TransferNodeSidebar } from "@/nodes/core/transfer"
+import { CreateTokenNodeSidebar } from "@/nodes/core/token"
 import { NodeIconMapping } from "@/nodes"
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
@@ -73,14 +73,14 @@ function AvailableNodes() {
                         Icon={NodeIconMapping[nodeKey] || CodeIcon}
                     />
                 ))}
-                {todo.map((t, i) => (
+                {/* {todo.map((t, i) => (
                     <NodeTemplate
                         key={i}
                         name={t as TNodes}
                         Icon={NodeIconMapping[t as TNodes] || CodeIcon}
                         disabled
                     />
-                ))}
+                ))} */}
             </div>
         </>
     );

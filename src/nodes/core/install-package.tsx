@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, Download, FunctionSquareIcon, Icon, Loader, Minus,
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes } from ".";
+import { keyToNode, TNodes } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,10 @@ import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { installAPM, installPackage, parseOutupt, runLua, searchPackages } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
-import NodeContainer from "./common/node";
+import NodeContainer from "../common/node";
 import { TPackage } from "@/lib/types";
 import { embedFunction } from "./function";
-import { NodeIconMapping } from ".";
+import { NodeIconMapping } from "..";
 
 // data field structure for react-node custom node
 export interface data {
@@ -146,7 +146,6 @@ export function InstallPackageNodeSidebar() {
                 <Input
                     className="border-y border-x-0 bg-muted"
                     placeholder="Type a name"
-                    defaultValue={search}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />

@@ -8,8 +8,8 @@ import { luaGenerator } from 'blockly/lua';
 import { initializeBlocks } from './utils/registry';
 import { getToolboxConfiguration } from './toolbox';
 import * as Blockly from "blockly"
-import { data as HandlerAddData } from '@/nodes/handler-add';
-import { data as FunctionData } from '@/nodes/function';
+import { data as HandlerAddData } from '@/nodes/core/handler-add';
+import { data as FunctionData } from '@/nodes/core/function';
 import "./blocks"
 
 initializeBlocks()

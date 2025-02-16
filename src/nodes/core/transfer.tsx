@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, Coins, FunctionSquareIcon, Icon, Loader, Play, Plu
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes } from ".";
+import { keyToNode, TNodes } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,9 @@ import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
-import NodeContainer from "./common/node";
+import NodeContainer from "../common/node";
 import { MousePointerClick } from "lucide-react";
-import { NodeIconMapping } from ".";
+import { NodeIconMapping } from "..";
 
 // data field structure for react-node custom node
 export interface data {
@@ -189,7 +189,7 @@ export function TransferNodeSidebar() {
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
         <SmolText className="mt-2">Token</SmolText>
-        <select defaultValue={tokenSelection || "default"} value={tokenSelection || "default"} onChange={(e) => {
+        <select value={tokenSelection || "default"} onChange={(e) => {
             setTokenSelection(e.target.value)
             if (e.target.value === "other") {
                 setTokenProcess("")
@@ -241,7 +241,6 @@ export function TransferNodeSidebar() {
         <Input
             className="border-y border-x-0 bg-muted"
             placeholder="Enter recipient address"
-            defaultValue={recipient}
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
         />
@@ -260,7 +259,6 @@ export function TransferNodeSidebar() {
             type={quantityType === "TEXT" ? "number" : "text"}
             className="border-y border-x-0 bg-muted"
             placeholder="Enter quantity"
-            defaultValue={quantity}
             value={quantity}
             onChange={(e) => {
                 if (quantityType === "TEXT") {

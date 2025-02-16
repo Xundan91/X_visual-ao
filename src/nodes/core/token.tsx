@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, Coins, FunctionSquareIcon, Icon, Loader, Play, Plu
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes, NodeIconMapping } from ".";
+import { keyToNode, TNodes, NodeIconMapping } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
-import NodeContainer from "./common/node";
+import NodeContainer from "../common/node";
 import { MousePointerClick } from "lucide-react";
 import { token } from "@/blueprints";
 import { TokenOptions } from "./transfer";

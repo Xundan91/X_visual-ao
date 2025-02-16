@@ -3,8 +3,8 @@ import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Tag } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Loader, MessageSquareShare, MousePointerClick, Play, RotateCwSquare } from "lucide-react";
-import { keyToNode, NodeIconMapping } from ".";
-import { TNodes } from ".";
+import { keyToNode, NodeIconMapping } from "..";
+import { TNodes } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Ansi from "ansi-to-react";
 import Link from "next/link";
-import NodeContainer from "./common/node";
+import NodeContainer from "../common/node";
 
 
 // data field structure for react-node custom node

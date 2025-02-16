@@ -12,12 +12,12 @@ import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { data as HandlerAddDataType, embedHandler } from '@/nodes/handler-add';
-import { data as AOSendDataType, embedSendFunction } from '@/nodes/ao-send';
-import { data as AOFunctionDataType, embedFunction } from "@/nodes/function"
-import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/install-package"
-import { data as TransferDataType, embedTransferFunction } from '@/nodes/transfer';
-import { data as CreateTokenDataType, embedCreateTokenCode } from '@/nodes/token';
+import { data as HandlerAddDataType, embedHandler } from '@/nodes/core/handler-add';
+import { data as AOSendDataType, embedSendFunction } from '@/nodes/core/ao-send';
+import { data as AOFunctionDataType, embedFunction } from "@/nodes/core/function"
+import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/core/install-package"
+import { data as TransferDataType, embedTransferFunction } from '@/nodes/core/transfer';
+import { data as CreateTokenDataType, embedCreateTokenCode } from '@/nodes/core/token';
 import { toast } from 'sonner';
 
 const defaults = {
@@ -107,16 +107,16 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         const lastNode = nodes.pop();
         if (!lastNode) return [...nodes];
 
-        const lastNodeSize = NodeSizes[lastNode.type as TNodes];
-        const currentNodeSize = NodeSizes[type as TNodes];
-
         if (lastNode.type === "add") {
           globals.setActiveNode({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
           nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
         } else {
+          const lastNodeSize = NodeSizes.normal;
           globals.setActiveNode({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
           nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
         }
+
+        let lastNodeSize = NodeSizes.small;
         nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
 
         return [...nodes];

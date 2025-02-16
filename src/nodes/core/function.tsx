@@ -2,7 +2,7 @@ import { CheckIcon, CodeIcon, FunctionSquareIcon, Icon, Loader, Play, PlusIcon, 
 import { Handle, Node, Position } from "@xyflow/react"
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { keyToNode, TNodes } from ".";
+import { keyToNode, TNodes } from "..";
 import { useEffect, useState } from "react";
 import { SmolText } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,8 @@ import Ansi from "ansi-to-react";
 import Link from "next/link";
 import { parseOutupt, runLua } from "@/lib/aos";
 import { Switch } from "@/components/ui/switch";
-import NodeContainer from "./common/node";
-import { NodeIconMapping } from ".";
+import NodeContainer from "../common/node";
+import { NodeIconMapping } from "..";
 
 // data field structure for react-node custom node
 export interface data {
@@ -116,23 +116,7 @@ export function FunctionNodeSidebar() {
     return <div className="flex flex-col gap-0.5 h-full">
         {/* inputs for handler name */}
         <SmolText className="mt-2">Name of the function</SmolText>
-        <Input className="border-y border-x-0 bg-muted" placeholder="Enter function name" defaultValue={functionName} value={functionName} onChange={(e) => setFunctionName(e.target.value)} />
-        {/* <input type="text" placeholder="Enter handler name" className="p-2 w-full border-b border-black/20 bg-muted" /> */}
-        {/* dropdown with options to either use default action, custom string action, or write your own checker */}
-
-        {/* <SmolText>Action Type</SmolText>
-        <select disabled={!functionName || functionName.length < 3} defaultValue={runOnAdd ? "default" : "custom"} value={runOnAdd ? "default" : "custom"} onChange={(e) => {
-            setRunOnAdd(e.target.value === "default")
-        }}
-            className="p-2 w-full bg-muted border-y border-x-0">
-            <option value="default" disabled>Select Action</option>
-            <option value="default-action">Action="{functionName}"</option>
-            <option value="custom-str">Action={"<custom string>"}</option>
-            <option value="custom-fun" disabled>Custom Function</option>
-        </select> */}
-
-        {/* <SmolText>Action Value</SmolText>
-        <Input disabled={actionType != "custom-str"} className="border-y border-x-0 bg-muted" placeholder="Enter custom string" defaultValue={actionValue} value={actionValue} onChange={(e) => setActionValue(e.target.value)} /> */}
+        <Input className="border-y border-x-0 bg-muted" placeholder="Enter function name" value={functionName} onChange={(e) => setFunctionName(e.target.value)} />
 
         <div className="flex items-center mt-2">
             <SmolText className="pb-1.5">Run On Add</SmolText>
