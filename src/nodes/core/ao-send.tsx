@@ -216,7 +216,6 @@ export function AOSendNodeSidebar() {
         <Input
             className=" bg-muted border-x-0"
             placeholder="Input Target"
-            defaultValue={target.replaceAll('"', '')}
             value={target.replaceAll('"', '')}
             onChange={(e) => setTarget(e.target.value)}
         />
@@ -236,7 +235,6 @@ export function AOSendNodeSidebar() {
             disabled={target.length <= 0}
             className=" bg-muted border-x-0"
             placeholder="Input Action"
-            defaultValue={action.replaceAll('"', '')}
             value={action.replaceAll('"', '')}
             onChange={(e) => setAction(e.target.value)}
         />
@@ -256,7 +254,6 @@ export function AOSendNodeSidebar() {
             disabled={target.length <= 0}
             className=" bg-muted border-x-0"
             placeholder="Input Data"
-            defaultValue={data.replaceAll('"', '')}
             value={data.replaceAll('"', '')}
             onChange={(e) => setData(e.target.value)}
         />

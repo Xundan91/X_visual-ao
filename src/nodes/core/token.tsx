@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import NodeContainer from "../common/node";
 import { MousePointerClick } from "lucide-react";
 import { token } from "@/blueprints";
-import { TokenOptions } from "./transfer";
+import { TokenOptions } from "@/nodes/core/transfer";
 
 // data field structure for react-node custom node
 export interface data {
