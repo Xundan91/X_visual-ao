@@ -170,7 +170,6 @@ export function LeftSidebar() {
                 <div className="px-4">
                     <Input
                         placeholder="Search Processes"
-                        defaultValue={searchTerm}
                         value={searchTerm}
                         className="mb-4 rounded-md mx-auto bg-white border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
                         onChange={(e) => setSearchTerm(e.target.value.trim())}

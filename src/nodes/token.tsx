@@ -176,7 +176,6 @@ export function CreateTokenNodeSidebar() {
             <Input
                 className="border-y border-x-0 bg-muted"
                 placeholder="Points Coin"
-                defaultValue={name}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
             />
@@ -187,7 +186,6 @@ export function CreateTokenNodeSidebar() {
             <Input
                 className="border-y border-x-0 bg-muted"
                 placeholder="PNTS"
-                defaultValue={ticker}
                 value={ticker}
                 onChange={(e) => setTicker(e.target.value)}
             />
@@ -198,7 +196,6 @@ export function CreateTokenNodeSidebar() {
             <Input
                 className="border-y border-x-0 bg-muted"
                 placeholder="10000"
-                defaultValue={totalSupply}
                 type="number"
                 value={totalSupply}
                 onChange={(e) => {
@@ -213,7 +210,6 @@ export function CreateTokenNodeSidebar() {
             <Input
                 className="border-y border-x-0 bg-muted"
                 placeholder="12"
-                defaultValue={denomination}
                 type="number"
                 value={denomination}
                 onChange={(e) => {
@@ -228,7 +224,6 @@ export function CreateTokenNodeSidebar() {
             <Input
                 className="border-y border-x-0 bg-muted"
                 placeholder="SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY"
-                defaultValue={logo}
                 value={logo}
                 onChange={(e) => setLogo(e.target.value)}
             />
@@ -238,7 +233,6 @@ export function CreateTokenNodeSidebar() {
             <SmolText className="mt-2">Overwrite Token</SmolText>
             <Switch
                 className="mt-4"
-                defaultChecked={overwrite}
                 checked={overwrite}
                 onCheckedChange={setOverwrite}
             />
