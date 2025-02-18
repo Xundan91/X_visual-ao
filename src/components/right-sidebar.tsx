@@ -13,8 +13,9 @@ export function SmolText({ children, className }: { children: React.ReactNode, c
 }
 
 export type InputTypes = "TEXT" | "VARIABLE"
-export function ToggleButton({ onClick, nameType, className }: { onClick: () => void, nameType: InputTypes, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
+export function ToggleButton({ onClick, nameType, className, disabled }: { onClick: () => void, nameType: InputTypes, className?: HTMLAttributes<HTMLDivElement>["className"], disabled?: boolean }) {
     return <Button
+        disabled={disabled}
         variant="outline"
         className={cn("flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground", className)}
         onClick={onClick}

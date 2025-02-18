@@ -251,7 +251,14 @@ export function CreateTokenNodeSidebar() {
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Create Token</>}
             </Button>
             <pre className="overflow-scroll max-h-[200px]">
-                {embedCreateToken(activeNode?.data)}
+                {embedCreateToken({
+                    name,
+                    ticker,
+                    totalSupply,
+                    denomination,
+                    logo,
+                    overwrite
+                })}
             </pre>
         </div>
 

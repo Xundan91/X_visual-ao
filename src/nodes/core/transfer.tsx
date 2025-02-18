@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { keyToNode, TNodes } from "..";
 import { useEffect, useState } from "react";
-import { SmolText } from "@/components/right-sidebar";
+import { SmolText, ToggleButton } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export function TransferNodeSidebar() {
             if (tokenProcess == "ao.id") token = activeProcess
             const res = await runLua("", token, [{ name: "Action", value: "Info" }], true)
 
-            if (res.Messages.length == 0) return
+            if (!res.Messages || res.Messages.length == 0) return
             const denom = res.Messages[0].Tags.find((tag: any) => tag.name === "Denomination")?.value
             console.log(denom)
             if (denom) setDenomination(Number(denom))
@@ -211,7 +211,7 @@ export function TransferNodeSidebar() {
             <option value="other">Other</option>
 
         </select>
-        <div className="flex items-end gap-1 justify-between">
+        <div className="flex gap-0 justify-between items-center">
             <Input
                 className="border-y border-x-0 bg-muted"
                 disabled={tokenSelection !== "other"}
@@ -219,25 +219,12 @@ export function TransferNodeSidebar() {
                 value={tokenProcess}
                 onChange={(e) => setTokenProcess(e.target.value)}
             />
-            <Button
-                disabled={tokenSelection !== "other"}
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(tokenType, setTokenType, "tokenType")}
-            >
-                {tokenType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
-            </Button>
+            <ToggleButton disabled={tokenSelection !== "other"} className="rounded-md !rounded-tl-none !rounded-l-none top-0 my-0 border-dashed border h-full border-l-0" nameType={tokenType} onClick={() => handleTypeToggle(tokenType, setTokenType, "tokenType")} />
         </div>
 
         <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
             <SmolText className="h-4 p-0">Recipient</SmolText>
-            <Button
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(recipientType, setRecipientType, "toType")}
-            >
-                {recipientType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
-            </Button>
+            <ToggleButton nameType={recipientType} onClick={() => handleTypeToggle(recipientType, setRecipientType, "toType")} />
         </div>
         <Input
             className="border-y border-x-0 bg-muted"
@@ -248,13 +235,7 @@ export function TransferNodeSidebar() {
 
         <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
             <SmolText className="h-4 p-0">Quantity</SmolText>
-            <Button
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(quantityType, setQuantityType, "quantityType")}
-            >
-                {quantityType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
-            </Button>
+            <ToggleButton nameType={quantityType} onClick={() => handleTypeToggle(quantityType, setQuantityType, "quantityType")} />
         </div>
         <Input
             type={quantityType === "TEXT" ? "number" : "text"}
@@ -279,7 +260,16 @@ export function TransferNodeSidebar() {
                 {(() => {
                     const data = activeNode?.data as data
                     data.tokenProcess = tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess
-                    return embedTransferFunction(data)
+                    return embedTransferFunction({
+                        tokenProcess,
+                        tokenSelection,
+                        tokenType,
+                        quantity,
+                        quantityType,
+                        denomination,
+                        to: recipient,
+                        toType: recipientType
+                    })
                 })()}
             </pre>
         </div>

@@ -210,11 +210,7 @@ export function InstallPackageNodeSidebar() {
                 </Button>
                 <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {(() => {
-                            const data = activeNode?.data as data
-                            data.installedPackages = installedPackages
-                            return embedInstallPackageFunction(data)
-                        })()}
+                        {embedInstallPackageFunction({ installedPackages })}
                     </pre>
                 </div>
             </div>

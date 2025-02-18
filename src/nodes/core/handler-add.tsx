@@ -157,7 +157,12 @@ export function HandlerAddNodeSidebar() {
             {
                 nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {embedHandler(nodeData)}
+                        {embedHandler({
+                            handlerName,
+                            actionType,
+                            actionValue,
+                            blocklyXml: nodeData?.blocklyXml
+                        })}
                     </pre>
                 </div>
             }

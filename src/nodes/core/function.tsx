@@ -136,7 +136,11 @@ export function FunctionNodeSidebar() {
             {
                 nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {embedFunction(nodeData)}
+                        {embedFunction({
+                            functionName,
+                            runOnAdd,
+                            blocklyXml: nodeData?.blocklyXml
+                        })}
                     </pre>
                 </div>
             }

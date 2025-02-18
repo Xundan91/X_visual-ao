@@ -6,7 +6,7 @@ import { Loader, MessageSquareShare, MousePointerClick, Play, RotateCwSquare } f
 import { keyToNode, NodeIconMapping } from "..";
 import { TNodes } from "..";
 import { useEffect, useState } from "react";
-import { SmolText } from "@/components/right-sidebar";
+import { SmolText, ToggleButton } from "@/components/right-sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -204,13 +204,7 @@ export function AOSendNodeSidebar() {
 
         <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
             <SmolText className="h-4 p-0">Target</SmolText>
-            <Button
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(targetType, setTargetType, "targetType")}
-            >
-                {targetType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
-            </Button>
+            <ToggleButton nameType={targetType} onClick={() => handleTypeToggle(targetType, setTargetType, "targetType")} />
         </div>
 
         <Input
@@ -222,13 +216,7 @@ export function AOSendNodeSidebar() {
 
         <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
             <SmolText className="h-4 p-0">Action</SmolText>
-            <Button
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(actionType, setActionType, "actionType")}
-            >
-                {actionType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
-            </Button>
+            <ToggleButton nameType={actionType} onClick={() => handleTypeToggle(actionType, setActionType, "actionType")} />
         </div>
 
         <Input
@@ -241,13 +229,7 @@ export function AOSendNodeSidebar() {
 
         <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
             <SmolText className="h-4 p-0">Data</SmolText>
-            <Button
-                variant="outline"
-                className="flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground"
-                onClick={() => handleTypeToggle(dataType, setDataType, "dataType")}
-            >
-                {dataType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
-            </Button>
+            <ToggleButton nameType={dataType} onClick={() => handleTypeToggle(dataType, setDataType, "dataType")} />
         </div>
 
         <Input
@@ -263,13 +245,7 @@ export function AOSendNodeSidebar() {
         {tags.map((tag, index) => (
             <div key={index} className="grid grid-cols-2 items-center justify-end">
                 <div></div>
-                <Button
-                    variant="outline"
-                    className="flex items-center justify-center gap-1 rounded-none relative right-2 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground ml-auto"
-                    onClick={() => setTags(tags.map((t, i) => i == index ? { ...t, type: t.type == "TEXT" ? "VARIABLE" : "TEXT" } : t))}
-                >
-                    {tag.type == "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} className="" />
-                </Button>
+                <ToggleButton className="mb-0.5" nameType={tag.type} onClick={() => setTags(tags.map((t, i) => i == index ? { ...t, type: t.type == "TEXT" ? "VARIABLE" : "TEXT" } : t))} />
 
                 <Input
                     data-error={tag.name.length <= 0}
