@@ -5,6 +5,8 @@ import { data as InstallPackageNodeData } from "./core/install-package"
 import { data as CreateTokenNodeData } from "./core/token"
 import { data as TransferNodeData } from "./core/transfer"
 
+import { data as TemplateNodeData } from "./common/_template"
+
 export type TNodeData = any
     | HandlerAddNodeData
     | AOSendNodeData
@@ -12,3 +14,4 @@ export type TNodeData = any
     | InstallPackageNodeData
     | CreateTokenNodeData
     | TransferNodeData
+    | TemplateNodeData

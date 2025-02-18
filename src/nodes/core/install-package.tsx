@@ -22,11 +22,11 @@ export interface data {
     installedPackages: TPackage[];
 }
 
-export function embedInstallPackageFunction(installedPackages: TPackage[]) {
+export function embedInstallPackageFunction(inputs: data) {
     return `
-${installedPackages.map(pkg => `apm.install("${pkg.Vendor}/${pkg.Name}")`).join("\n")}
+${inputs.installedPackages.map(pkg => `apm.install("${pkg.Vendor}/${pkg.Name}")`).join("\n")}
 
-return "Installing ${installedPackages.length} packages"`
+return "Installing ${inputs.installedPackages.length} packages"`
 }
 
 // the install package node for react-flow
@@ -112,7 +112,7 @@ export function InstallPackageNodeSidebar() {
         setInstalling(true);
         const res = await installAPM(activeProcess);
         console.log(res);
-        const code = embedInstallPackageFunction(installedPackages);
+        const code = embedInstallPackageFunction({ installedPackages });
         console.log(code);
         const res2 = await runLua(code, activeProcess);
         console.log(res2);
@@ -210,7 +210,11 @@ export function InstallPackageNodeSidebar() {
                 </Button>
                 <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {embedInstallPackageFunction(installedPackages)}
+                        {(() => {
+                            const data = activeNode?.data as data
+                            data.installedPackages = installedPackages
+                            return embedInstallPackageFunction(data)
+                        })()}
                     </pre>
                 </div>
             </div>

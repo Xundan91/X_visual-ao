@@ -6,7 +6,7 @@ import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
 import { getNodesOrdered } from '@/lib/utils';
-import { customNodes, Node, Nodes, NodeSizes, TNodes } from '@/nodes';
+import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes, TNodes } from '@/nodes';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
@@ -17,7 +17,7 @@ import { data as AOSendDataType, embedSendFunction } from '@/nodes/core/ao-send'
 import { data as AOFunctionDataType, embedFunction } from "@/nodes/core/function"
 import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/core/install-package"
 import { data as TransferDataType, embedTransferFunction } from '@/nodes/core/transfer';
-import { data as CreateTokenDataType, embedCreateTokenCode } from '@/nodes/core/token';
+import { data as CreateTokenDataType, embedCreateToken } from '@/nodes/core/token';
 import { toast } from 'sonner';
 
 const defaults = {
@@ -231,27 +231,17 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       for (const node of list) {
         globals.addRunningNode(node)
         try {
+          const embedFunction = NodeEmbedFunctionMapping[node.type as TNodes]
+          if (!embedFunction) {
+            globals.addErrorNode(node)
+            globals.addOutput({ type: "error", message: `no embed function found for node ${node.type}`, preMessage: `[${node.id}]` })
+            continue;
+          }
+          const code = embedFunction(node.data)
           switch (node.type) {
-            case "handler-add": {
-              const handlerData = node.data as HandlerAddDataType
-              const code = embedHandler(handlerData.handlerName, handlerData.actionValue, handlerData.blocklyXml)
-              await runCodeAndAddOutput(node, code)
-            } break;
-            case "ao-send": {
-              const sendData = node.data as AOSendDataType
-              const code = embedSendFunction(sendData)
-              await runCodeAndAddOutput(node, code)
-            } break;
-            case "function": {
-              const funcData = node.data as AOFunctionDataType
-              const code = embedFunction(funcData.functionName, funcData.blocklyXml, funcData.runOnAdd)
-              await runCodeAndAddOutput(node, code)
-            } break;
             case "install-package": {
-              const installData = node.data as InstallPackageDataType
               const res = await installAPM(globals.activeProcess)
               console.log(res)
-              const code = embedInstallPackageFunction(installData.installedPackages)
               let tries = 0
               while (true) {
                 const done = await justRunCode(code)
@@ -268,20 +258,12 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
                   }
                 }
               }
-            } break;
-            case "transfer": {
-              const transferData = node.data as TransferDataType
-              const code = embedTransferFunction(transferData.tokenProcess == "ao.id" ? `"${globals.activeProcess}"` : transferData.tokenProcess, transferData.tokenType, transferData.quantity, transferData.denomination, transferData.quantityType, transferData.to, transferData.toType)
-              await runCodeAndAddOutput(node, code)
-            } break;
-            case "create-token": {
-              const createTokenData = node.data as CreateTokenDataType
-              const code = embedCreateTokenCode(createTokenData.name, createTokenData.ticker, createTokenData.totalSupply, createTokenData.denomination, createTokenData.logo, createTokenData.overwrite)
-              await runCodeAndAddOutput(node, code)
+              globals.addSuccessNode(node)
+              globals.addOutput({ type: "output", message: `installed packages`, preMessage: `[${node.id}]` })
+
             } break;
             default: {
-              globals.addRunningNode(node)
-              globals.addOutput({ type: "warning", message: `unknown node type (check main.tsx)`, preMessage: `[${node.id}]` })
+              await runCodeAndAddOutput(node, code)
             }
           }
         } catch (e: any) {

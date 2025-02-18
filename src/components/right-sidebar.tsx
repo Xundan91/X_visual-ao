@@ -1,18 +1,26 @@
 import { useGlobalState } from "@/hooks/useGlobalStore"
-import { CodeIcon, LucideIcon, Send, FunctionSquareIcon, MessageSquareShare } from "lucide-react"
+import { CodeIcon, LucideIcon, MousePointerClick } from "lucide-react"
 import { keyToNode, Node, Nodes, TNodes } from "@/nodes"
 import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
-import { HandlerAddNodeSidebar } from "@/nodes/core/handler-add"
-import { AOSendNodeSidebar } from "@/nodes/core/ao-send"
-import { FunctionNodeSidebar } from "@/nodes/core/function"
-import { InstallPackageNodeSidebar } from "@/nodes/core/install-package"
-import { TransferNodeSidebar } from "@/nodes/core/transfer"
-import { CreateTokenNodeSidebar } from "@/nodes/core/token"
 import { NodeIconMapping } from "@/nodes"
+import { nodeConfigs } from "@/nodes/registry"
+import { Button } from "./ui/button"
+
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
+}
+
+export type InputTypes = "TEXT" | "VARIABLE"
+export function ToggleButton({ onClick, nameType, className }: { onClick: () => void, nameType: InputTypes, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
+    return <Button
+        variant="outline"
+        className={cn("flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground", className)}
+        onClick={onClick}
+    >
+        {nameType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />
+    </Button>
 }
 
 
@@ -95,7 +103,14 @@ function NodeData({ activeNode }: { activeNode: Node }) {
         </div>
         <hr />
         <div className="h-[calc(100vh-56px)] overflow-y-scroll">
-            {(() => {
+            {
+                nodeConfigs.map((node) => {
+                    if (node.type == activeNode.type) {
+                        return <node.SidebarComponent />
+                    }
+                })
+            }
+            {/* {(() => {
                 switch (activeNode.type) {
                     case "handler-add":
                         return <HandlerAddNodeSidebar />
@@ -112,7 +127,7 @@ function NodeData({ activeNode }: { activeNode: Node }) {
                     default:
                         return <div className="text-red-500 text-xs text-center py-2">Unknown Node<br /> Please check @components/right-sidebar.tsx</div>
                 }
-            })()}
+            })()} */}
         </div>
     </div>
 }

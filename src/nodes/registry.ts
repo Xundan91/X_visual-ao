@@ -1,16 +1,19 @@
-import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins } from "lucide-react";
+import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins, SquareDashed } from "lucide-react";
 
 // Import your node components and (if available) sidebar editors
 import StartNode from "@/nodes/common/start";
 import AddNode from "@/nodes/common/add";
 import AnnotationNode from "@/nodes/common/annotation";
+import { TNodeData } from "./type";
 
-import HandlerAddNode, { HandlerAddNodeSidebar } from "@/nodes/core/handler-add";
-import AOSendNode, { AOSendNodeSidebar } from "@/nodes/core/ao-send";
-import FunctionNode, { FunctionNodeSidebar } from "@/nodes/core/function";
-import InstallPackageNode, { InstallPackageNodeSidebar } from "@/nodes/core/install-package";
-import TransferNode, { TransferNodeSidebar } from "@/nodes/core/transfer";
-import CreateTokenNode, { CreateTokenNodeSidebar } from "@/nodes/core/token";
+import HandlerAddNode, { embedHandler, HandlerAddNodeSidebar } from "@/nodes/core/handler-add";
+import AOSendNode, { AOSendNodeSidebar, embedSendFunction } from "@/nodes/core/ao-send";
+import FunctionNode, { embedFunction, FunctionNodeSidebar } from "@/nodes/core/function";
+import InstallPackageNode, { embedInstallPackageFunction, InstallPackageNodeSidebar } from "@/nodes/core/install-package";
+import TransferNode, { embedTransferFunction, TransferNodeSidebar } from "@/nodes/core/transfer";
+import CreateTokenNode, { CreateTokenNodeSidebar, embedCreateToken } from "@/nodes/core/token";
+import { embedTemplate, TemplateSidebar } from "./common/_template";
+import { TemplateNode } from "./common/_template";
 
 // Define a configuration interface for a node:
 export interface NodeConfig {
@@ -19,10 +22,11 @@ export interface NodeConfig {
     icon: LucideIcon;
     NodeComponent: React.FC<any>;
     SidebarComponent: React.FC<any>;
+    embedFunction?: (inputs: TNodeData) => string;
 }
 
 // Create an array of node configurations – adding a new node now only means adding a new entry here.
-export const nodeConfigs: NodeConfig[] = [
+const nodeConfigs: NodeConfig[] = [
     {
         type: "start",
         name: "Start",
@@ -50,6 +54,7 @@ export const nodeConfigs: NodeConfig[] = [
         icon: Workflow,
         NodeComponent: HandlerAddNode,
         SidebarComponent: HandlerAddNodeSidebar, // Implement editor if needed
+        embedFunction: embedHandler
     },
     {
         type: "ao-send",
@@ -57,6 +62,7 @@ export const nodeConfigs: NodeConfig[] = [
         icon: MessageSquareShare,
         NodeComponent: AOSendNode,
         SidebarComponent: AOSendNodeSidebar,
+        embedFunction: embedSendFunction
     },
     {
         type: "function",
@@ -64,6 +70,7 @@ export const nodeConfigs: NodeConfig[] = [
         icon: FunctionSquareIcon,
         NodeComponent: FunctionNode,
         SidebarComponent: FunctionNodeSidebar,
+        embedFunction: embedFunction
     },
     {
         type: "install-package",
@@ -71,6 +78,7 @@ export const nodeConfigs: NodeConfig[] = [
         icon: DownloadCloud,
         NodeComponent: InstallPackageNode,
         SidebarComponent: InstallPackageNodeSidebar,
+        embedFunction: embedInstallPackageFunction
     },
     {
         type: "transfer",
@@ -78,6 +86,7 @@ export const nodeConfigs: NodeConfig[] = [
         icon: Send,
         NodeComponent: TransferNode,
         SidebarComponent: TransferNodeSidebar,
+        embedFunction: embedTransferFunction
     },
     {
         type: "create-token",
@@ -85,5 +94,19 @@ export const nodeConfigs: NodeConfig[] = [
         icon: Coins,
         NodeComponent: CreateTokenNode,
         SidebarComponent: CreateTokenNodeSidebar,
+        embedFunction: embedCreateToken
     },
-]; 
+];
+
+if (process.env.NODE_ENV == "development") {
+    nodeConfigs.push({
+        type: "template",
+        name: "Template",
+        icon: SquareDashed,
+        NodeComponent: TemplateNode,
+        SidebarComponent: TemplateSidebar,
+        embedFunction: embedTemplate
+    });
+}
+
+export { nodeConfigs };

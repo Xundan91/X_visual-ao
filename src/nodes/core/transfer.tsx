@@ -37,10 +37,10 @@ export const TokenOptions = {
     wUSDC: "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ",
 }
 
-export function embedTransferFunction(token: string, tokenType: InputTypes, quantity: string, denomination: number, quantityType: InputTypes, to: string, toType: InputTypes) {
-    const tokenCode = tokenType === "TEXT" ? `"${token}"` : `${token}`
-    const quantityCode = quantityType === "TEXT" ? `"${(Number(quantity) * Math.pow(10, denomination)).toFixed(0)}"` : `${quantity}`
-    const toCode = toType === "TEXT" ? `"${to}"` : `${to}`
+export function embedTransferFunction(inputs: data) {
+    const tokenCode = inputs.tokenType === "TEXT" ? `"${inputs.tokenProcess}"` : `${inputs.tokenProcess}`
+    const toCode = inputs.toType === "TEXT" ? `"${inputs.to}"` : `${inputs.to}`
+    const quantityCode = inputs.quantityType === "TEXT" ? `"${(Number(inputs.quantity) * Math.pow(10, inputs.denomination)).toFixed(0)}"` : `${inputs.quantity}`
 
     return `
 Send({
@@ -170,7 +170,8 @@ export function TransferNodeSidebar() {
     async function sendTokens() {
         setRunningCode(true)
         const data = activeNode?.data as data
-        const code = embedTransferFunction(tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess, tokenType, quantity, denomination, quantityType, recipient, recipientType)
+        data.tokenProcess = tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess
+        const code = embedTransferFunction(data)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -275,7 +276,11 @@ export function TransferNodeSidebar() {
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Send Tokens</>}
             </Button>
             <pre className="overflow-scroll">
-                {embedTransferFunction(tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess, tokenType, quantity, denomination, quantityType, recipient, recipientType)}
+                {(() => {
+                    const data = activeNode?.data as data
+                    data.tokenProcess = tokenProcess == "ao.id" ? `"${activeProcess}"` : tokenProcess
+                    return embedTransferFunction(data)
+                })()}
             </pre>
         </div>
 

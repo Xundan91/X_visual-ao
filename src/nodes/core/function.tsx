@@ -22,10 +22,10 @@ export interface data {
     blocklyXml: string;
 }
 
-export function embedFunction(name: string, xml: string, run: boolean) {
-    return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name))}
+export function embedFunction(inputs: data) {
+    return `${xmlToLua(replaceXMLFieldValue(inputs.blocklyXml, "NAME", inputs.functionName))}
 
-${run ? `return ${name}()` : ""}
+${inputs.runOnAdd ? `return ${inputs.functionName}()` : ""}
 `
 }
 
@@ -97,7 +97,8 @@ export function FunctionNodeSidebar() {
     async function runFunction() {
         setRunningCode(true)
         const data = activeNode?.data as data
-        const code = embedFunction(functionName, data?.blocklyXml || "", runOnAdd)
+        data.blocklyXml = data.blocklyXml || ""
+        const code = embedFunction(data)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -135,7 +136,7 @@ export function FunctionNodeSidebar() {
             {
                 nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {embedFunction(functionName, nodeData.blocklyXml, runOnAdd)}
+                        {embedFunction(nodeData)}
                     </pre>
                 </div>
             }

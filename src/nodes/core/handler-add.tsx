@@ -24,14 +24,14 @@ export interface data {
     blocklyXml: string;
 }
 
-export function embedHandler(name: string, action: string, xml: string) {
-    console.log(xml)
-    return `${xmlToLua(replaceXMLFieldValue(xml, "NAME", name + "Handler"))}
+export function embedHandler(inputs: data) {
+    // console.log(xml)
+    return `${xmlToLua(replaceXMLFieldValue(inputs.blocklyXml, "NAME", inputs.handlerName + "Handler"))}
 
 return Handlers.add(
-  "${name}",
-  "${action}",
-  ${name}Handler
+  "${inputs.handlerName}",
+  "${inputs.actionValue}",
+  ${inputs.handlerName}Handler
 )
 `
 }
@@ -108,7 +108,7 @@ export function HandlerAddNodeSidebar() {
 
     async function runHandler() {
         setRunningCode(true)
-        const code = embedHandler(handlerName, actionValue, nodeData.blocklyXml)
+        const code = embedHandler(nodeData)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -157,7 +157,7 @@ export function HandlerAddNodeSidebar() {
             {
                 nodeData?.blocklyXml && <div className="min-h-[100px] overflow-scroll w-full p-2 pt-0">
                     <pre className="text-xs">
-                        {embedHandler(handlerName, actionValue, nodeData.blocklyXml)}
+                        {embedHandler(nodeData)}
                     </pre>
                 </div>
             }

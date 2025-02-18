@@ -36,7 +36,10 @@ type InputTypes = "TEXT" | "VARIABLE"
 //     wUSDC: "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ",
 // }
 
-export function embedCreateTokenCode(name = "Points Coin", ticker = "PNTS", totalSupply = 10_000, denomination = 12, logo = "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY", overwrite = false) {
+// export function embedCreateToken(name = "Points Coin", ticker = "PNTS", totalSupply = 10_000, denomination = 12, logo = "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY", overwrite = false) {
+export function embedCreateToken(inputs: data) {
+    let { name, ticker, totalSupply, denomination, logo, overwrite } = inputs
+
     if (!name) name = "Points Coin"
     if (!ticker) ticker = "PNTS"
     if (!totalSupply) totalSupply = 10_000
@@ -150,7 +153,7 @@ export function CreateTokenNodeSidebar() {
     async function sendTokens() {
         setRunningCode(true)
         const data = activeNode?.data as data
-        const code = embedCreateTokenCode(name, ticker, totalSupply, denomination, logo, overwrite)
+        const code = embedCreateToken(data)
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -248,7 +251,7 @@ export function CreateTokenNodeSidebar() {
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Create Token</>}
             </Button>
             <pre className="overflow-scroll max-h-[200px]">
-                {embedCreateTokenCode(name, ticker, totalSupply, denomination, logo, overwrite)}
+                {embedCreateToken(activeNode?.data)}
             </pre>
         </div>
 

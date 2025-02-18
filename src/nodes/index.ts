@@ -17,6 +17,13 @@ export const NodeIconMapping: Record<TNodes, LucideIcon> = nodeConfigs.reduce((a
     return acc;
 }, {} as Record<TNodes, LucideIcon>);
 
+export const NodeEmbedFunctionMapping: Record<TNodes, (inputs: TNodeData) => string> = nodeConfigs.reduce((acc, config) => {
+    if (config.embedFunction) {
+        acc[config.type as TNodes] = config.embedFunction;
+    }
+    return acc;
+}, {} as Record<TNodes, (inputs: TNodeData) => string>);
+
 // Generate a friendly name mapping based on the registry entry
 export function keyToNode(key: TNodes): string {
     const config = nodeConfigs.find(cfg => cfg.type === key);
