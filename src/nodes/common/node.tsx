@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { useGlobalState } from "@/hooks/useGlobalStore"
 import { cn } from "@/lib/utils"
 import { Node, useReactFlow } from "@xyflow/react"
-import { Loader, MoveLeft, MoveRight, Trash } from "lucide-react"
+import { ChevronsLeft, ChevronsRight, Loader, MoveLeft, MoveRight, StepBack, Trash } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 interface NodeContainerProps extends PropsWithChildren<Node> {
@@ -105,24 +105,28 @@ export default function NodeContainer(props: NodeContainerProps) {
             {/* Toolbar */}
             {iAmSelected && (
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white border border-black/30 rounded-md p-1 flex gap-1 shadow-sm">
-                    <Button
-                        disabled={thisNode().index <= 1}
-                        onClick={handleMoveLeft}
-                        variant="ghost"
-                        title="Move left"
-                        className="p-2 h-7 w-7"
-                    >
-                        <MoveLeft size={16} />
-                    </Button>
-                    <Button
-                        disabled={thisNode().index >= getNodes().length - 2}
-                        onClick={handleMoveRight}
-                        variant="ghost"
-                        title="Move right"
-                        className="p-2 h-7 w-7"
-                    >
-                        <MoveRight size={16} />
-                    </Button>
+                    <div className="flex items-end relative">
+                        <Button
+                            disabled={thisNode().index <= 1}
+                            onClick={handleMoveLeft}
+                            variant="ghost"
+                            title="Move left"
+                            className="p-2 h-7 w-7"
+                        >
+                            {/* <MoveLeft size={16} /> */}
+                            <ChevronsLeft size={16} />
+                        </Button>
+                        <div className="text-[7px] p-0 m-0 absolute -bottom-0.5 w-full text-center text-muted-foreground pointer-events-none">move node</div>
+                        <Button
+                            disabled={thisNode().index >= getNodes().length - 2}
+                            onClick={handleMoveRight}
+                            variant="ghost"
+                            title="Move right"
+                            className="p-2 h-7 w-7"
+                        >
+                            <ChevronsRight size={16} />
+                        </Button>
+                    </div>
                     {/* <button
                         onClick={() => props.onRunFromHere?.(props.id)}
                         className="p-1 hover:bg-gray-100 rounded"
