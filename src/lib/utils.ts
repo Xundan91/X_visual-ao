@@ -1,6 +1,7 @@
-import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml"
+// import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml"
 import { Edge } from "@/edges"
-import { Node } from "@/nodes"
+import { Node } from "@/nodes/index"
+import { TNodeType } from "@/nodes/index/registry"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -26,4 +27,8 @@ export function getNodesOrdered(nodes: any, edges: any): Node[] {
     list.push(node)
   }
   return list
+}
+
+export function addNode(type: TNodeType, extraDetail?: {}) {
+  dispatchEvent(new CustomEvent("add-node", { detail: { type, ...extraDetail } }))
 }

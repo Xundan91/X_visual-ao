@@ -1,5 +1,6 @@
-import { SmoothStepEdge } from "@xyflow/react";
+import { BezierEdge } from "@xyflow/react";
 import DashedEdge from "./dashed";
+import MessageEdge from "./message";
 
 export interface Edge {
     id: string;
@@ -10,8 +11,9 @@ export interface Edge {
 }
 
 const Edges = {
-    default: SmoothStepEdge,
-    dashed: DashedEdge
+    default: BezierEdge,
+    dashed: DashedEdge,
+    message: MessageEdge
 }
 
 type TEdges = keyof typeof Edges

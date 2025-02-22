@@ -1,32 +1,35 @@
 "use client";
-import BlocklyComponent from '@/blockly';
-import { xmlToLua } from '@/blockly/utils/xml';
+// import BlocklyComponent from '@/blockly';
+// import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
-import { getNodesOrdered } from '@/lib/utils';
-import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes, TNodes } from '@/nodes';
-import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider } from '@xyflow/react';
+import { addNode, getNodesOrdered } from '@/lib/utils';
+import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
+import { RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
-import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { data as HandlerAddDataType, embedHandler } from '@/nodes/core/handler-add';
-import { data as AOSendDataType, embedSendFunction } from '@/nodes/core/ao-send';
-import { data as AOFunctionDataType, embedFunction } from "@/nodes/core/function"
-import { data as InstallPackageDataType, embedInstallPackageFunction } from "@/nodes/core/install-package"
-import { data as TransferDataType, embedTransferFunction } from '@/nodes/core/transfer';
-import { data as CreateTokenDataType, embedCreateToken } from '@/nodes/core/token';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const defaults = {
-  nodes: [
-    { id: "start", position: { x: 50, y: 50 }, data: {}, type: "start" },
-    { id: "add", position: { x: 200, y: 100 }, data: {}, type: "add" },
-  ]
-}
-const ignoreChangesForNodes = ["start"]
+const defaultNodes = [
+  {
+    id: "start",
+    position: { x: 50, y: 50 },
+    type: "start",
+    data: {}
+  },
+  {
+    id: "add-node",
+    position: { x: 200, y: 50 + NodeSizes.small.height / 4 },
+    type: "add-node",
+    data: {}
+  }
+];
+
 
 export default function Main({ heightPerc }: { heightPerc?: number }) {
   return <ReactFlowProvider>
@@ -34,261 +37,119 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
   </ReactFlowProvider>
 }
 
+const ignoreChangesForNodes = ["start", "annotation"]
 function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
   const { setCenter, setViewport } = useReactFlow();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(defaults.nodes);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  // Generate edges whenever nodes change
   useEffect(() => {
-    const newEdges: Edge[] = [];
-    for (let i = 0; i < nodes.length - 1; i++) {
-      const source = nodes[i].id;
-      const target = nodes[i + 1].id;
-      const edgeType = target === "add" ? "dashed" : "default";
-      newEdges.push({
-        id: `${source}-${target}`,
-        source,
-        target,
-        type: edgeType
-      });
-    }
-    setEdges(newEdges);
-  }, [nodes]);
+    const addNodeListener = ((e: CustomEvent) => {
+      if (!globals.activeProcess) return
+      const type = e.detail.type as TNodeType
+      const id = `${type}-${nodes.length}`
+
+      switch (type) {
+        case "annotation": case "start": break;
+
+        case "handler": {
+          console.log("handler", e)
+          const addNodeButton = nodes.find(n => n.id === "add-node");
+          if (!addNodeButton) return;
+
+          const newNode = {
+            id,
+            position: { ...addNodeButton.position },
+            type,
+            data: {}
+          };
+
+          const updatedAddNode = {
+            ...addNodeButton,
+            position: {
+              x: addNodeButton.position.x,
+              y: addNodeButton.position.y + NodeSizes.normal.height + 20
+            }
+          };
+
+          const newEdge = {
+            id: `start-${id}`,
+            source: "start",
+            target: id,
+            type: "default"
+          };
+          setEdges(edges => [...edges, newEdge]);
+          globals.setActiveNode(newNode)
+
+          setNodes(nodes => nodes.map(n =>
+            n.id === "add-node" ? updatedAddNode : n
+          ).concat(newNode))
+
+          break;
+        }
+        default: {
+          console.log("append node", e.detail, globals.attach)
+          if (!globals.attach) return;
+          const attachToNode = nodes.find(n => n.id == globals.attach);
+          if (!attachToNode) return;
+          const newNode = {
+            id,
+            position: {
+              x: attachToNode.position.x + NodeSizes.normal.width + 50,
+              y: attachToNode.position.y + NodeSizes.normal.height / 2 - NodeSizes.addNode.height / 2
+            },
+            type,
+            data: {}
+          }
+          setNodes(nodes => nodes.concat(newNode))
+          setEdges(edges => edges.concat({
+            id: `${globals.attach!}-${id}`,
+            source: globals.attach!,
+            target: id,
+            type: "message"
+          }))
+          globals.setAttach(undefined)
+        }
+      }
+
+    }) as EventListener
+
+    window.addEventListener("add-node", addNodeListener)
+    return () => window.removeEventListener("add-node", addNodeListener)
+  }, [nodes, setEdges, globals.activeProcess, globals.attach])
 
   useEffect(() => {
     globals.setActiveProcess("")
     globals.setActiveNode(undefined)
-    if (globals.nodebarOpen)
-      globals.toggleNodebar()
   }, [address])
-
-  useEffect(() => {
-    const storedData = localStorage.getItem(`${globals.activeProcess}-flow`);
-    if (storedData) {
-      const { nodes } = JSON.parse(storedData);
-      setNodes(nodes);
-    } else {
-      setNodes(defaults.nodes);
-    }
-
-    const { width, height } = document.querySelector('.react-flow')?.getBoundingClientRect() || { width: 0, height: 0 };
-    setCenter(width / 2, height / 2, { duration: 500, zoom: 1 });
-
-    globals.resetNodes()
-
-    globals.setActiveNode(undefined)
-    if (globals.nodebarOpen)
-      globals.toggleNodebar()
-  }, [globals.activeProcess]);
-
-  useEffect(() => {
-    if (!globals.activeProcess) return;
-    if (nodes !== defaults.nodes) {
-      const data = { nodes };
-      localStorage.setItem(`${globals.activeProcess}-flow`, JSON.stringify(data));
-    }
-  }, [nodes, globals.activeProcess]);
-
-  useEffect(() => {
-    function onUpdateNodesEvent(e: CustomEvent) {
-      const { nodes } = e.detail;
-      setNodes(nodes)
-    }
-
-    function onAddNodeEvent(e: CustomEvent) {
-      const type = e.detail.type;
-      let newId = "";
-      setNodes(nodes => {
-        newId = `node-${nodes.length + 1}`;
-        const lastNode = nodes.pop();
-        if (!lastNode) return [...nodes];
-
-        if (lastNode.type === "add") {
-          globals.setActiveNode({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
-          nodes.push({ id: newId, position: { x: lastNode.position.x, y: lastNode.position.y }, type: type, data: {} });
-        } else {
-          const lastNodeSize = NodeSizes.normal;
-          globals.setActiveNode({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
-          nodes.push({ id: newId, position: { x: lastNode.position.x + lastNodeSize.width + 100, y: lastNode.position.y + 50 }, type: type, data: {} });
-        }
-
-        let lastNodeSize = NodeSizes.small;
-        nodes.push({ id: "add", position: { x: lastNode.position.x + lastNodeSize.width + 200, y: lastNode.position.y }, data: {}, type: "add" });
-
-        return [...nodes];
-      });
-    }
-
-    function onUpdateNodeDataEvent(e: CustomEvent) {
-      const detail = e.detail;
-      console.log(detail)
-      setNodes(nodes => {
-        const nodeIndex = nodes.findIndex(node => node.id == detail.id);
-        console.log(nodeIndex)
-        if (nodeIndex === -1) return [...nodes];
-        nodes[nodeIndex].data = detail.data;
-        return [...nodes];
-      })
-    }
-
-    function onBlocklySaveEvent(e: CustomEvent) {
-      const xml = e.detail.xml;
-      if (!globals.activeNode) return console.log(globals.activeNode);
-
-      console.log("saving blocks")
-      setNodes(nodes => {
-        return nodes.map(node => {
-          if (node.id == globals.activeNode?.id) {
-            const node_ = { ...node, data: { ...node.data, blocklyXml: xml } } as Node
-            globals.setActiveNode(node_)
-            console.log("node updated", node_)
-            return node_
-          } else {
-            return node
-          }
-        })
-      })
-    }
-
-    window.addEventListener("add-node", onAddNodeEvent as EventListener);
-    window.addEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
-    window.addEventListener("save-blocks", onBlocklySaveEvent as EventListener)
-    window.addEventListener("update-nodes", onUpdateNodesEvent as EventListener)
-
-    return () => {
-      window.removeEventListener("add-node", onAddNodeEvent as EventListener);
-      window.removeEventListener("update-node-data", onUpdateNodeDataEvent as EventListener)
-      window.removeEventListener("save-blocks", onBlocklySaveEvent as EventListener)
-      window.removeEventListener("update-nodes", onUpdateNodesEvent as EventListener)
-    }
-  }, [globals.activeNode])
-
-  useEffect(() => {
-    function onImportTemplate(e: CustomEvent) {
-      const { nodes: templateNodes } = e.detail;
-      setNodes(templateNodes);
-      toast.success("Imported Template", { style: { backgroundColor: "white" } })
-    }
-
-    window.addEventListener("import-template", onImportTemplate as EventListener);
-    return () => {
-      window.removeEventListener("import-template", onImportTemplate as EventListener);
-    }
-  }, []);
-
-  async function justRunCode(code: string) {
-    try {
-      const result = await runLua(code, globals.activeProcess)
-      if (result.Error) {
-        return false
-      } else {
-        return true
-      }
-    } catch (e: any) {
-      console.log(e)
-      return false
-    }
-  }
-
-  async function runCodeAndAddOutput(node: Node, code: string) {
-    console.log("running", code)
-    try {
-      const result = await runLua(code, globals.activeProcess)
-      if (result.Error) {
-        globals.addErrorNode(node)
-        globals.addOutput({ type: "error", message: `${result.Error}`, preMessage: `[${node.id}]` })
-        return false
-      } else {
-        globals.addSuccessNode(node)
-        globals.addOutput({ type: "output", message: `${parseOutupt(result) || "[no data returned]"}`, preMessage: `[${node.id}] [${result.id}] ` })
-        return true
-      }
-    } catch (e: any) {
-      console.log(e)
-      globals.addErrorNode(node)
-      globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-      return false
-    }
-  }
 
   async function onNodeClick(e: any, node: Node) {
     if (globals.flowIsRunning) return
+    console.log("onNodeClick", node)
 
-    if (node.type === "start") {
-      if (globals.nodebarOpen)
-        globals.toggleNodebar()
-      globals.setActiveNode(undefined)
-      // iterate over nodes and run them one by one
-      const list = getNodesOrdered(nodes, edges)
-      globals.setFlowIsRunning(true)
-      globals.resetNodes()
-      if (globals.consoleRef?.current?.isCollapsed())
-        globals.consoleRef?.current?.resize(25);
-      for (const node of list) {
-        globals.addRunningNode(node)
-        try {
-          const embedFunction = NodeEmbedFunctionMapping[node.type as TNodes]
-          if (!embedFunction) {
-            globals.addErrorNode(node)
-            globals.addOutput({ type: "error", message: `no embed function found for node ${node.type}`, preMessage: `[${node.id}]` })
-            continue;
-          }
-          const code = embedFunction(node.data)
-          switch (node.type) {
-            case "install-package": {
-              const res = await installAPM(globals.activeProcess)
-              console.log(res)
-              let tries = 0
-              while (true) {
-                const done = await justRunCode(code)
-                if (done) {
-                  globals.addSuccessNode(node)
-                  globals.addOutput({ type: "output", message: `installed packages`, preMessage: `[${node.id}]` })
-                  break;
-                } else {
-                  tries++
-                  if (tries > 5) {
-                    globals.addErrorNode(node)
-                    globals.addOutput({ type: "error", message: `failed to install packages`, preMessage: `[${node.id}]` })
-                    break;
-                  }
-                }
-              }
-              globals.addSuccessNode(node)
-              globals.addOutput({ type: "output", message: `installed packages`, preMessage: `[${node.id}]` })
-
-            } break;
-            default: {
-              await runCodeAndAddOutput(node, code)
-            }
-          }
-        } catch (e: any) {
-          console.log(e)
-          globals.addErrorNode(node)
-          globals.addOutput({ type: "error", message: `${e.message}`, preMessage: `[${node.id}]` })
-          globals.setFlowIsRunning(false)
-        }
+    switch (node.type) {
+      case "start": {
+        globals.setActiveNode(undefined)
+        globals.setAttach(undefined)
+        globals.toggleSidebar(false)
+        break;
       }
+      case "add-node": {
+        globals.setAvailableNodes(RootNodesAvailable)
+        globals.toggleSidebar(true)
+        globals.setActiveNode(undefined)
+        globals.setAttach(undefined)
+        break;
+      }
+      case "annotation": break;
 
-      globals.setFlowIsRunning(false)
-    }
-    else if (node.type === "add") {
-      if (!globals.nodebarOpen)
-        globals.toggleNodebar()
-      globals.setActiveNode(undefined)
-    }
-    else if (Object.keys(customNodes).includes(node.type)) {
-      setCenter(node.position.x + 200, node.position.y + 200, { duration: 500, zoom: 1 });
-      if (!globals.nodebarOpen)
-        globals.toggleNodebar()
-      globals.setActiveNode(node)
-    }
-    else {
-      globals.setActiveNode(undefined)
+      default: {
+        globals.setActiveNode(node)
+        globals.toggleSidebar(true)
+      }
     }
   }
 
@@ -300,23 +161,29 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
           {globals.activeNode && <>
             <div className='px-1.5 text-base'>/</div>
             <div>{globals.activeNode?.id}</div>
-            {
+            {/* {
               globals.editingNode && <>
                 <div className='px-1.5 text-base'>/</div>
                 <div>block editor</div>
               </>
-            }
+            } */}
           </>}
         </>}
       </div>
-      {globals.editingNode && <div className='absolute left-0 top-0 w-screen h-screen bg-black/60 z-50 flex flex-col items-center justify-center'>
-        <BlocklyComponent />
-      </div>
-      }
+
 
       <ReactFlow
+        // nodesDraggable={false}
+        nodesConnectable={false}
+        // nodesFocusable={false}
+        // elementsSelectable={false}
+        selectionOnDrag={true}
+        selectionMode={SelectionMode.Partial}
+        panOnDrag={false}
+        panOnScroll={true}
+        selectNodesOnDrag={true}
         style={{ height: `calc(calc(100vh-20px)-${heightPerc}%) !important` }}
-        nodeTypes={Nodes as any}
+        nodeTypes={Nodes}
         edgeTypes={Edges}
         nodes={globals.activeProcess ? nodes :
           [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
@@ -329,11 +196,12 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         }}
         onPaneClick={() => {
           globals.setActiveNode(undefined)
-          if (globals.nodebarOpen)
-            globals.toggleNodebar()
+          globals.toggleSidebar(false)
+          globals.setAttach(undefined)
+          globals.setAvailableNodes([])
         }}
       >
-        {/* <FlowPanel /> */}
+        <FlowPanel />
         <Background variant={BackgroundVariant.Dots} bgColor="#f2f2f2" />
         <MiniMap />
         <Controls />

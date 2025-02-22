@@ -1,11 +1,12 @@
-import NodeContainer from "@/nodes/common/node";
+import NodeContainer from "@/nodes/node";
 import { Handle, Position } from "@xyflow/react";
-import { keyToNode, Node, TNodes, NodeIconMapping } from "@/nodes";
+import { keyToNode, Node, NodeIconMapping } from "@/nodes/index";
+import { RootNodesAvailable, SubRootNodesAvailable, TNodeType } from "@/nodes/index/registry";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
-import { Loader, Play } from "lucide-react";
+import { Loader, Play, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
@@ -25,23 +26,35 @@ export interface data {
 }
 
 // takes in input data and returns a string of lua code
-export function embedTemplate(inputs: data) {
+export function embed(inputs: data) {
     return `print(${inputs.nameType == "TEXT" ? `"${inputs.name}"` : inputs.name})`
 }
 
 // react flow node component
-export function TemplateNode(props: Node) {
-    const Icon = NodeIconMapping[props.type as TNodes]
+export function HandlerNode(props: Node) {
+    const { setAvailableNodes, toggleSidebar, setActiveNode, attach, setAttach } = useGlobalState()
+
+    const Icon = NodeIconMapping[props.type as TNodeType]
     return <NodeContainer {...props}>
         {Icon && <Icon size={30} strokeWidth={1} />}
-        <div className="text-center">{keyToNode(props.type as TNodes)}</div>
+        <div className="text-center">{keyToNode(props.type as TNodeType)}</div>
         <Handle type="target" position={Position.Left} />
         <Handle type="source" position={Position.Right} />
+        <Button variant="ghost" onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setAvailableNodes(SubRootNodesAvailable)
+            toggleSidebar(true)
+            setActiveNode(undefined)
+            setAttach(props.id)
+        }} data-willattach={attach == props.id} className="absolute -right-10 bg-white p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-yellow-100">
+            <Plus size={20} />
+        </Button>
     </NodeContainer>
 }
 
 // react sidebar component that appears when a node is selected
-export function TemplateSidebar() {
+export function HandlerSidebar() {
     // input states according to node data (modify as needed)
     const [name, setName] = useState("")
     const [nameType, setNameType] = useState<InputTypes>("TEXT")
@@ -103,9 +116,9 @@ export function TemplateSidebar() {
     }
 
     // runs the template code and displays the output
-    async function runTemplate() {
+    async function run() {
         setRunningCode(true)
-        const code = embedTemplate({ name, nameType })
+        const code = embed({ name, nameType })
         console.log("running", code)
         try {
             const result = await runLua(code, activeProcess)
@@ -128,11 +141,11 @@ export function TemplateSidebar() {
 
         <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
         <div className="bg-muted p-2 text-xs border-y">
-            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={runTemplate}>
+            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={run}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Template</>}
             </Button>
             <pre className="overflow-scroll">
-                {embedTemplate({ name, nameType })}
+                {embed({ name, nameType })}
             </pre>
         </div>
 

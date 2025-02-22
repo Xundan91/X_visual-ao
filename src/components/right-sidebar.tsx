@@ -1,11 +1,11 @@
 import { useGlobalState } from "@/hooks/useGlobalStore"
-import { CodeIcon, LucideIcon, MousePointerClick } from "lucide-react"
-import { keyToNode, Node, Nodes, TNodes } from "@/nodes"
+import { CodeIcon, FileQuestion, LucideIcon, MousePointerClick } from "lucide-react"
+import { keyToNode, Node, Nodes } from "@/nodes/index"
 import { HTMLAttributes, useEffect, useState } from "react"
-import { cn } from "@/lib/utils"
+import { addNode, cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
-import { NodeIconMapping } from "@/nodes"
-import { nodeConfigs } from "@/nodes/registry"
+import { NodeIconMapping } from "@/nodes/index"
+import { nodeConfigs, TNodeType } from "@/nodes/index/registry"
 import { Button } from "./ui/button"
 
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
@@ -27,21 +27,21 @@ export function ToggleButton({ onClick, nameType, className, disabled }: { onCli
 
 
 // a single node in the list
-function NodeTemplate({ name, Icon, disabled }: { name: TNodes, Icon: LucideIcon, disabled?: boolean }) {
+function NodeTemplate({ type, Icon, disabled }: { type: TNodeType, Icon: LucideIcon, disabled?: boolean }) {
     function addThisNode() {
         if (disabled) return;
-        dispatchEvent(new CustomEvent("add-node", { detail: { type: name } }));
+        addNode(type)
     }
 
     return (
         <div
             data-disabled={disabled}
-            className="flex items-center gap-2 hover:bg-black/10 data-[disabled=true]:text-muted-foreground p-2 cursor-pointer data-[disabled=true]:cursor-default"
+            className="flex flex-col w-28 h-28 border bg-white/50 rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:hover:bg-white/50 data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
             onClick={addThisNode}
         >
             <Icon size={22} />
-            <div className="truncate">
-                {keyToNode(name) || name} {disabled && "(coming soon)"}
+            <div className="truncate whitespace-normal text-center">
+                {keyToNode(type) || type}
             </div>
         </div>
     );
@@ -51,16 +51,19 @@ function NodeTemplate({ name, Icon, disabled }: { name: TNodes, Icon: LucideIcon
 function AvailableNodes() {
     // New state for search term
     const [searchTerm, setSearchTerm] = useState("");
+    const { availableNodes } = useGlobalState()
+    const hidden: TNodeType[] = ["add-node", "start", "annotation"];
+    const todo: string[] = [];
 
-    const hidden = ["add", "start", "annotation"];
     // Get all available nodes excluding hidden ones.
     const allNodes = (Object.keys(Nodes)
-        .filter((v) => !hidden.includes(v)) as TNodes[]);
+        .filter((v) => !hidden.includes(v as TNodeType)) as TNodeType[])
+
+
     // Filter nodes based on search; using keyToNode for a friendly name match.
-    const filteredNodes = allNodes.filter((nodeKey) =>
-        keyToNode(nodeKey).toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const todo: string[] = [];
+    let filteredNodes = allNodes.filter((node) =>
+        keyToNode(node).toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
     return (
         <>
@@ -74,22 +77,30 @@ function AvailableNodes() {
                     className="w-full"
                 />
             </div>
-            <div className="p-0">
-                {filteredNodes.map((nodeKey, index) => (
-                    <NodeTemplate
-                        key={index}
-                        name={nodeKey}
-                        Icon={NodeIconMapping[nodeKey] || CodeIcon}
-                    />
-                ))}
-                {/* {todo.map((t, i) => (
-                    <NodeTemplate
-                        key={i}
-                        name={t as TNodes}
-                        Icon={NodeIconMapping[t as TNodes] || CodeIcon}
-                        disabled
-                    />
-                ))} */}
+            <div className="p-2 grid w-full items-start justify-start grid-cols-[repeat(auto-fill,minmax(7rem,0fr))] gap-2">
+                {/* Show enabled nodes first */}
+                {filteredNodes
+                    .filter(type => availableNodes.includes(type))
+                    .map((type, index) => (
+                        <NodeTemplate
+                            disabled={false}
+                            key={`enabled-${index}`}
+                            type={type}
+                            Icon={NodeIconMapping[type] || FileQuestion}
+                        />
+                    ))}
+
+                {/* Then show disabled nodes */}
+                {filteredNodes
+                    .filter(type => !availableNodes.includes(type))
+                    .map((type, index) => (
+                        <NodeTemplate
+                            disabled={true}
+                            key={`disabled-${index}`}
+                            type={type}
+                            Icon={NodeIconMapping[type] || FileQuestion}
+                        />
+                    ))}
             </div>
         </>
     );
@@ -111,34 +122,16 @@ function NodeData({ activeNode }: { activeNode: Node }) {
                     }
                 })
             }
-            {/* {(() => {
-                switch (activeNode.type) {
-                    case "handler-add":
-                        return <HandlerAddNodeSidebar />
-                    case "ao-send":
-                        return <AOSendNodeSidebar />
-                    case "function":
-                        return <FunctionNodeSidebar />
-                    case "install-package":
-                        return <InstallPackageNodeSidebar />
-                    case "transfer":
-                        return <TransferNodeSidebar />
-                    case "create-token":
-                        return <CreateTokenNodeSidebar />
-                    default:
-                        return <div className="text-red-500 text-xs text-center py-2">Unknown Node<br /> Please check @components/right-sidebar.tsx</div>
-                }
-            })()} */}
         </div>
     </div>
 }
 
 // the right sidebar component
 export function RightSidebar() {
-    const { nodebarOpen, activeNode } = useGlobalState()
+    const { activeNode } = useGlobalState()
 
     return (
-        <div data-nodebaropen={nodebarOpen} className="w-[269px] !bg-[#fefefe] h-screen z-20 data-[nodebaropen=false]:!w-0 transition-all duration-200 border-l">
+        <div className=" h-screen z-20 transition-all duration-200 border-l">
             {activeNode ? <NodeData activeNode={activeNode} /> : <AvailableNodes />}
         </div>
     )
