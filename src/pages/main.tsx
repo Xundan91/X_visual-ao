@@ -21,12 +21,6 @@ const defaultNodes = [
     position: { x: 50, y: 50 },
     type: "start",
     data: {}
-  },
-  {
-    id: "add-node",
-    position: { x: 200, y: 50 + NodeSizes.small.height / 4 },
-    type: "add-node",
-    data: {}
   }
 ];
 
@@ -57,36 +51,66 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
         case "handler": {
           console.log("handler", e)
-          const addNodeButton = nodes.find(n => n.id === "add-node");
-          if (!addNodeButton) return;
+          const totalHandlers = nodes.filter(n => n.type == "handler").length
+          const newHandlerPosition = {
+            x: NodeSizes.normal.width * 2,
+            y: 50 + totalHandlers * (NodeSizes.normal.height + 20)
+          }
 
-          const newNode = {
+          // position just below the last handler
+          const lastHandler = nodes.filter(n => n.type == "handler").sort((a, b) => a.position.y - b.position.y).pop()
+          if (lastHandler) {
+            newHandlerPosition.x = lastHandler.position.x
+            newHandlerPosition.y = lastHandler.position.y + NodeSizes.normal.height + 20
+          }
+
+          const newHandler = {
             id,
-            position: { ...addNodeButton.position },
+            position: newHandlerPosition,
             type,
             data: {}
-          };
+          }
 
-          const updatedAddNode = {
-            ...addNodeButton,
-            position: {
-              x: addNodeButton.position.x,
-              y: addNodeButton.position.y + NodeSizes.normal.height + 20
-            }
-          };
-
-          const newEdge = {
+          setNodes(nodes => nodes.concat(newHandler))
+          setEdges(edges => edges.concat({
             id: `start-${id}`,
             source: "start",
             target: id,
             type: "default"
-          };
-          setEdges(edges => [...edges, newEdge]);
-          globals.setActiveNode(newNode)
+          }))
+          globals.setActiveNode(newHandler)
 
-          setNodes(nodes => nodes.map(n =>
-            n.id === "add-node" ? updatedAddNode : n
-          ).concat(newNode))
+
+          // const addNodeButton = nodes.find(n => n.id === "add-node");
+          // if (!addNodeButton) return;
+
+          // const newNode = {
+          //   id,
+          //   position: { ...addNodeButton.position },
+          //   type,
+          //   data: {}
+          // };
+
+          // const updatedAddNode = {
+          //   ...addNodeButton,
+          //   position: {
+          //     x: addNodeButton.position.x,
+          //     y: addNodeButton.position.y + NodeSizes.normal.height + 20
+          //   }
+          // };
+
+          // const newEdge = {
+          //   id: `start-${id}`,
+          //   source: "start",
+          //   target: id,
+          //   type: "default"
+          // };
+          // setEdges(edges => [...edges, newEdge]);
+          // globals.setActiveNode(newNode)
+
+          // setNodes(nodes => nodes.map(n =>
+          //   n.id === "add-node" ? updatedAddNode : n
+          // ).concat(newNode))
 
           break;
         }

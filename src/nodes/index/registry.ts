@@ -2,7 +2,6 @@ import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon,
 
 // Import your node components and (if available) sidebar editors
 import StartNode from "@/nodes/start";
-import AddNode from "@/nodes/index/add";
 import AnnotationNode from "@/nodes/index/annotation";
 import { TNodeData } from "@/nodes/index/type";
 
@@ -41,13 +40,6 @@ const nodeConfigs: NodeConfig[] = [
         icon: CodeIcon,
         NodeComponent: StartNode,
         SidebarComponent: () => null,  // No sidebar needed
-    },
-    {
-        type: "add-node",
-        name: "Add Node (Handler)",
-        icon: Plus,
-        NodeComponent: AddNode,
-        SidebarComponent: () => null,
     },
     {
         type: "annotation",

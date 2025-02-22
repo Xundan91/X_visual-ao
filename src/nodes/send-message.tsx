@@ -47,7 +47,7 @@ export function SendMessageNode(props: Node) {
             toggleSidebar(true)
             setAttach(props.id)
             setActiveNode(undefined)
-        }} data-willattach={attach == props.id} className="absolute -right-10 bg-white p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-yellow-100">
+        }} data-willattach={attach == props.id} className="absolute -right-3 bg-white p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-yellow-100">
             <Plus size={20} />
         </Button>
     </NodeContainer>
