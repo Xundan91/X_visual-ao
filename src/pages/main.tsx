@@ -5,7 +5,7 @@ import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
-import { getConnectedNodes } from '@/lib/events';
+import { getCode, getConnectedNodes } from '@/lib/events';
 import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
 import { attachables, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
@@ -39,8 +39,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [runningCode, setRunningCode] = useState(false)
 
-  const [orderVisible, setOrderVisible] = useState(false)
 
   // add node
   useEffect(() => {
@@ -371,8 +371,42 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setAttach(undefined)
         globals.toggleSidebar(false)
 
+        let fullCode = ""
+        const rootNodes: Node[] = []
         const n = getConnectedNodes("start")
-        console.log("n", n)
+        n.forEach(node => {
+          if (Array.isArray(node)) {
+            let n = node.find(nn => !Array.isArray(nn)) as Node
+            if (n) {
+              rootNodes.push(n)
+            }
+          } else {
+            rootNodes.push(node)
+          }
+        })
+
+        console.log("rootNodes", rootNodes)
+        rootNodes.forEach(node => {
+          const code = getCode(node.id, node.data)
+          console.log(node.id, code)
+          fullCode += `
+-- [ ${node.id} ]
+${code}
+`
+        })
+
+        console.log("fullCode", fullCode)
+
+        setRunningCode(true)
+        try {
+          const res = await runLua(fullCode, globals.activeProcess)
+          console.log("res", res)
+        } catch (e: any) {
+          console.log(e)
+          toast.error("Error running code")
+        } finally {
+          setRunningCode(false)
+        }
 
         break;
       }

@@ -17,6 +17,8 @@ export function updateNodeData(id: string, data: {}) {
     dispatchEvent(new CustomEvent("update-node-data", { detail: { id, data } }))
 }
 
+const maxTries = 1000
+
 export type TConnectedNodes = (Node | (Node | (Node | Node[])[])[])[]
 export function getConnectedNodes(id: string): TConnectedNodes {
     let connectedNodes: TConnectedNodes | undefined = undefined
@@ -27,9 +29,16 @@ export function getConnectedNodes(id: string): TConnectedNodes {
         }
     }))
 
-    while (connectedNodes == undefined)
+    let tries = 0
+    while (connectedNodes == undefined && tries < maxTries) {
+        tries++
         console.log("waiting for connected nodes")
+    }
 
+    if (connectedNodes == undefined) {
+        console.error("failed to get connected nodes")
+        return []
+    }
     connectedNodes = connectedNodes as TConnectedNodes
     return connectedNodes
 }
@@ -40,8 +49,15 @@ export function getCode(id: string, data: {}): string {
         detail: { id, data, callback: (_: string) => code = _ }
     }))
 
-    while (code == undefined)
+    let tries = 0
+    while (code == undefined && tries < maxTries) {
+        tries++
         console.log("waiting for code")
+    }
 
+    if (code == undefined) {
+        console.error("failed to get code")
+        return ""
+    }
     return code as string
 }

@@ -14,7 +14,7 @@ import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 import { Tag } from "@/lib/types";
 import { embed } from "./_template";
 import { getCode, updateNodeData } from "@/lib/events";
-import { sanitizeVariableName } from "@/lib/utils";
+import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { CommonActions } from "@/lib/constants";
 
 // This file should be copied and modified to create new nodes
@@ -45,7 +45,7 @@ export function SendMessageNode(props: Node) {
             const me = e.detail.id == props.id
             if (!me) return
 
-            const inputs = e.detail.data as data
+            const inputs = (e.detail.data || props.data) as data
             const { target, targetType, action, actionType, data, dataType, tags } = inputs
 
             const targetCode = targetType == "TEXT" ? `"${target}"` : `${target}`
@@ -54,18 +54,9 @@ export function SendMessageNode(props: Node) {
             const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
 
             let code = `Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})`
-            // strip first 8 lines of the code
-            try {
-                code = (require("lua-format").Beautify(code, {
-                    RenameVariables: false,
-                    RenameGlobals: false,
-                    SolveMath: true
-                }) as string).split("\n").slice(8).join("\n")
-            } catch (e: any) {
-                console.log(e)
-            } finally {
-                e.detail.callback(code)
-            }
+
+            code = formatLua(code)
+            e.detail.callback(code)
         }) as EventListener
 
         window.addEventListener("get-code", getCodeListener)

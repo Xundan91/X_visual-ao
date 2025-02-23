@@ -36,8 +36,7 @@ export function CodeblockNode(props: Node) {
             const me = e.detail.id == props.id
             if (!me) return
 
-            const inputs = e.detail.data as data
-
+            const inputs = (e.detail.data || props.data) as data
             e.detail.callback(inputs.code)
         }) as EventListener
 

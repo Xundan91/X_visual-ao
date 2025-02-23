@@ -38,3 +38,16 @@ export function sanitizeVariableName(name: string) {
   }
   return sanitized
 }
+
+export function formatLua(code: string) {
+  try {
+    return (require("lua-format").Beautify(code, {
+      RenameVariables: false,
+      RenameGlobals: false,
+      SolveMath: true
+    }) as string).split("\n").slice(8).join("\n")
+  } catch (e: any) {
+    console.log(e)
+    return code
+  }
+}

@@ -13,6 +13,7 @@ import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { CommonActions } from "@/lib/constants";
+import { formatLua } from "@/lib/utils";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -35,20 +36,38 @@ export function HandlerNode(props: Node) {
     useEffect(() => {
         const getCodeListener = ((e: CustomEvent) => {
             const me = e.detail.id == props.id
-            if (!me) e.detail.callback("")
+            if (!me) return
 
-            const inputs = e.detail.data as data
+            const inputs = (e.detail.data || props.data) as data
 
             const connectedNodes = getConnectedNodes(props.id)
             console.log("connectedNodes", connectedNodes)
 
-            e.detail.callback(`Handlers.add(
+            let body = ""
+            let code = ""
+            const iterateNode = (node: any) => {
+                if (Array.isArray(node)) {
+                    node.forEach(iterateNode)
+                } else {
+                    let _ = getCode(node.id, node.data)
+                    body += `
+-- [ ${node.id} ]
+${_}
+`
+                }
+            }
+
+            connectedNodes.forEach(iterateNode)
+
+            code = `Handlers.add(
     "${inputs.name}",
     { Action = "${inputs.action}" },
     function(msg)
-        -- Add nodes to the graph to add code here
+        ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
     end
-)`)
+            )`
+            code = formatLua(code)
+            e.detail.callback(code)
         }) as EventListener
 
         window.addEventListener("get-code", getCodeListener)
