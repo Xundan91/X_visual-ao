@@ -1,4 +1,5 @@
 import { TNodeType } from "@/nodes/index/registry"
+import { Node } from "@/nodes/index"
 
 export function addNode(type: TNodeType, extraDetail?: {}) {
     dispatchEvent(new CustomEvent("add-node", { detail: { type, ...extraDetail } }))
@@ -30,4 +31,16 @@ export function getConnectedNodes(id: string) {
 
     connectedNodes = connectedNodes as Node[]
     return connectedNodes
+}
+
+export function getCode(id: string, data: {}): string {
+    let code: string | undefined = undefined
+    dispatchEvent(new CustomEvent("get-code", {
+        detail: { id, data, callback: (_: string) => code = _ }
+    }))
+
+    while (code == undefined)
+        console.log("waiting for code")
+
+    return code as string
 }

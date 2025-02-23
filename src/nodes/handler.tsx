@@ -18,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { getConnectedNodes, updateNodeData } from "@/lib/events";
+import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -44,6 +44,30 @@ const commonActions = {
 export function HandlerNode(props: Node) {
     const { setAvailableNodes, toggleSidebar, setActiveNode, attach, setAttach } = useGlobalState()
 
+    // get code event
+    useEffect(() => {
+        const getCodeListener = ((e: CustomEvent) => {
+            const me = e.detail.id == props.id
+            if (!me) return
+
+            const inputs = e.detail.data as data
+
+            const connectedNodes = getConnectedNodes(props.id)
+            console.log("connectedNodes", connectedNodes)
+
+            e.detail.callback(`Handlers.add(
+    "${inputs.name}",
+    { Action = "${inputs.action}" },
+    function(msg)
+        -- Add nodes to the graph to add code here
+    end
+)`)
+        }) as EventListener
+
+        window.addEventListener("get-code", getCodeListener)
+        return () => window.removeEventListener("get-code", getCodeListener)
+    }, [props])
+
     const Icon = NodeIconMapping[props.type as TNodeType]
     return <NodeContainer {...props} onAddClick={() => setAvailableNodes(SubRootNodesAvailable)}>
         {Icon && <Icon size={30} strokeWidth={1} />}
@@ -66,19 +90,8 @@ export function HandlerSidebar() {
 
     // takes in input data and returns a string of lua code
     function embed(inputs: data) {
-        // list of nodes connected to this handler node
-        const connectedNodes = getConnectedNodes(activeNode?.id!)
-
-        console.dir(connectedNodes, { depth: null })
-
-        return `Handlers.add(
-    "${inputs.name}",
-    { Action = "${inputs.action}" },
-    function(msg)
-        -- Add nodes to the graph to add code here
-        ${connectedNodes.length}
-    end
-)`
+        const code = getCode(activeNode?.id!, inputs)
+        return code
     }
 
     // updates the data in sidebar when the node is selected
@@ -96,34 +109,6 @@ export function HandlerSidebar() {
         activeNode.data = { ...newNodeData }
         updateNodeData(activeNode?.id, newNodeData)
     }, [name, action, activeNode])
-
-    // helper function to toggle the input type between text and variable
-    // fields which can be toggled between text and variable
-    type InputField = keyof Pick<data, "name">;
-    function handleTypeToggle(
-        currentType: InputTypes,
-        setType: (type: InputTypes) => void,
-        field: InputField
-    ) {
-        const newType = currentType === "TEXT" ? "VARIABLE" : "TEXT"
-        setType(newType)
-
-        // This could possibly be removed, but I'm not sure, best to keep this to ensure the node data is updated
-        if (!activeNode) return
-
-        const newNodeData: data = {
-            name,
-            action
-        }
-        newNodeData[field] = newType
-
-        dispatchEvent(new CustomEvent("update-node-data", {
-            detail: {
-                id: activeNode.id,
-                data: newNodeData
-            }
-        }))
-    }
 
     // runs the template code and displays the output
     async function run() {
