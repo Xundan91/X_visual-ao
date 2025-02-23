@@ -11,6 +11,14 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { getConnectedNodes, updateNodeData } from "@/lib/events";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -22,12 +30,14 @@ import Link from "next/link";
 // data field structure for react-node custom node
 export interface data {
     name: string;
-    nameType: InputTypes;
+    action: string;
 }
 
-// takes in input data and returns a string of lua code
-export function embed(inputs: data) {
-    return `print(${inputs.nameType == "TEXT" ? `"${inputs.name}"` : inputs.name})`
+const commonActions = {
+    "Info": "Info",
+    "Credit-Notice": "Credit-Notice",
+    "Debit-Notice": "Debit-Notice",
+    "Balance": "Balance",
 }
 
 // react flow node component
@@ -45,7 +55,7 @@ export function HandlerNode(props: Node) {
 export function HandlerSidebar() {
     // input states according to node data (modify as needed)
     const [name, setName] = useState("")
-    const [nameType, setNameType] = useState<InputTypes>("TEXT")
+    const [action, setAction] = useState("")
 
     // necessary states
     const [runningCode, setRunningCode] = useState(false)
@@ -54,30 +64,42 @@ export function HandlerSidebar() {
 
     const { activeNode, activeProcess } = useGlobalState()
 
+    // takes in input data and returns a string of lua code
+    function embed(inputs: data) {
+        // list of nodes connected to this handler node
+        const connectedNodes = getConnectedNodes(activeNode?.id!)
+
+        console.dir(connectedNodes, { depth: null })
+
+        return `Handlers.add(
+    "${inputs.name}",
+    { Action = "${inputs.action}" },
+    function(msg)
+        -- Add nodes to the graph to add code here
+        ${connectedNodes.length}
+    end
+)`
+    }
+
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return
         const nodeData = activeNode?.data as data
         setName(nodeData?.name || "")
-        setNameType(nodeData?.nameType || "TEXT")
+        setAction(nodeData?.action || "")
     }, [activeNode?.id])
-
-    // updates the node data in localStorage
-    function updateNodeData() {
-        if (!activeNode) return
-        const newNodeData: data = { name, nameType }
-        activeNode.data = { ...newNodeData }
-        dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
-    }
 
     // updates the node data in localStorage when the input data updates
     useEffect(() => {
-        updateNodeData()
-    }, [name, nameType])
+        if (!activeNode) return
+        const newNodeData: data = { name, action }
+        activeNode.data = { ...newNodeData }
+        updateNodeData(activeNode?.id, newNodeData)
+    }, [name, action, activeNode])
 
     // helper function to toggle the input type between text and variable
     // fields which can be toggled between text and variable
-    type InputField = keyof Pick<data, "nameType">;
+    type InputField = keyof Pick<data, "name">;
     function handleTypeToggle(
         currentType: InputTypes,
         setType: (type: InputTypes) => void,
@@ -91,7 +113,7 @@ export function HandlerSidebar() {
 
         const newNodeData: data = {
             name,
-            nameType,
+            action
         }
         newNodeData[field] = newType
 
@@ -106,14 +128,15 @@ export function HandlerSidebar() {
     // runs the template code and displays the output
     async function run() {
         setRunningCode(true)
-        const code = embed({ name, nameType })
-        console.log("running", code)
+        // const code = embed({ name, action })
+        // console.log("running", code)
         try {
-            const result = await runLua(code, activeProcess)
-            setOutput(parseOutupt(result))
-            setOutputId(result.id)
+
+            // const result = await runLua(code, activeProcess)
+            // setOutput(parseOutupt(result))
+            // setOutputId(result.id)
         } catch (e: any) {
-            setOutput(e.message)
+            // setOutput(e.message)
         } finally {
             setRunningCode(false)
         }
@@ -121,33 +144,44 @@ export function HandlerSidebar() {
 
 
     return <div>
-        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
-            <SmolText className="h-4 p-0">Name</SmolText>
-            <ToggleButton className="mb-0.5" nameType={nameType} onClick={() => handleTypeToggle(nameType, setNameType, "nameType")} />
-        </div>
-        <Input type="text" className="border-y border-x-0 bg-muted" value={name} onChange={(e) => setName(e.target.value)} />
+        <SmolText className="h-4 p-0 ml-4 mt-4">Name</SmolText>
+        <Input type="text" placeholder="Name of the handler" className="" value={name} onChange={(e) => setName(e.target.value)} />
 
-        <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
+        <SmolText className="h-4 p-0 ml-4 mt-4">Action</SmolText>
+        <Input type="text" placeholder="Action tag of the incoming message" className="mb-2" value={action} onChange={(e) => setAction(e.target.value)} />
+        <div className="flex flex-wrap gap-1 px-2">
+            {Object.entries(commonActions).map(([key, value]) => (
+                <Button
+                    key={key}
+                    data-active={action == value}
+                    variant="ghost"
+                    onClick={() => setAction(value)}
+                    className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
+                >
+                    {value}
+                </Button>
+            ))}
+        </div>
+
+        <pre className="text-xs mt-6 p-4 w-full overflow-scroll bg-muted border-y border-muted-foreground/30">
+            {embed({ name, action })}
+        </pre>
+        {/* <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
         <div className="bg-muted p-2 text-xs border-y">
             <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={run}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Template</>}
             </Button>
             <pre className="overflow-scroll">
-                {embed({ name, nameType })}
+                {embed({ name })}
             </pre>
-        </div>
+        </div> */}
 
-        <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
+        {/* <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
         <div className="bg-muted p-2 text-xs border-y">
             <pre className="overflow-scroll">
                 {output ? <Ansi className="text-xs">{output}</Ansi> : <div className="text-muted-foreground">...</div>}
             </pre>
-        </div>
-
-        <div className="text-destructive text-xs p-2 mt-4">
-            This is a sample template meant for developers to be used to create new nodes.<br /><br />
-            Copy @nodes/common/_template.tsx to create your own node.<br /><br />
-            Once modified, import the compoments and functions into @nodes/registry.ts
-        </div>
+        </div> */}
     </div>
+
 }

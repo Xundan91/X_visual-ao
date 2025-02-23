@@ -5,7 +5,7 @@ import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
-import { addNode, getNodesOrdered } from '@/lib/utils';
+import { getConnectedNodes } from '@/lib/events';
 import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
 import { attachables, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
@@ -40,6 +40,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  // add node
   useEffect(() => {
     const addNodeListener = ((e: CustomEvent) => {
       if (!globals.activeProcess) return
@@ -135,6 +136,20 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     return () => window.removeEventListener("add-node", addNodeListener)
   }, [nodes, setEdges, globals.activeProcess, globals.attach])
 
+  // update node data
+  useEffect(() => {
+    const updateNodeDataListener = ((e: CustomEvent) => {
+      const id = e.detail.id
+      const data = e.detail.data
+      setNodes(nodes => nodes.map(n => n.id === id ? { ...n, data: { ...n.data, ...data } } : n))
+      console.log("updateNodeDataListener", id, data)
+    }) as EventListener
+
+    window.addEventListener("update-node-data", updateNodeDataListener)
+    return () => window.removeEventListener("update-node-data", updateNodeDataListener)
+  }, [nodes, setEdges, globals.activeProcess])
+
+  // delete node
   useEffect(() => {
     const deleteNodeListener = ((e: CustomEvent) => {
       const id = e.detail.id
@@ -142,7 +157,11 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       // Check if node is connected to start
       const isConnectedToStart = edges.some(e => e.source === 'start' && e.target === id)
 
+
       if (isConnectedToStart) {
+        // ask for confirmation
+        if (!confirm("Are you sure you want to delete this node and all its descendants?")) return
+
         // Get all nodes that need to be deleted (the node and its descendants)
         const nodesToDelete = new Set<string>([id])
         let foundNew = true
@@ -162,6 +181,9 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         setNodes(nodes => nodes.filter(n => !nodesToDelete.has(n.id)))
         setEdges(edges => edges.filter(e => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target)))
       } else {
+        // ask for confirmation
+        if (!confirm("Are you sure you want to delete this node?")) return
+
         // Find edges connected to this node
         const incomingEdge = edges.find(e => e.target === id)
         const outgoingEdge = edges.find(e => e.source === id)
@@ -192,6 +214,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     return () => window.removeEventListener("delete-node", deleteNodeListener)
   }, [nodes, setEdges, edges])
 
+  // load nodes and edges from localStorage
   useEffect(() => {
     if (!globals.activeProcess) return
 
@@ -206,6 +229,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     }
   }, [globals.activeProcess])
 
+  // save nodes and edges to localStorage
   useEffect(() => {
     if (!globals.activeProcess) return
 
@@ -221,9 +245,76 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify(saveItem))
   }, [globals.activeProcess, nodes, edges])
 
+
+  // event: input: node id, callback: list of nodes connected to this node
+  useEffect(() => {
+    const getConnectedNodesListener = ((e: CustomEvent) => {
+      const id = e.detail.id
+      const result: any[] = []
+
+      // Find direct connections from source node
+      const directEdges = edges.filter(edge => edge.source === id)
+
+      // Sort edges by y position of target nodes (top to bottom)
+      const sortedEdges = directEdges.sort((a, b) => {
+        const nodeA = nodes.find(n => n.id === a.target)
+        const nodeB = nodes.find(n => n.id === b.target)
+        return (nodeA?.position?.y || 0) - (nodeB?.position?.y || 0)
+      })
+
+      // Helper function to recursively build nested arrays of nodes
+      const buildNodeTree = (currentId: string): any => {
+        const currentNode = nodes.find(n => n.id === currentId)
+        if (!currentNode) return null
+
+        // Find nodes connected to current node
+        const nextEdges = edges.filter(edge => edge.source === currentId)
+
+        // Sort child edges by y position
+        const sortedNextEdges = nextEdges.sort((a, b) => {
+          const nodeA = nodes.find(n => n.id === a.target)
+          const nodeB = nodes.find(n => n.id === b.target)
+          return (nodeA?.position?.y || 0) - (nodeB?.position?.y || 0)
+        })
+
+        if (sortedNextEdges.length === 0) {
+          // Leaf node
+          return currentNode
+        }
+
+        // Get subtrees for all child nodes in sorted order
+        const children = sortedNextEdges.map(edge => buildNodeTree(edge.target))
+          .filter(child => child !== null)
+
+        if (children.length === 0) {
+          return currentNode
+        }
+
+        // Return node followed by array of child subtrees
+        return [currentNode, children]
+      }
+
+      // Build tree starting from each direct connection in sorted order
+      sortedEdges.forEach(edge => {
+        const tree = buildNodeTree(edge.target)
+        if (tree) {
+          result.push(tree)
+        }
+      })
+
+      e.detail.callback(result)
+    }) as EventListener
+
+    window.addEventListener("get-connected-nodes", getConnectedNodesListener)
+    return () => window.removeEventListener("get-connected-nodes", getConnectedNodesListener)
+  }, [nodes, edges])
+
   useEffect(() => {
     globals.setActiveProcess("")
     globals.setActiveNode(undefined)
+    globals.setAttach(undefined)
+    globals.setAvailableNodes([])
+    globals.toggleSidebar(false)
   }, [address])
 
   async function onNodeClick(e: any, node: Node) {
@@ -231,10 +322,15 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     console.log("onNodeClick", node)
 
     switch (node.type) {
+      case "annotation": break;
       case "start": {
         globals.setActiveNode(undefined)
         globals.setAttach(undefined)
         globals.toggleSidebar(false)
+
+        const n = getConnectedNodes("start")
+        console.log("n", n)
+
         break;
       }
       case "add-node": {
@@ -244,7 +340,6 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setAttach(undefined)
         break;
       }
-      case "annotation": break;
 
       default: {
         globals.setActiveNode(node)

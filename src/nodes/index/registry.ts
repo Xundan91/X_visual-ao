@@ -5,7 +5,7 @@ import StartNode from "@/nodes/index/start";
 import AnnotationNode from "@/nodes/index/annotation";
 import { TNodeData } from "@/nodes/index/type";
 
-import { embed, TemplateSidebar } from "@/nodes/_template";
+import { TemplateSidebar } from "@/nodes/_template";
 import { TemplateNode } from "@/nodes/_template";
 import { HandlerNode, HandlerSidebar } from "@/nodes/handler";
 import { SendMessageSidebar } from "../send-message";
@@ -95,7 +95,6 @@ if (process.env.NODE_ENV == "development") {
         icon: SquareDashed,
         NodeComponent: TemplateNode,
         SidebarComponent: TemplateSidebar,
-        embedFunction: embed
     });
 }
 

@@ -5,7 +5,7 @@ import { PlayIcon, Trash2 } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Button } from "./ui/button"
 import { Plus } from "lucide-react"
-import { deleteNode, runNode } from "@/lib/utils"
+import { deleteNode, runNode } from "@/lib/events"
 
 export default function FlowPanel() {
     const { activeNode, flowIsRunning } = useGlobalState()
