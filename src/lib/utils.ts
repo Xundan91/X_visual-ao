@@ -28,3 +28,13 @@ export function getNodesOrdered(nodes: any, edges: any): Node[] {
   }
   return list
 }
+
+export function sanitizeVariableName(name: string) {
+  let sanitized = name.replace(/[^a-zA-Z0-9_\.]/g, '')
+  // Must start with letter
+  if (sanitized.length > 0 && !/^[a-zA-Z]/.test(sanitized)) {
+    // strip numbers from start
+    sanitized = sanitized.replace(/^[0-9]*/, '')
+  }
+  return sanitized
+}

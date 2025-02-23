@@ -11,3 +11,10 @@ export const CommonTags = [
     { name: "App-Name", value: "Visual-AO" },
     { name: "App-Version", value: AppVersion },
 ];
+
+export const CommonActions = {
+    "Info": "Info",
+    "Credit-Notice": "Credit-Notice",
+    "Debit-Notice": "Debit-Notice",
+    "Balance": "Balance",
+}

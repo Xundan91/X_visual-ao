@@ -12,6 +12,7 @@ import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
 import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 import { updateNodeData } from "@/lib/events";
+import Editor from "@monaco-editor/react"
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -60,7 +61,7 @@ export function CodeblockSidebar() {
     const [runningCode, setRunningCode] = useState(false)
     const [outputId, setOutputId] = useState<string | null>(null)
     const [output, setOutput] = useState<string | null>(null)
-
+    const [prompt, setPrompt] = useState<string | null>(null)
     const { activeNode, activeProcess } = useGlobalState()
 
     // updates the data in sidebar when the node is selected
@@ -77,8 +78,33 @@ export function CodeblockSidebar() {
 
 
     return <div>
-        <SmolText className="h-4 p-0 ml-4 mt-4">Code</SmolText>
-        {/* code editor here */}
-
+        <SmolText className="h-4 p-0 ml-4 mt-4">Ask AI to write code for you (coming soon)</SmolText>
+        <textarea
+            disabled
+            className="flex w-full max-h-[20vh] min-h-[20px] bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            placeholder="Prompt for AI"
+            value={prompt || ""}
+            rows={1}
+            onChange={(e) => setPrompt(e.target.value)}
+        />
+        <SmolText className="h-4 p-0 ml-4 mt-4">Write your lua code here</SmolText>
+        <Editor
+            defaultLanguage="lua"
+            value={code}
+            onChange={(value) => setCode(value || "")}
+            height={
+                Math.min(Math.max(code.split("\n").length * 18, 18 * 10), 18 * 20)
+            }
+            options={{
+                scrollBeyondLastLine: false,
+                fontSize: 12,
+                fontFamily: "monospace",
+                fontLigatures: false,
+                minimap: { enabled: false },
+                wordWrap: "on",
+                lineNumbersMinChars: 2,
+                lineDecorationsWidth: 0
+            }}
+        />
     </div>
 }

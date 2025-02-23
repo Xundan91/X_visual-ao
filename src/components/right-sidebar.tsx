@@ -17,8 +17,8 @@ export type InputTypes = "TEXT" | "VARIABLE"
 export function ToggleButton({ onClick, nameType, className, disabled }: { onClick: () => void, nameType: InputTypes, className?: HTMLAttributes<HTMLDivElement>["className"], disabled?: boolean }) {
     return <Button
         disabled={disabled}
-        variant="outline"
-        className={cn("flex items-center justify-center gap-1 rounded-none relative top-0.5 !rounded-t m-0 text-xs h-5 p-0 px-1 w-fit hover:bg-secondary hover:text-secondary-foreground transition-colors border-b-0 border-dashed text-muted-foreground", className)}
+        variant="ghost"
+        className={cn("h-5 mr-4 relative top-0.5 flex items-center justify-center gap-1 rounded-none !rounded-t m-0 text-xs p-0 px-1 w-fit text-muted-foreground/80 border border-dashed border-b-0", className)}
         onClick={onClick}
     >
         {nameType === "TEXT" ? "Text" : "Variable"} <MousePointerClick size={8} strokeWidth={1} />

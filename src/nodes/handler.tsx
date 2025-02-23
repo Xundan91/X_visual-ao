@@ -11,14 +11,8 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
+import { CommonActions } from "@/lib/constants";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -33,13 +27,6 @@ export interface data {
     action: string;
 }
 
-const commonActions = {
-    "Info": "Info",
-    "Credit-Notice": "Credit-Notice",
-    "Debit-Notice": "Debit-Notice",
-    "Balance": "Balance",
-}
-
 // react flow node component
 export function HandlerNode(props: Node) {
     const { setAvailableNodes, toggleSidebar, setActiveNode, attach, setAttach } = useGlobalState()
@@ -48,7 +35,7 @@ export function HandlerNode(props: Node) {
     useEffect(() => {
         const getCodeListener = ((e: CustomEvent) => {
             const me = e.detail.id == props.id
-            if (!me) return
+            if (!me) e.detail.callback("")
 
             const inputs = e.detail.data as data
 
@@ -129,18 +116,21 @@ export function HandlerSidebar() {
 
 
     return <div>
-        <SmolText className="h-4 p-0 ml-4 mt-4">Name</SmolText>
+        <SmolText className="h-4 p-0 ml-4 mt-4">Name (string)</SmolText>
         <Input type="text" placeholder="Name of the handler" className="" value={name} onChange={(e) => setName(e.target.value)} />
 
-        <SmolText className="h-4 p-0 ml-4 mt-4">Action</SmolText>
+        <SmolText className="h-4 p-0 ml-4 mt-4">Action (string)</SmolText>
         <Input type="text" placeholder="Action tag of the incoming message" className="mb-2" value={action} onChange={(e) => setAction(e.target.value)} />
         <div className="flex flex-wrap gap-1 px-2">
-            {Object.entries(commonActions).map(([key, value]) => (
+            {Object.entries(CommonActions).map(([key, value]) => (
                 <Button
                     key={key}
                     data-active={action == value}
                     variant="ghost"
-                    onClick={() => setAction(value)}
+                    onClick={() => {
+                        setAction(value)
+
+                    }}
                     className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
                 >
                     {value}

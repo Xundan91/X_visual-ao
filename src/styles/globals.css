@@ -115,3 +115,7 @@ body {
 *::-webkit-scrollbar { 
   display: none;  /* Safari and Chrome */
 }
+
+textarea {
+  outline: 0;
+}
