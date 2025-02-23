@@ -53,7 +53,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
       const newNodePosition = {
         x: startNodePosition.x + NodeSizes.normal.width + 50,
-        y: startNodePosition.y + NodeSizes.normal.height / 2 - NodeSizes.normal.height / 2
+        y: startNodePosition.y
       }
 
       console.log("addNodeListener", type, attachTo)
@@ -61,14 +61,41 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       let leftAttachedNode: Node | undefined
       let lastAttachedNode: Node | undefined
       let attachable = false
+
       if (attachTo == "start") {
         leftAttachedNode = nodes.find(n => n.id == "start") as Node
         attachable = attachables.includes(type)
+
+        // Find last node attached to start to position below it
+        const attachedToStart = nodes.filter(n =>
+          edges.some(e => e.source == "start" && e.target == n.id)
+        ).sort((a, b) => a.position.y - b.position.y)
+
+        if (attachedToStart.length > 0) {
+          lastAttachedNode = attachedToStart[attachedToStart.length - 1] as Node
+          newNodePosition.y = lastAttachedNode.position.y + NodeSizes.normal.height + 20
+        }
+
         newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+
       } else {
         leftAttachedNode = nodes.find(n => n.id == attachTo) as Node
         attachable = (leftAttachedNode?.data as any).attachable ?? false
-        newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+
+        // Find last node attached to this node to position to the right of it
+        const attachedToNode = nodes.filter(n =>
+          edges.some(e => e.source == leftAttachedNode!.id && e.target == n.id)
+        ).sort((a, b) => a.position.x - b.position.x)
+
+        if (attachedToNode.length > 0) {
+          const lastAttachedNode = attachedToNode[attachedToNode.length - 1]
+          newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+          newNodePosition.y = lastAttachedNode.position.y + NodeSizes.normal.height + 20
+        } else {
+          // If no attached nodes yet, position to the right of the attached node
+          newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+          newNodePosition.y = leftAttachedNode.position.y
+        }
       }
 
 
