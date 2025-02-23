@@ -34,6 +34,8 @@ interface GlobalState {
     errorNodes: Node[];
     addErrorNode: (node: Node) => void;
     resetNodes: () => void;
+
+    resetNode: (id: string) => void;
 }
 
 export const useGlobalState = create<GlobalState>()((set) => ({
@@ -76,4 +78,5 @@ export const useGlobalState = create<GlobalState>()((set) => ({
     errorNodes: [],
     addErrorNode: (node: Node) => set((state) => ({ errorNodes: [...state.errorNodes, node] })),
     resetNodes: () => set(() => ({ runningNodes: [], successNodes: [], errorNodes: [] })),
+    resetNode: (id: string) => set((state) => ({ runningNodes: state.runningNodes.filter((node) => node.id !== id), successNodes: state.successNodes.filter((node) => node.id !== id), errorNodes: state.errorNodes.filter((node) => node.id !== id) })),
 }))

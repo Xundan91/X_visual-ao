@@ -39,7 +39,6 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [runningCode, setRunningCode] = useState(false)
 
 
   // add node
@@ -360,6 +359,11 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     globals.toggleSidebar(false)
   }, [address])
 
+  useEffect(() => {
+    globals.resetNodes()
+    globals.setActiveNode(undefined)
+  }, [globals.activeProcess])
+
   async function onNodeClick(e: any, node: Node) {
     if (globals.flowIsRunning) return
     console.log("onNodeClick", node)
@@ -370,7 +374,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setActiveNode(undefined)
         globals.setAttach(undefined)
         globals.toggleSidebar(false)
-
+        globals.consoleRef?.current?.resize(35)
+        globals.resetNodes()
         let fullCode = ""
         const rootNodes: Node[] = []
         const n = getConnectedNodes("start")
@@ -386,27 +391,44 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         })
 
         console.log("rootNodes", rootNodes)
-        rootNodes.forEach(node => {
+
+        globals.setFlowIsRunning(true)
+        for (const node of rootNodes) {
           const code = getCode(node.id, node.data)
           console.log(node.id, code)
-          fullCode += `
--- [ ${node.id} ]
-${code}
-`
-        })
+          fullCode += `\n-- [ ${node.id} ]\n${code}\n`
+
+          try {
+            globals.addRunningNode(node)
+            const res = await runLua(code, globals.activeProcess)
+            console.log(node.id, res)
+            if (res.Error) {
+              globals.addErrorNode(node)
+              globals.addOutput({ type: "error", message: res.Error })
+            } else {
+              globals.addSuccessNode(node)
+              globals.addOutput({ type: "output", message: parseOutupt(res) })
+            }
+          } catch (e: any) {
+            console.log(node.id, e)
+            globals.addErrorNode(node)
+            globals.addOutput({ type: "error", message: e.message })
+          }
+        }
+        globals.setFlowIsRunning(false)
 
         console.log("fullCode", fullCode)
 
-        setRunningCode(true)
-        try {
-          const res = await runLua(fullCode, globals.activeProcess)
-          console.log("res", res)
-        } catch (e: any) {
-          console.log(e)
-          toast.error("Error running code")
-        } finally {
-          setRunningCode(false)
-        }
+        // globals.setFlowIsRunning(true)
+        // try {
+        //   const res = await runLua(fullCode, globals.activeProcess)
+        //   console.log("res", res)
+        // } catch (e: any) {
+        //   console.log(e)
+        //   toast.error("Error running code")
+        // } finally {
+        //   globals.setFlowIsRunning(false)
+        // }
 
         break;
       }

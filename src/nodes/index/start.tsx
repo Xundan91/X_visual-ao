@@ -7,10 +7,10 @@ import { RootNodesAvailable, SubRootNodesAvailable } from "./registry";
 export default function StartNode(props: Node) {
     const { flowIsRunning, setAvailableNodes, toggleSidebar, setAttach, setActiveNode, attach } = useGlobalState()
 
-    return <div className="bg-white border border-black/50 rounded-md aspect-square cursor-pointer w-28 h-12">
+    return <div className="bg-white border border-black/50 rounded-md aspect-square cursor-pointer w-24 h-12">
         <Button disabled={flowIsRunning} className="aspect-square h-full w-full" variant="ghost">
             {flowIsRunning ? <Loader size={25} color="green" className="animate-spin" /> : <PlayIcon size={25} color="green" fill="green" />}
-            RUN ALL
+            RUN
             <Handle type="source" position={Position.Right} />
             <Button variant="ghost"
                 onClick={(e) => {

@@ -13,7 +13,7 @@ interface NodeContainerProps extends PropsWithChildren<Node> {
 }
 
 export default function NodeContainer(props: NodeContainerProps) {
-    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode, order, toggleSidebar, setAttach, attach } = useGlobalState()
+    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode, order, toggleSidebar, setAttach, attach, flowIsRunning } = useGlobalState()
     const { getNode, getNodes, setCenter } = useReactFlow()
 
     // order of preference for applying classes is selected > running > success > error
@@ -48,7 +48,7 @@ export default function NodeContainer(props: NodeContainerProps) {
                 {props.children}
                 <Handle type="target" position={Position.Left} />
                 {props.data.attachable && <Handle type="source" position={Position.Right} />}
-                {props.data.attachable && <Button variant="ghost" onClick={(e) => {
+                {props.data.attachable && <Button disabled={flowIsRunning} variant="ghost" onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     toggleSidebar(true)
