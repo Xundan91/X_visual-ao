@@ -13,7 +13,7 @@ interface NodeContainerProps extends PropsWithChildren<Node> {
 }
 
 export default function NodeContainer(props: NodeContainerProps) {
-    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode, setAvailableNodes, toggleSidebar, setAttach, attach } = useGlobalState()
+    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode, order, toggleSidebar, setAttach, attach } = useGlobalState()
     const { getNode, getNodes, setCenter } = useReactFlow()
 
     // order of preference for applying classes is selected > running > success > error
@@ -26,9 +26,14 @@ export default function NodeContainer(props: NodeContainerProps) {
     // error - red
     // selected - blue  
 
+    const orderNumber = order[props.id]
+
     return (
         <div className="relative">
             {/* Toolbar */}
+            {orderNumber !== undefined && <div className="absolute -left-2 -top-3 bg-white border border-black/30 rounded-full aspect-square w-5 h-5 flex justify-center items-center z-20 text-xs">
+                {orderNumber + 1}
+            </div>}
 
             {/* Node Container */}
             <div data-selected={iAmSelected}

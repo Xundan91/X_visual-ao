@@ -17,6 +17,8 @@ interface GlobalState {
     setAttach: (attach: string | undefined) => void;
     availableNodes: TNodeType[];
     setAvailableNodes: (nodes: TNodeType[]) => void;
+    order: { [id: string]: number };
+    setOrder: (order: { [id: string]: number }) => void;
 
     activeProcess: string;
     setActiveProcess: (process: string) => void;
@@ -57,6 +59,8 @@ export const useGlobalState = create<GlobalState>()((set) => ({
     setAttach: (attach: string | undefined) => set(() => ({ attach })),
     availableNodes: [],
     setAvailableNodes: (nodes: TNodeType[]) => set(() => ({ availableNodes: nodes })),
+    order: {},
+    setOrder: (order: { [id: string]: number }) => set(() => ({ order })),
 
     activeProcess: "",
     setActiveProcess: (process: string) => set(() => ({ activeProcess: process, editingNode: false })),

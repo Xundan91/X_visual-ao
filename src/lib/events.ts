@@ -17,19 +17,20 @@ export function updateNodeData(id: string, data: {}) {
     dispatchEvent(new CustomEvent("update-node-data", { detail: { id, data } }))
 }
 
-export function getConnectedNodes(id: string) {
-    let connectedNodes: Node[] | undefined = undefined
+export type TConnectedNodes = (Node | (Node | (Node | Node[])[])[])[]
+export function getConnectedNodes(id: string): TConnectedNodes {
+    let connectedNodes: TConnectedNodes | undefined = undefined
     dispatchEvent(new CustomEvent("get-connected-nodes", {
         detail: {
             id,
-            callback: (nodes: Node[]) => connectedNodes = nodes
+            callback: (nodes: TConnectedNodes) => connectedNodes = nodes
         }
     }))
 
     while (connectedNodes == undefined)
         console.log("waiting for connected nodes")
 
-    connectedNodes = connectedNodes as Node[]
+    connectedNodes = connectedNodes as TConnectedNodes
     return connectedNodes
 }
 

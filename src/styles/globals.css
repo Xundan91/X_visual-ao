@@ -119,3 +119,7 @@ body {
 textarea {
   outline: 0;
 }
+
+.react-flow__attribution {
+  display: none;
+}

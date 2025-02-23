@@ -40,6 +40,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  const [orderVisible, setOrderVisible] = useState(false)
+
   // add node
   useEffect(() => {
     const addNodeListener = ((e: CustomEvent) => {
@@ -245,6 +247,47 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify(saveItem))
   }, [globals.activeProcess, nodes, edges])
 
+  // hotkey to show node execution order on pressing e 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Alt") {
+        const nodes = getConnectedNodes("start")
+
+        let _: Node[] = []
+        // iterate through all nodes in nodes array and print the node id and the node type
+        const logNode = (node: any) => {
+          if (!Array.isArray(node)) {
+            _.push(node)
+            return
+          }
+          node.forEach(n => logNode(n))
+        }
+        nodes.forEach(node => logNode(node))
+
+        const localOrder: { [id: string]: number } = {}
+        // iterate through order and display the order number in which the node will run, on the react flow viewport
+        _.forEach((node, index) => {
+          console.log("node", node.id, node.type, index)
+          localOrder[node.id] = index
+        })
+
+        globals.setOrder(localOrder)
+      }
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Alt") {
+        globals.setOrder({})
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
+    }
+  }, [nodes, edges, globals.setOrder])
 
   // event: input: node id, callback: list of nodes connected to this node
   useEffect(() => {
