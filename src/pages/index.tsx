@@ -60,7 +60,7 @@ export default function Index() {
     return <div className="flex flex-col border h-screen">
         <TopBar />
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel maxSize={25} minSize={15} defaultSize={20} className="overflow-visible">
+            <ResizablePanel maxSize={25} minSize={15} defaultSize={15} className="overflow-visible">
                 <LeftSidebar />
             </ResizablePanel>
             <ResizableHandle />

@@ -7,7 +7,7 @@ import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
 import { addNode, getNodesOrdered } from '@/lib/utils';
 import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
-import { RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
+import { attachables, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const defaultNodes = [
   {
     id: "start",
-    position: { x: 50, y: 50 },
+    position: { x: 50, y: 200 },
     type: "start",
     data: {}
   }
@@ -44,100 +44,126 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     const addNodeListener = ((e: CustomEvent) => {
       if (!globals.activeProcess) return
       const type = e.detail.type as TNodeType
+      const attachTo = globals.attach
       const id = `${type}-${nodes.length}`
 
-      switch (type) {
-        case "annotation": case "start": break;
+      const startNode = nodes.find(n => n.id == "start")
+      if (!startNode) return console.log("no start node")
+      const startNodePosition = startNode.position
 
-        case "handler": {
-          console.log("handler", e)
-          const totalHandlers = nodes.filter(n => n.type == "handler").length
-          const newHandlerPosition = {
-            x: NodeSizes.normal.width * 2,
-            y: 50 + totalHandlers * (NodeSizes.normal.height + 20)
-          }
-
-          // position just below the last handler
-          const lastHandler = nodes.filter(n => n.type == "handler").sort((a, b) => a.position.y - b.position.y).pop()
-          if (lastHandler) {
-            newHandlerPosition.x = lastHandler.position.x
-            newHandlerPosition.y = lastHandler.position.y + NodeSizes.normal.height + 20
-          }
-
-          const newHandler = {
-            id,
-            position: newHandlerPosition,
-            type,
-            data: {}
-          }
-
-          setNodes(nodes => nodes.concat(newHandler))
-          setEdges(edges => edges.concat({
-            id: `start-${id}`,
-            source: "start",
-            target: id,
-            type: "default"
-          }))
-          globals.setActiveNode(newHandler)
-
-
-          // const addNodeButton = nodes.find(n => n.id === "add-node");
-          // if (!addNodeButton) return;
-
-          // const newNode = {
-          //   id,
-          //   position: { ...addNodeButton.position },
-          //   type,
-          //   data: {}
-          // };
-
-          // const updatedAddNode = {
-          //   ...addNodeButton,
-          //   position: {
-          //     x: addNodeButton.position.x,
-          //     y: addNodeButton.position.y + NodeSizes.normal.height + 20
-          //   }
-          // };
-
-          // const newEdge = {
-          //   id: `start-${id}`,
-          //   source: "start",
-          //   target: id,
-          //   type: "default"
-          // };
-          // setEdges(edges => [...edges, newEdge]);
-          // globals.setActiveNode(newNode)
-
-          // setNodes(nodes => nodes.map(n =>
-          //   n.id === "add-node" ? updatedAddNode : n
-          // ).concat(newNode))
-
-          break;
-        }
-        default: {
-          console.log("append node", e.detail, globals.attach)
-          if (!globals.attach) return;
-          const attachToNode = nodes.find(n => n.id == globals.attach);
-          if (!attachToNode) return;
-          const newNode = {
-            id,
-            position: {
-              x: attachToNode.position.x + NodeSizes.normal.width + 50,
-              y: attachToNode.position.y + NodeSizes.normal.height / 2 - NodeSizes.addNode.height / 2
-            },
-            type,
-            data: {}
-          }
-          setNodes(nodes => nodes.concat(newNode))
-          setEdges(edges => edges.concat({
-            id: `${globals.attach!}-${id}`,
-            source: globals.attach!,
-            target: id,
-            type: "message"
-          }))
-          globals.setAttach(undefined)
-        }
+      const newNodePosition = {
+        x: startNodePosition.x + NodeSizes.normal.width + 50,
+        y: startNodePosition.y + NodeSizes.normal.height / 2 - NodeSizes.normal.height / 2
       }
+
+      console.log("addNodeListener", type, attachTo)
+
+      let leftAttachedNode: Node | undefined
+      let lastAttachedNode: Node | undefined
+      let attachable = false
+      if (attachTo == "start") {
+        leftAttachedNode = nodes.find(n => n.id == "start") as Node
+        attachable = attachables.includes(type)
+        newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+      } else {
+        leftAttachedNode = nodes.find(n => n.id == attachTo) as Node
+        attachable = (leftAttachedNode?.data as any).attachable ?? false
+        newNodePosition.x = leftAttachedNode.position.x + NodeSizes.normal.width + 50
+      }
+
+
+
+      const newNode = {
+        id,
+        position: newNodePosition,
+        type,
+        data: { attachable }
+      }
+
+      setNodes(nodes => nodes.concat(newNode))
+
+      if (attachTo == "start") {
+        setEdges(edges => edges.concat({
+          id: `start-${id}`,
+          source: "start",
+          target: id,
+          type: "default"
+        }))
+      } else {
+        setEdges(edges => edges.concat({
+          id: `${attachTo!}-${id}`,
+          source: attachTo!,
+          target: id,
+          type: "message"
+        }))
+      }
+
+
+      // switch (type) {
+      //   case "handler": case "token": {
+      //     console.log("handler", e)
+
+      //     const startNode = nodes.find(n => n.type == "start")
+      //     if (!startNode) return;
+      //     const startNodePosition = startNode.position
+
+      //     const newHandlerPosition = {
+      //       x: startNodePosition.x + NodeSizes.normal.width + 50,
+      //       y: startNodePosition.y + NodeSizes.normal.height / 2 - NodeSizes.normal.height / 2
+      //     }
+
+      //     // position just below the last handler
+      //     const lastHandler = nodes.filter(n => n.type == type).sort((a, b) => a.position.y - b.position.y).pop()
+      //     if (lastHandler) {
+      //       newHandlerPosition.x = lastHandler.position.x
+      //       newHandlerPosition.y = lastHandler.position.y + NodeSizes.normal.height + 20
+      //     }
+
+      //     const newHandler = {
+      //       id,
+      //       position: newHandlerPosition,
+      //       type,
+      //       data: {}
+      //     }
+
+      //     setNodes(nodes => nodes.concat(newHandler))
+      //     setEdges(edges => edges.concat({
+      //       id: `start-${id}`,
+      //       source: "start",
+      //       target: id,
+      //       type: "default"
+      //     }))
+      //     globals.setActiveNode(newHandler)
+      //     globals.toggleSidebar(true)
+      //     globals.setAttach(undefined)
+      //     break;
+      //   }
+      //   default: {
+      //     console.log("append node", e.detail, globals.attach)
+      //     if (!globals.attach) return;
+      //     const attachToNode = nodes.find(n => n.id == globals.attach);
+      //     if (!attachToNode) return;
+      //     const newNode = {
+      //       id,
+      //       position: {
+      //         x: attachToNode.position.x + NodeSizes.normal.width + 50,
+      //         y: attachToNode.position.y + NodeSizes.normal.height / 2 - NodeSizes.addNode.height / 2
+      //       },
+      //       type,
+      //       data: {}
+      //     }
+      //     setNodes(nodes => nodes.concat(newNode))
+      //     setEdges(edges => edges.concat({
+      //       id: `${globals.attach!}-${id}`,
+      //       source: globals.attach!,
+      //       target: id,
+      //       type: "message"
+      //     }))
+      //     globals.setAttach(undefined)
+      //     globals.setActiveNode(newNode)
+      //     globals.toggleSidebar(true)
+      //   }
+      // }
 
     }) as EventListener
 

@@ -47,7 +47,6 @@ export interface Node {
 }
 
 export const NodeSizes = {
-    addNode: { width: 112, height: 30 },
     small: { width: 48, height: 48 },
     wide: { width: 112, height: 48 },
     normal: { width: 112, height: 112 },

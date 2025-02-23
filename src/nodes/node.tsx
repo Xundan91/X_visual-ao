@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button"
 import { useGlobalState } from "@/hooks/useGlobalStore"
 import { cn } from "@/lib/utils"
-import { Node, useReactFlow } from "@xyflow/react"
-import { ChevronsLeft, ChevronsRight, Loader, MoveLeft, MoveRight, StepBack, Trash } from "lucide-react"
+import { Handle, Position, useReactFlow } from "@xyflow/react"
+import { Node } from "@/nodes/index"
+import { ChevronsLeft, ChevronsRight, Loader, MoveLeft, MoveRight, Plus, StepBack, Trash } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 interface NodeContainerProps extends PropsWithChildren<Node> {
     onDelete?: (nodeId: string) => void
     onRunFromHere?: (nodeId: string) => void
+    onAddClick?: () => void
 }
 
 export default function NodeContainer(props: NodeContainerProps) {
-    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode } = useGlobalState()
+    const { activeNode, runningNodes, successNodes, errorNodes, setActiveNode, setAvailableNodes, toggleSidebar, setAttach, attach } = useGlobalState()
     const { getNode, getNodes, setCenter } = useReactFlow()
 
     // order of preference for applying classes is selected > running > success > error
@@ -39,7 +41,20 @@ export default function NodeContainer(props: NodeContainerProps) {
                 )}>
                 {iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />}
                 {props.children}
+                <Handle type="target" position={Position.Left} />
+                {props.data.attachable && <Handle type="source" position={Position.Right} />}
+                {props.data.attachable && <Button variant="ghost" onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toggleSidebar(true)
+                    setAttach(props.id)
+                    setActiveNode(undefined)
+                    if (props.onAddClick) props.onAddClick()
+                }} data-willattach={attach == props.id} className="absolute -right-3 bg-white p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-yellow-100">
+                    <Plus size={20} />
+                </Button>}
             </div>
+
         </div>
     )
 }

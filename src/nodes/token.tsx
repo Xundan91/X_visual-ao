@@ -1,16 +1,16 @@
 import NodeContainer from "@/nodes/node";
 import { Handle, Position } from "@xyflow/react";
 import { keyToNode, Node, NodeIconMapping } from "@/nodes/index";
-import { RootNodesAvailable, SubRootNodesAvailable, TNodeType } from "@/nodes/index/registry";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
-import { Loader, Play, Plus } from "lucide-react";
+import { Loader, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
+import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -31,9 +31,8 @@ export function embed(inputs: data) {
 }
 
 // react flow node component
-export function HandlerNode(props: Node) {
-    const { setAvailableNodes, toggleSidebar, setActiveNode, attach, setAttach } = useGlobalState()
-
+export function TokenNode(props: Node) {
+    const { setAvailableNodes } = useGlobalState()
     const Icon = NodeIconMapping[props.type as TNodeType]
     return <NodeContainer {...props} onAddClick={() => setAvailableNodes(SubRootNodesAvailable)}>
         {Icon && <Icon size={30} strokeWidth={1} />}
@@ -42,7 +41,7 @@ export function HandlerNode(props: Node) {
 }
 
 // react sidebar component that appears when a node is selected
-export function HandlerSidebar() {
+export function TokenSidebar() {
     // input states according to node data (modify as needed)
     const [name, setName] = useState("")
     const [nameType, setNameType] = useState<InputTypes>("TEXT")
@@ -66,7 +65,7 @@ export function HandlerSidebar() {
     function updateNodeData() {
         if (!activeNode) return
         const newNodeData: data = { name, nameType }
-        activeNode.data = { ...newNodeData }
+        activeNode.data = newNodeData
         dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
     }
 
@@ -104,7 +103,7 @@ export function HandlerSidebar() {
     }
 
     // runs the template code and displays the output
-    async function run() {
+    async function runTemplate() {
         setRunningCode(true)
         const code = embed({ name, nameType })
         console.log("running", code)
@@ -129,7 +128,7 @@ export function HandlerSidebar() {
 
         <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
         <div className="bg-muted p-2 text-xs border-y">
-            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={run}>
+            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={runTemplate}>
                 {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Template</>}
             </Button>
             <pre className="overflow-scroll">

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Loader, PlayIcon, Plus } from "lucide-react";
 import { Handle, Node, Position } from "@xyflow/react"
 import { useGlobalState } from "@/hooks/useGlobalStore";
-import { RootNodesAvailable, SubRootNodesAvailable } from "./index/registry";
+import { RootNodesAvailable, SubRootNodesAvailable } from "./registry";
 
 export default function StartNode(props: Node) {
     const { flowIsRunning, setAvailableNodes, toggleSidebar, setAttach, setActiveNode, attach } = useGlobalState()

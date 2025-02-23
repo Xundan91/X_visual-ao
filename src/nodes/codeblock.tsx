@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
-import { TNodeType } from "./index/registry";
+import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -31,18 +31,17 @@ export function embed(inputs: data) {
 }
 
 // react flow node component
-export function TemplateNode(props: Node) {
+export function CodeblockNode(props: Node) {
+    const { setAvailableNodes } = useGlobalState()
     const Icon = NodeIconMapping[props.type as TNodeType]
-    return <NodeContainer {...props}>
+    return <NodeContainer {...props} onAddClick={() => setAvailableNodes(SubRootNodesAvailable)}>
         {Icon && <Icon size={30} strokeWidth={1} />}
         <div className="text-center">{keyToNode(props.type as TNodeType)}</div>
-        <Handle type="target" position={Position.Left} />
-        <Handle type="source" position={Position.Right} />
     </NodeContainer>
 }
 
 // react sidebar component that appears when a node is selected
-export function TemplateSidebar() {
+export function CodeblockSidebar() {
     // input states according to node data (modify as needed)
     const [name, setName] = useState("")
     const [nameType, setNameType] = useState<InputTypes>("TEXT")

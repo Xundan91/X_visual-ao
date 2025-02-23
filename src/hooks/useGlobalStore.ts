@@ -41,7 +41,12 @@ export const useGlobalState = create<GlobalState>()((set) => ({
     setSidebarRef: (ref: React.RefObject<ImperativePanelHandle>) => set(() => ({ sidebarRef: ref })),
     toggleSidebar: (open: boolean) => set((state) => {
         if (state.sidebarRef?.current) {
-            open ? state.sidebarRef.current.expand() : state.sidebarRef.current.collapse()
+            if (open) {
+                state.sidebarRef.current.expand()
+                state.sidebarRef.current.resize(40)
+            } else {
+                state.sidebarRef.current.collapse()
+            }
         }
         return { sidebarRef: state.sidebarRef }
     }),
