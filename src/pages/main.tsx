@@ -125,72 +125,9 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         }))
       }
 
-
-      // switch (type) {
-      //   case "handler": case "token": {
-      //     console.log("handler", e)
-
-      //     const startNode = nodes.find(n => n.type == "start")
-      //     if (!startNode) return;
-      //     const startNodePosition = startNode.position
-
-      //     const newHandlerPosition = {
-      //       x: startNodePosition.x + NodeSizes.normal.width + 50,
-      //       y: startNodePosition.y + NodeSizes.normal.height / 2 - NodeSizes.normal.height / 2
-      //     }
-
-      //     // position just below the last handler
-      //     const lastHandler = nodes.filter(n => n.type == type).sort((a, b) => a.position.y - b.position.y).pop()
-      //     if (lastHandler) {
-      //       newHandlerPosition.x = lastHandler.position.x
-      //       newHandlerPosition.y = lastHandler.position.y + NodeSizes.normal.height + 20
-      //     }
-
-      //     const newHandler = {
-      //       id,
-      //       position: newHandlerPosition,
-      //       type,
-      //       data: {}
-      //     }
-
-      //     setNodes(nodes => nodes.concat(newHandler))
-      //     setEdges(edges => edges.concat({
-      //       id: `start-${id}`,
-      //       source: "start",
-      //       target: id,
-      //       type: "default"
-      //     }))
-      //     globals.setActiveNode(newHandler)
-      //     globals.toggleSidebar(true)
-      //     globals.setAttach(undefined)
-      //     break;
-      //   }
-      //   default: {
-      //     console.log("append node", e.detail, globals.attach)
-      //     if (!globals.attach) return;
-      //     const attachToNode = nodes.find(n => n.id == globals.attach);
-      //     if (!attachToNode) return;
-      //     const newNode = {
-      //       id,
-      //       position: {
-      //         x: attachToNode.position.x + NodeSizes.normal.width + 50,
-      //         y: attachToNode.position.y + NodeSizes.normal.height / 2 - NodeSizes.addNode.height / 2
-      //       },
-      //       type,
-      //       data: {}
-      //     }
-      //     setNodes(nodes => nodes.concat(newNode))
-      //     setEdges(edges => edges.concat({
-      //       id: `${globals.attach!}-${id}`,
-      //       source: globals.attach!,
-      //       target: id,
-      //       type: "message"
-      //     }))
-      //     globals.setAttach(undefined)
-      //     globals.setActiveNode(newNode)
-      //     globals.toggleSidebar(true)
-      //   }
-      // }
+      globals.setAttach(undefined)
+      globals.toggleSidebar(true)
+      globals.setActiveNode({ ...newNode, data: newNode.data as any } as Node)
 
     }) as EventListener
 
