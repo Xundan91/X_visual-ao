@@ -32,3 +32,11 @@ export function getNodesOrdered(nodes: any, edges: any): Node[] {
 export function addNode(type: TNodeType, extraDetail?: {}) {
   dispatchEvent(new CustomEvent("add-node", { detail: { type, ...extraDetail } }))
 }
+
+export function deleteNode(id: string, extraDetail?: {}) {
+  dispatchEvent(new CustomEvent("delete-node", { detail: { id, ...extraDetail } }))
+}
+
+export function runNode(id: string, extraDetail?: {}) {
+  dispatchEvent(new CustomEvent("run-node", { detail: { id, ...extraDetail } }))
+}

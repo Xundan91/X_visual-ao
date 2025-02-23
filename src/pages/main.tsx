@@ -136,6 +136,92 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   }, [nodes, setEdges, globals.activeProcess, globals.attach])
 
   useEffect(() => {
+    const deleteNodeListener = ((e: CustomEvent) => {
+      const id = e.detail.id
+
+      // Check if node is connected to start
+      const isConnectedToStart = edges.some(e => e.source === 'start' && e.target === id)
+
+      if (isConnectedToStart) {
+        // Get all nodes that need to be deleted (the node and its descendants)
+        const nodesToDelete = new Set<string>([id])
+        let foundNew = true
+
+        // Keep looking for connected nodes until no new ones are found
+        while (foundNew) {
+          foundNew = false
+          edges.forEach(edge => {
+            if (nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)) {
+              nodesToDelete.add(edge.target)
+              foundNew = true
+            }
+          })
+        }
+
+        // Delete all connected nodes and their edges
+        setNodes(nodes => nodes.filter(n => !nodesToDelete.has(n.id)))
+        setEdges(edges => edges.filter(e => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target)))
+      } else {
+        // Find edges connected to this node
+        const incomingEdge = edges.find(e => e.target === id)
+        const outgoingEdge = edges.find(e => e.source === id)
+
+        // Delete the node
+        setNodes(nodes => nodes.filter(n => n.id !== id))
+
+        // Delete edges connected to this node
+        setEdges(edges => {
+          const filteredEdges = edges.filter(e => e.source !== id && e.target !== id)
+
+          // If node had both incoming and outgoing edges, connect them
+          if (incomingEdge && outgoingEdge) {
+            filteredEdges.push({
+              id: `${incomingEdge.source}-${outgoingEdge.target}`,
+              source: incomingEdge.source,
+              target: outgoingEdge.target,
+              type: "message"
+            })
+          }
+
+          return filteredEdges
+        })
+      }
+    }) as EventListener
+
+    window.addEventListener("delete-node", deleteNodeListener)
+    return () => window.removeEventListener("delete-node", deleteNodeListener)
+  }, [nodes, setEdges, edges])
+
+  useEffect(() => {
+    if (!globals.activeProcess) return
+
+    const savedNodes = localStorage.getItem(`flow-${globals.activeProcess}`)
+    if (savedNodes) {
+      setNodes(JSON.parse(savedNodes).nodes)
+      setEdges(JSON.parse(savedNodes).edges)
+    } else {
+      setNodes(defaultNodes)
+      setEdges([])
+      localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify({ nodes: defaultNodes, edges: [] }))
+    }
+  }, [globals.activeProcess])
+
+  useEffect(() => {
+    if (!globals.activeProcess) return
+
+    // Only save if this process was previously loaded
+    const existingData = localStorage.getItem(`flow-${globals.activeProcess}`)
+    if (!existingData) return
+
+    // Compare with default state to avoid saving initial state
+    const isDefaultState = nodes.length === 1 && nodes[0].id === "start" && edges.length === 0
+    if (isDefaultState) return
+
+    const saveItem = { nodes, edges }
+    localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify(saveItem))
+  }, [globals.activeProcess, nodes, edges])
+
+  useEffect(() => {
     globals.setActiveProcess("")
     globals.setActiveNode(undefined)
   }, [address])
