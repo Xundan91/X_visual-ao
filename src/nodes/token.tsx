@@ -88,6 +88,7 @@ export function TokenNode(props: Node) {
                         }
                     } else {
                         const nodeCode = await getCode(node.id, node.data)
+                        if (body.includes(`-- [ ${node.id} ]`)) return
                         body += `\n-- [ ${node.id} ]\n${nodeCode}\n`
                     }
                 }
