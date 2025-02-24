@@ -174,11 +174,6 @@ export function SendMessageSidebar() {
         setTags(newTags)
     }
 
-    // runs the template code and displays the output
-    async function run() {
-
-    }
-
     function embed(inputs: data) {
         return getCode(activeNode?.id!, inputs)
     }
@@ -333,7 +328,7 @@ export function SendMessageSidebar() {
             </Button>
         </div>
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-scroll bg-muted border-y border-muted-foreground/30">
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
             {embed({ target, action, data, tags, targetType, actionType, dataType })}
         </pre>
     </div>

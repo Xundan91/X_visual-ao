@@ -157,25 +157,9 @@ export function HandlerSidebar() {
             ))}
         </div>
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-scroll bg-muted border-y border-muted-foreground/30">
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
             {embed({ name, action })}
         </pre>
-        {/* <SmolText className="h-4 p-0 pl-2 mt-4">Lua Code</SmolText>
-        <div className="bg-muted p-2 text-xs border-y">
-            <Button disabled={runningCode} variant="link" className="text-muted-foreground w-full" onClick={run}>
-                {runningCode ? <><Loader size={20} className="animate-spin" /> Running Code</> : <><Play size={20} /> Run Template</>}
-            </Button>
-            <pre className="overflow-scroll">
-                {embed({ name })}
-            </pre>
-        </div> */}
-
-        {/* <SmolText className="h-4 p-0 pl-2 mt-4"><>Output {outputId && <Link className="ml-2 text-muted-foreground hover:underline" href={`https://ao.link/#/message/${outputId}`} target="_blank">ao.link</Link>}</></SmolText>
-        <div className="bg-muted p-2 text-xs border-y">
-            <pre className="overflow-scroll">
-                {output ? <Ansi className="text-xs">{output}</Ansi> : <div className="text-muted-foreground">...</div>}
-            </pre>
-        </div> */}
     </div>
 
 }

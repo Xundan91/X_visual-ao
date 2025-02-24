@@ -62,7 +62,7 @@ Balances = Balances or { [ao.id] = utils.toBalanceValue(<<SUPPLY>> * 10 ^ Denomi
 TotalSupply = TotalSupply or utils.toBalanceValue(<<SUPPLY>> * 10 ^ Denomination)
 Name = Name or "<<NAME>>" or "Points Coin"
 Ticker = Ticker or "<<TICKER>>" or "PNTS"
-Logo = Logo or "<<LOGO>>" or "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY"
+Logo = Logo or "<<LOGO>>" or "nHIO6wFuyEKZ03glfjbpFiKObP782Sp425q4akilT44"
 
 --[[
      Add handlers for each incoming Action defined by the ao Standard Token Specification
@@ -305,13 +305,22 @@ end)
 
 export const token = {
   src,
-  init: (name: string, ticker: string, denomination: number, supply: number, logo: string) => {
-
-    return src
+  init: (name: string, ticker: string, denomination: number, supply: number, logo: string, overwrite: boolean) => {
+    let _ = src
       .replaceAll(`<<NAME>>`, name)
       .replaceAll(`<<TICKER>>`, ticker)
       .replaceAll(`<<DENOMINATION>>`, denomination.toString())
       .replaceAll(`<<SUPPLY>>`, supply.toString())
       .replaceAll(`<<LOGO>>`, logo)
+
+    if (overwrite) {
+      _ += `
+Denomination = ${denomination} or Denomination
+Name = "${name}" or Name
+Ticker = "${ticker}" or Ticker
+Logo = "${logo}" or Logo`
+    }
+
+    return _
   }
 }

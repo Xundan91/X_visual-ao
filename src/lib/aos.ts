@@ -3,7 +3,7 @@ import { connect, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { createDataItemSigner as nodeCDIS } from "@permaweb/aoconnect/node";
 import { Tag } from "./types";
 
-export async function findMyPIDs(owner: any, length?: number, cursor?: string, pName?: string) {
+export async function findMyPIDs(owner: any, length?: number, cursor?: string, pName = "") {
   const processes = await fetch(GOLD_SKY_GQL, {
     method: 'POST',
     headers: {
@@ -30,7 +30,7 @@ export async function findMyPIDs(owner: any, length?: number, cursor?: string, p
   });
 }
 
-function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?: string) {
+function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName = "") {
   return `query {
         transactions(owners: ["${owner}"], tags: [
           {name: "Type", values: ["Process"]},
@@ -38,7 +38,7 @@ function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?
           {name: "Data-Protocol", values: ["ao"]},
           ${pName ? `{name: "Name", values: ["${pName}"], match: FUZZY_OR}` : ""}
         ],
-        sort: INGESTED_AT_DESC,
+        sort: HEIGHT_DESC,
         first: ${length || 10},
         ${cursor ? `after: "${cursor}"` : ""}
         )

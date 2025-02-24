@@ -115,7 +115,7 @@ function NodeData({ activeNode }: { activeNode: Node }) {
             <SmolText className="pt-0 pb-2.5">{activeNode.id}</SmolText>
         </div>
         <hr />
-        <div className="h-[calc(100vh-56px)] overflow-y-scroll">
+        <div className="h-[calc(100vh-130px)] overflow-y-scroll">
             {
                 nodeConfigs.map((node) => {
                     if (node.type == activeNode.type) {

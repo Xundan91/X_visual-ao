@@ -241,31 +241,30 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   useEffect(() => {
     if (!globals.activeProcess) return
 
-    const savedNodes = localStorage.getItem(`flow-${globals.activeProcess}`)
-    if (savedNodes) {
-      setNodes(JSON.parse(savedNodes).nodes)
-      setEdges(JSON.parse(savedNodes).edges)
+    // Clear current nodes/edges before loading new process
+    const savedData = localStorage.getItem(`flow-${globals.activeProcess}`)
+    if (savedData) {
+      const parsedData = JSON.parse(savedData)
+      setNodes(parsedData.nodes)
+      setEdges(parsedData.edges)
     } else {
       setNodes(defaultNodes)
       setEdges([])
       localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify({ nodes: defaultNodes, edges: [] }))
     }
-  }, [globals.activeProcess])
+  }, [globals.activeProcess]) // Only depend on activeProcess changes
 
   // save nodes and edges to localStorage
   useEffect(() => {
     if (!globals.activeProcess) return
 
-    // Only save if this process was previously loaded
-    const existingData = localStorage.getItem(`flow-${globals.activeProcess}`)
-    if (!existingData) return
+    // Debounce the save operation
+    const timeoutId = setTimeout(() => {
+      const saveItem = { nodes, edges }
+      localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify(saveItem))
+    }, 100)
 
-    // Compare with default state to avoid saving initial state
-    const isDefaultState = nodes.length === 1 && nodes[0].id === "start" && edges.length === 0
-    if (isDefaultState) return
-
-    const saveItem = { nodes, edges }
-    localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify(saveItem))
+    return () => clearTimeout(timeoutId)
   }, [globals.activeProcess, nodes, edges])
 
   // hotkey to show node execution order on pressing e 
