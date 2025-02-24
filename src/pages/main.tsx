@@ -36,7 +36,7 @@ const ignoreChangesForNodes = ["start", "annotation"]
 function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
-  const { setCenter, setViewport } = useReactFlow();
+  const { setCenter, setViewport, fitView } = useReactFlow();
   const { setActiveNode } = useGlobalState()
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -408,6 +408,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     if (globals.flowIsRunning) return
     console.log("onNodeClick", node)
 
+
+
     switch (node.type) {
       case "annotation": break;
       case "start": {
@@ -416,6 +418,9 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.toggleSidebar(false)
         globals.consoleRef?.current?.resize(35)
         globals.resetNodes()
+
+        setTimeout(() => fitView({ padding: 0.2, duration: 500 }), 100)
+
         let fullCode = ""
         const rootNodes: Node[] = []
         const n = getConnectedNodes("start")
@@ -511,17 +516,12 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         console.log("fullCode", fullCode)
         break;
       }
-      case "add-node": {
-        globals.setAvailableNodes(RootNodesAvailable)
-        globals.toggleSidebar(true)
-        globals.setActiveNode(undefined)
-        globals.setAttach(undefined)
-        break;
-      }
 
       default: {
         globals.setActiveNode(node)
         globals.toggleSidebar(true)
+        setTimeout(() => setCenter(node.position.x + NodeSizes.normal.width / 2, node.position.y + NodeSizes.normal.height / 2, { duration: 500, zoom: 0.8 }), 100)
+
       }
     }
   }

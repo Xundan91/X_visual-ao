@@ -1,7 +1,7 @@
 import { useGlobalState } from "@/hooks/useGlobalStore"
 import { Panel } from "@xyflow/react"
 import { ConnectButton } from "arweave-wallet-kit"
-import { PlayIcon, Trash2, Code } from "lucide-react"
+import { PlayIcon, Trash2, Code, Workflow } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Button } from "./ui/button"
 import { Plus } from "lucide-react"
@@ -13,12 +13,14 @@ import { AOAuthority, AOModule } from "@/lib/constants"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Node } from "@/nodes/index"
 import { SmolText } from "./right-sidebar"
+import { useReactFlow } from "@xyflow/react"
 
 export default function FlowPanel() {
     const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
     const [nodeRunning, setNodeRunning] = useState(false)
     const [showCodeDialog, setShowCodeDialog] = useState(false)
     const [fullCode, setFullCode] = useState("")
+    const reactFlowInstance = useReactFlow()
 
     async function runThis() {
         if (!activeNode) return
@@ -118,6 +120,125 @@ export default function FlowPanel() {
         setShowCodeDialog(true)
     }
 
+    async function formatFlow() {
+        if (flowIsRunning) return
+
+        const nodes = reactFlowInstance.getNodes()
+        const edges = reactFlowInstance.getEdges()
+
+        // Find the start node
+        const startNode = nodes.find(node => node.id === "start")
+        if (!startNode) return
+
+        // Starting position
+        const startX = startNode.position.x
+        const startY = startNode.position.y
+        const horizontalSpacing = 300  // Increased for better spacing between columns
+        const verticalSpacing = 150    // Spacing between nodes in the same column
+
+        // Keep track of nodes we've positioned and their levels
+        const positionedNodes = new Set<string>([startNode.id])
+        const nodesByLevel = new Map<number, Set<string>>()
+        nodesByLevel.set(0, new Set([startNode.id]))
+
+        // First pass: Assign levels to all nodes (BFS)
+        const assignLevels = () => {
+            const queue = [{ id: startNode.id, level: 0 }]
+            const visited = new Set<string>([startNode.id])
+
+            while (queue.length > 0) {
+                const { id, level } = queue.shift()!
+
+                // Get all nodes connected to this node
+                const connectedEdges = edges.filter(edge => edge.source === id)
+
+                for (const edge of connectedEdges) {
+                    if (!visited.has(edge.target)) {
+                        visited.add(edge.target)
+
+                        // Assign level to this node
+                        const nextLevel = level + 1
+                        if (!nodesByLevel.has(nextLevel)) {
+                            nodesByLevel.set(nextLevel, new Set())
+                        }
+                        nodesByLevel.get(nextLevel)!.add(edge.target)
+
+                        // Add to queue for processing
+                        queue.push({ id: edge.target, level: nextLevel })
+                    }
+                }
+            }
+        }
+
+        // Second pass: Position nodes by level
+        const positionNodesByLevel = () => {
+            // Position the start node
+            reactFlowInstance.setNodes(nds =>
+                nds.map(node => {
+                    if (node.id === startNode.id) {
+                        return {
+                            ...node,
+                            position: { x: startX, y: startY }
+                        }
+                    }
+                    return node
+                })
+            )
+
+            // Position all other nodes by level
+            const maxLevel = Math.max(...Array.from(nodesByLevel.keys()))
+
+            for (let level = 1; level <= maxLevel; level++) {
+                const nodesAtLevel = Array.from(nodesByLevel.get(level) || [])
+                const totalNodesAtLevel = nodesAtLevel.length
+
+                // Position each node at this level
+                nodesAtLevel.forEach((nodeId, index) => {
+                    const node = nodes.find(n => n.id === nodeId)
+                    if (!node) return
+
+                    // Calculate vertical position
+                    // Center the nodes vertically with equal spacing
+                    const totalHeight = (totalNodesAtLevel - 1) * verticalSpacing
+                    const y = startY - totalHeight / 2 + index * verticalSpacing
+
+                    // Calculate horizontal position (fixed distance from previous level)
+                    const x = startX + level * horizontalSpacing
+
+                    // Update node position
+                    reactFlowInstance.setNodes(nds =>
+                        nds.map(n => {
+                            if (n.id === nodeId) {
+                                return {
+                                    ...n,
+                                    position: { x, y }
+                                }
+                            }
+                            return n
+                        })
+                    )
+                })
+            }
+        }
+
+        // Execute the layout algorithm
+        assignLevels()
+        positionNodesByLevel()
+
+        // Center the view on the flow
+        setTimeout(() => {
+            reactFlowInstance.fitView({ padding: 0.2, duration: 500 })
+        }, 100)
+    }
+
+    if (!activeProcess) {
+        return (
+            <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+                <span className="text-xs font-medium">;)</span>
+            </Panel>
+        )
+    }
+
     if (!activeNode) {
         // Return a simplified panel when no node is active
         return (
@@ -132,6 +253,18 @@ export default function FlowPanel() {
                 >
                     <Code key="code-icon" size={25} color="#555" />
                     <span className="text-xs font-medium">Full Code</span>
+                </Button>
+
+                <Button
+                    key="format-flow-button"
+                    disabled={flowIsRunning}
+                    className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
+                    variant="ghost"
+                    onClick={formatFlow}
+                    title="Format flow"
+                >
+                    <Workflow key="format-icon" size={25} color="#555" />
+                    <span className="text-xs font-medium">Format</span>
                 </Button>
 
                 <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
