@@ -1,37 +1,11 @@
 
-const src = `
+const src = `-- NOTE
+-- This is a modified token blueprint
+-- where the Owner has initial supply
+-- of the token and can mint more
+
 local bint = require('.bint')(256)
---[[
-  This module implements the ao Standard Token Specification.
-
-  Terms:
-    Sender: the wallet or Process that sent the Message
-
-  It will first initialize the internal state, and then attach handlers,
-    according to the ao Standard Token Spec API:
-
-    - Info(): return the token parameters, like Name, Ticker, Logo, and Denomination
-
-    - Balance(Target?: string): return the token balance of the Target. If Target is not provided, the Sender
-        is assumed to be the Target
-
-    - Balances(): return the token balance of all participants
-
-    - Transfer(Target: string, Quantity: number): if the Sender has a sufficient balance, send the specified Quantity
-        to the Target. It will also issue a Credit-Notice to the Target and a Debit-Notice to the Sender
-
-    - Mint(Quantity: number): if the Sender matches the Process Owner, then mint the desired Quantity of tokens, adding
-        them the Processes' balance
-]]
---
 local json = require('json')
-
---[[
-  utils helper functions to remove the bint complexity.
-]]
---
-
-
 local utils = {
   add = function(a, b)
     return tostring(bint(a) + bint(b))
@@ -47,32 +21,17 @@ local utils = {
   end
 }
 
-
---[[
-     Initialize State
-
-     ao.id is equal to the Process.Id
-   ]]
---
 Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
 Denomination = Denomination or <<DENOMINATION>>
-Balances = Balances or { [ao.id] = utils.toBalanceValue(<<SUPPLY>> * 10 ^ Denomination) }
+Balances = Balances or { [Owner] = utils.toBalanceValue(<<SUPPLY>> * 10 ^ Denomination) }
 TotalSupply = TotalSupply or utils.toBalanceValue(<<SUPPLY>> * 10 ^ Denomination)
 Name = Name or "<<NAME>>" or "Points Coin"
 Ticker = Ticker or "<<TICKER>>" or "PNTS"
 Logo = Logo or "<<LOGO>>" or "nHIO6wFuyEKZ03glfjbpFiKObP782Sp425q4akilT44"
 
---[[
-     Add handlers for each incoming Action defined by the ao Standard Token Specification
-   ]]
---
 
---[[
-     Info
-   ]]
---
 Handlers.add('info', Handlers.utils.hasMatchingTag("Action", "Info"), function(msg)
   if msg.reply then
     msg.reply({
@@ -92,10 +51,7 @@ Handlers.add('info', Handlers.utils.hasMatchingTag("Action", "Info"), function(m
   end
 end)
 
---[[
-     Balance
-   ]]
---
+
 Handlers.add('balance', Handlers.utils.hasMatchingTag("Action", "Balance"), function(msg)
   local bal = '0'
 
@@ -127,10 +83,7 @@ Handlers.add('balance', Handlers.utils.hasMatchingTag("Action", "Balance"), func
   end
 end)
 
---[[
-     Balances
-   ]]
---
+
 Handlers.add('balances', Handlers.utils.hasMatchingTag("Action", "Balances"),
   function(msg)
     if msg.reply then
@@ -140,10 +93,7 @@ Handlers.add('balances', Handlers.utils.hasMatchingTag("Action", "Balances"),
     end
   end)
 
---[[
-     Transfer
-   ]]
---
+
 Handlers.add('transfer', Handlers.utils.hasMatchingTag("Action", "Transfer"), function(msg)
   assert(type(msg.Recipient) == 'string', 'Recipient is required!')
   assert(type(msg.Quantity) == 'string', 'Quantity is required!')
@@ -156,11 +106,7 @@ Handlers.add('transfer', Handlers.utils.hasMatchingTag("Action", "Transfer"), fu
     Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Quantity)
     Balances[msg.Recipient] = utils.add(Balances[msg.Recipient], msg.Quantity)
 
-    --[[
-         Only send the notifications to the Sender and Recipient
-         if the Cast tag is not set on the Transfer message
-       ]]
-    --
+    
     if not msg.Cast then
       -- Debit-Notice message template, that is sent to the Sender of the transfer
       local debitNotice = {
@@ -218,17 +164,13 @@ Handlers.add('transfer', Handlers.utils.hasMatchingTag("Action", "Transfer"), fu
   end
 end)
 
---[[
-    Mint
-   ]]
---
 Handlers.add('mint', Handlers.utils.hasMatchingTag("Action", "Mint"), function(msg)
   assert(type(msg.Quantity) == 'string', 'Quantity is required!')
   assert(bint(0) < bint(msg.Quantity), 'Quantity must be greater than zero!')
 
-  if not Balances[ao.id] then Balances[ao.id] = "0" end
+  if not Balances[Owner] then Balances[Owner] = "0" end
 
-  if msg.From == ao.id then
+  if msg.From == Owner then
     -- Add tokens to the token pool, according to Quantity
     Balances[msg.From] = utils.add(Balances[msg.From], msg.Quantity)
     TotalSupply = utils.add(TotalSupply, msg.Quantity)
@@ -260,10 +202,6 @@ Handlers.add('mint', Handlers.utils.hasMatchingTag("Action", "Mint"), function(m
   end
 end)
 
---[[
-     Total Supply
-   ]]
---
 Handlers.add('totalSupply', Handlers.utils.hasMatchingTag("Action", "Total-Supply"), function(msg)
   assert(msg.From ~= ao.id, 'Cannot call Total-Supply from the same process!')
   if msg.reply then
@@ -282,9 +220,6 @@ Handlers.add('totalSupply', Handlers.utils.hasMatchingTag("Action", "Total-Suppl
   end
 end)
 
---[[
- Burn
-]] --
 Handlers.add('burn', Handlers.utils.hasMatchingTag("Action", 'Burn'), function(msg)
   assert(type(msg.Tags.Quantity) == 'string', 'Quantity is required!')
   assert(bint(msg.Tags.Quantity) <= bint(Balances[msg.From]),

@@ -41,9 +41,9 @@ export default function Index() {
         const intervalId = setInterval(async () => {
             const res = await getResults(activeProcess, localStorage.getItem("cursor") || "")
             localStorage.setItem("cursor", res.cursor)
-            if (res.results.length > 5) return
+            if (res.results.length > 6) return
             res.results.forEach(result => {
-                console.log(result)
+                console.log("interval results", result)
                 if (result.Output.print && result.Output.data) {
                     addOutput({ type: "output", message: result.Output.data as string })
                     toast(<pre className="max-h-[269px] overflow-scroll"><Ansi>{result.Output.data as string}</Ansi></pre>, { style: { backgroundColor: "whitesmoke" } })

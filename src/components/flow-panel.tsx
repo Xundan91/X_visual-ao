@@ -5,16 +5,37 @@ import { PlayIcon, Trash2 } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Button } from "./ui/button"
 import { Plus } from "lucide-react"
-import { deleteNode, getCode } from "@/lib/events"
-import { parseOutupt, runLua } from "@/lib/aos"
+import { deleteNode, getCode, updateNodeData } from "@/lib/events"
+import { findSpawnedProcess, parseOutupt, runLua, spawnProcess, spawnToken } from "@/lib/aos"
 import { useState } from "react"
+import { data as TokenData } from "@/nodes/token"
+import { AOAuthority, AOModule } from "@/lib/constants"
 export default function FlowPanel() {
     const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
     const [nodeRunning, setNodeRunning] = useState(false)
 
     async function runThis() {
         if (!activeNode) return
-        const code = getCode(activeNode!.id, activeNode!.data)
+        let code = getCode(activeNode!.id, activeNode!.data)
+
+        if (activeNode.type === "token") {
+            setFlowIsRunning(true)
+            setNodeRunning(true)
+            resetNode(activeNode.id)
+            addRunningNode(activeNode)
+
+            // if current active node is a token node
+            // spawn a new process form the activeProcess for the token and store its id in active node data
+            // if a process was spawned already, just run the code on that process
+            const data = activeNode.data as TokenData
+            try {
+                code = await spawnToken(data, activeProcess, activeNode, code)
+            } catch (e: any) {
+                addErrorNode(activeNode!)
+                addOutput({ type: "error", message: e.message })
+                return
+            }
+        }
 
         try {
             setFlowIsRunning(true)
@@ -22,7 +43,9 @@ export default function FlowPanel() {
             resetNode(activeNode.id)
             addRunningNode(activeNode)
 
+            console.log("running", code)
             const res = await runLua(code, activeProcess)
+            console.log("output", res)
             if (res.Error) {
                 addErrorNode(activeNode!)
                 addOutput({ type: "error", message: res.Error })
@@ -30,7 +53,6 @@ export default function FlowPanel() {
                 addSuccessNode(activeNode!)
                 addOutput({ type: "output", message: parseOutupt(res) })
             }
-            console.log(res)
         } catch (e: any) {
             console.log(e)
             addErrorNode(activeNode!)

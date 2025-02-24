@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
-import { Loader, Play } from "lucide-react";
+import { AlertTriangle, Loader, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
@@ -32,6 +32,7 @@ export interface data {
     logo: string;
     overwrite: boolean;
     tokenId?: string;
+    respawn?: boolean;
 }
 
 // react flow node component
@@ -78,7 +79,8 @@ export function TokenSidebar() {
     const [denomination, setDenomination] = useState(0)
     const [logo, setLogo] = useState("")
     const [overwrite, setOverwrite] = useState(false)
-    const [tokenId, setTokenId] = useState<string | null>(null)
+    const [respawn, setRespawn] = useState(false)
+    const [tokenId, setTokenId] = useState<string>("")
 
     // necessary states
     const [runningCode, setRunningCode] = useState(false)
@@ -97,16 +99,33 @@ export function TokenSidebar() {
         setDenomination(nodeData?.denomination || 0)
         setLogo(nodeData?.logo || "")
         setOverwrite(nodeData?.overwrite || false)
-        setTokenId(nodeData?.tokenId || null)
+        setTokenId(nodeData?.tokenId || "")
+        setRespawn(nodeData?.respawn || false)
+    }, [activeNode?.id])
+
+    useEffect(() => {
+        const updateNodeDataListener = ((e: CustomEvent) => {
+            if (e.detail.id == activeNode?.id) {
+                const nodeData = e.detail.data as data
+                if (nodeData.tokenId) {
+                    setTokenId(nodeData.tokenId)
+                    // @ts-ignore
+                    setRespawn(nodeData.respawn)
+                }
+            }
+        }) as EventListener
+        window.addEventListener("update-node-data", updateNodeDataListener)
+
+        return () => window.removeEventListener("update-node-data", updateNodeDataListener)
     }, [activeNode?.id])
 
     // updates the node data in localStorage when the input data updates
     useEffect(() => {
         if (!activeNode) return
-        const newNodeData: data = { name, ticker, totalSupply, denomination, logo, overwrite, tokenId: tokenId || undefined }
+        const newNodeData: data = { name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn }
         activeNode.data = newNodeData
         updateNodeData(activeNode.id, newNodeData)
-    }, [name, ticker, totalSupply, denomination, logo, overwrite, tokenId])
+    }, [name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn])
 
     function embed(inputs: data) {
         if (!inputs.logo)
@@ -116,6 +135,23 @@ export function TokenSidebar() {
 
 
     return <div>
+        <SmolText className="h-4 p-0 ml-4 mt-4">Token Process ID</SmolText>
+        {
+            tokenId ? (
+                <pre className="text-sm w-fit pl-4 cursor-pointer text-left hover:scale-105 active:scale-95 transition-all duration-200 relative" onClick={(e) => {
+                    navigator.clipboard.writeText(tokenId);
+                    const popup = document.createElement('div');
+                    popup.innerText = 'copied ;)';
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    popup.style.cssText = `position:fixed;padding:0px;padding-left:8px;padding-right:8px;background:black;color:white;border-radius:4px;z-index:1000;left:${rect.left + rect.width / 2}px;top:${rect.top}px;transform:translate(-50%,-100%);opacity:0.7`;
+                    document.body.appendChild(popup);
+                    setTimeout(() => popup.remove(), 1000);
+                }}>{tokenId}</pre>
+            ) : (
+                <pre className="text-sm pl-4 text-muted-foreground">token id not found, run this node to create a token</pre>
+            )
+        }
+
         <SmolText className="h-4 p-0 ml-4 mt-4">Name (string)</SmolText>
         <Input type="text" placeholder="Name of the token e.g. Points Coin" className="" value={name} onChange={(e) => setName(e.target.value)} />
 
@@ -147,18 +183,52 @@ export function TokenSidebar() {
         <SmolText className="h-4 p-0 ml-4 mt-4">Logo (tx string)</SmolText>
         <Input type="text" placeholder="Logo of the token e.g. nHIO6wFuyEKZ03glfjbpFiKObP782Sp425q4akilT44" className="" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
-        <div className="flex items-center justify-start gap-2">
-            <SmolText className="h-4 p-0 ml-4 mt-4">Overwrite (boolean)</SmolText>
-            <Switch
-                className="mt-4"
-                checked={overwrite}
-                onCheckedChange={setOverwrite}
-            />
+        <div className="flex items-center justify-start w-full px-4 mt-4">
+            <div className="w-1/2 flex items-center justify-center gap-2">
+                <SmolText className="h-4 p-0 mt-3 text-sm">Overwrite</SmolText>
+                <Switch
+                    className="mt-4"
+                    checked={overwrite}
+                    onCheckedChange={(checked) => {
+                        if (checked) {
+                            if (confirm("Are you sure you want to overwrite the token? This will update the token name, ticker, logo and denomination.")) {
+                                setOverwrite(true);
+                            }
+                        } else {
+                            setOverwrite(false);
+                        }
+                    }}
+                />
+            </div>
+
+            <div className="w-1/2 flex items-center justify-center gap-2">
+                <SmolText className="h-4 p-0 mt-3 text-sm">Respawn</SmolText>
+                <Switch
+                    className="mt-4"
+                    checked={respawn}
+                    onCheckedChange={(checked) => {
+                        if (checked) {
+                            if (confirm("Are you sure you want to respawn the token? This will create a new token process and replace the current one.")) {
+                                setRespawn(true);
+                            }
+                        } else {
+                            setRespawn(false);
+                        }
+                    }}
+                />
+            </div>
         </div>
         {
             overwrite && (
-                <div className="text-destructive text-xs p-2 font-bold">
-                    Overwriting token will only update the token name, ticker, logo, and denomination.<br />(not recommended unless needed)
+                <div className="text-destructive text-xs p-2 font-bold flex items-center justify-start gap-2 mt-4">
+                    <AlertTriangle className="w-4 h-4 mx-2" /> Overwriting token will only update the token name, ticker, logo, and denomination.<br />(not recommended unless needed)
+                </div>
+            )
+        }
+        {
+            respawn && (
+                <div className="text-destructive text-xs p-2 font-bold flex items-center justify-start gap-2 mt-4">
+                    <AlertTriangle className="w-4 h-4 mx-2" /> Respawning token will create a new token process and replace the current one.<br />(not recommended unless needed)
                 </div>
             )
         }
