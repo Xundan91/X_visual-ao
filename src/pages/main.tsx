@@ -417,6 +417,36 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setFlowIsRunning(true)
         for (const node of rootNodes) {
           try {
+            // Create a flat list of all nodes in this execution path
+            const allNodesInPath: Node[] = []
+
+            // Helper function to recursively collect all nodes
+            const collectNodes = (currentNode: any) => {
+              if (Array.isArray(currentNode)) {
+                // First element is the node, rest are children
+                if (currentNode.length > 0 && !Array.isArray(currentNode[0])) {
+                  allNodesInPath.push(currentNode[0])
+                }
+                // Process children (which start at index 1)
+                for (let i = 1; i < currentNode.length; i++) {
+                  collectNodes(currentNode[i])
+                }
+              } else if (currentNode && !Array.isArray(currentNode)) {
+                // Single node
+                allNodesInPath.push(currentNode)
+              }
+            }
+
+            // Get all connected nodes for this root node
+            const connectedNodes = getConnectedNodes(node.id)
+            connectedNodes.forEach(connectedNode => collectNodes(connectedNode))
+
+            // Add the root node itself
+            allNodesInPath.push(node)
+
+            // Mark all nodes in path as running
+            allNodesInPath.forEach(n => globals.addRunningNode(n))
+
             let code = await getCode(node.id, node.data)
             console.log(node.id, code)
 
@@ -426,30 +456,30 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
               const data = node.data as TokenData
               if (!data.tokenId || data.respawn) {
                 try {
-                  globals.addRunningNode(node)
                   const tokenId = await spawnToken(data, globals.activeProcess, node)
                   data.tokenId = tokenId
                   updateNodeData(node.id, data)
                 } catch (e: any) {
-                  globals.addErrorNode(node)
+                  // Mark all nodes in this path as error
+                  allNodesInPath.forEach(n => globals.addErrorNode(n))
                   globals.addOutput({ type: "error", message: e.message })
                   continue // Skip to next node
                 }
               }
-              // code = `tokens = tokens or {}\ntokens["${data.name}"] = "${data.tokenId}"`
               code = await getCode(node.id, node.data)
             }
 
             fullCode += `\n-- [ ${node.id} ]\n${code}\n`
 
-            globals.addRunningNode(node)
             const res = await runLua(code, globals.activeProcess)
             console.log(node.id, res)
             if (res.Error) {
-              globals.addErrorNode(node)
+              // Mark all nodes in this path as error
+              allNodesInPath.forEach(n => globals.addErrorNode(n))
               globals.addOutput({ type: "error", message: res.Error })
             } else {
-              globals.addSuccessNode(node)
+              // Mark all nodes in this path as success
+              allNodesInPath.forEach(n => globals.addSuccessNode(n))
               globals.addOutput({ type: "output", message: parseOutupt(res) })
             }
           } catch (e: any) {
