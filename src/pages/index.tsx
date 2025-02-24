@@ -18,8 +18,9 @@ import TopBar from "@/components/top-bar";
 
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
-    const { setConsoleRef } = useGlobalState();
-    const { activeProcess, addOutput, nodebarOpen } = useGlobalState();
+    const sidebarRef = useRef<ImperativePanelHandle>(null);
+    const { setConsoleRef, setSidebarRef } = useGlobalState();
+    const { activeProcess, addOutput } = useGlobalState();
     const [consoleSize, setConsoleSize] = useState(0);
 
     useEffect(() => {
@@ -29,14 +30,20 @@ export default function Index() {
     }, [consoleRef]);
 
     useEffect(() => {
+        if (sidebarRef.current) {
+            setSidebarRef(sidebarRef);
+        }
+    }, [sidebarRef]);
+
+    useEffect(() => {
         if (!activeProcess) return clearInterval(localStorage.getItem("intervalId") as string)
 
         const intervalId = setInterval(async () => {
             const res = await getResults(activeProcess, localStorage.getItem("cursor") || "")
             localStorage.setItem("cursor", res.cursor)
-            if (res.results.length > 5) return
+            if (res.results.length > 6) return
             res.results.forEach(result => {
-                console.log(result)
+                console.log("interval results", result)
                 if (result.Output.print && result.Output.data) {
                     addOutput({ type: "output", message: result.Output.data as string })
                     toast(<pre className="max-h-[269px] overflow-scroll"><Ansi>{result.Output.data as string}</Ansi></pre>, { style: { backgroundColor: "whitesmoke" } })
@@ -53,13 +60,13 @@ export default function Index() {
     return <div className="flex flex-col border h-screen">
         <TopBar />
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel maxSize={40} minSize={15} defaultSize={25} className="overflow-visible">
+            <ResizablePanel maxSize={25} minSize={15} defaultSize={15} className="overflow-visible">
                 <LeftSidebar />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
                 {/* <Main /> */}
-                <ResizablePanelGroup data-nodebaropen={nodebarOpen} direction="vertical" className="data-[nodebaropen=true]:!w-[calc(100%-269px)] transition-all duration-200">
+                <ResizablePanelGroup direction="vertical" className=" transition-all duration-200">
                     <ResizablePanel>
                         {/* console size to whole number */}
                         {/* <ReactFlowProvider>
@@ -73,9 +80,10 @@ export default function Index() {
                     </ResizablePanel>
                 </ResizablePanelGroup>
             </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel ref={sidebarRef} maxSize={50} minSize={15} defaultSize={5} collapsible>
+                <RightSidebar />
+            </ResizablePanel>
         </ResizablePanelGroup>
-        <div className="z-20 absolute right-0">
-            <RightSidebar />
-        </div>
     </div>
 }

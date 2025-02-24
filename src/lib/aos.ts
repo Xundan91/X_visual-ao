@@ -1,9 +1,13 @@
-import { AOModule, AOScheduler, CommonTags, GOLD_SKY_GQL, APM_ID, APM_INSTALLER } from "./constants";
+import { AOModule, AOScheduler, CommonTags, GOLD_SKY_GQL, APM_ID, APM_INSTALLER, AOAuthority } from "./constants";
 import { connect, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { createDataItemSigner as nodeCDIS } from "@permaweb/aoconnect/node";
 import { Tag } from "./types";
+import { data } from "@/nodes/token";
+import { updateNodeData } from "./events";
+import { Node } from "@/nodes/index";
+import { token } from "@/blueprints";
 
-export async function findMyPIDs(owner: any, length?: number, cursor?: string, pName?: string) {
+export async function findMyPIDs(owner: any, length?: number, cursor?: string, pName = "") {
   const processes = await fetch(GOLD_SKY_GQL, {
     method: 'POST',
     headers: {
@@ -30,7 +34,7 @@ export async function findMyPIDs(owner: any, length?: number, cursor?: string, p
   });
 }
 
-function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?: string) {
+function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName = "") {
   return `query {
         transactions(owners: ["${owner}"], tags: [
           {name: "Type", values: ["Process"]},
@@ -38,7 +42,7 @@ function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?
           {name: "Data-Protocol", values: ["ao"]},
           ${pName ? `{name: "Name", values: ["${pName}"], match: FUZZY_OR}` : ""}
         ],
-        sort: INGESTED_AT_DESC,
+        sort: HEIGHT_DESC,
         first: ${length || 10},
         ${cursor ? `after: "${cursor}"` : ""}
         )
@@ -55,6 +59,56 @@ function findMyPIDsQuery(owner: string, length?: number, cursor?: string, pName?
           }
         }
       }`
+}
+
+export async function findSpawnedProcess(from: string, ref: string) {
+  const processes = await fetch(GOLD_SKY_GQL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: findSpawnedProcessQuery(from, ref)
+    })
+  });
+
+  const data = await processes.json();
+  if (data.errors) {
+    throw new Error(data.errors[0].message)
+  }
+
+  if (!data.data?.transactions?.edges?.[0]?.node?.id) {
+    throw new Error("Process not found")
+  }
+  const processId = data.data.transactions.edges[0].node.id
+  return processId as string
+}
+
+function findSpawnedProcessQuery(from: string, ref: string) {
+  return `query {
+  transactions(
+    tags: [
+      { name: "Type", values: ["Process"] }
+      { name: "From-Process",values: ["${from}"] }
+      { name: "Data-Protocol", values: ["ao"] }
+      { name: "Reference", values: ["${ref}"] }
+    ]
+    sort: HEIGHT_DESC
+  )
+  {
+    edges {
+      cursor
+      node {
+        id
+        # tags {
+        #   name
+        #   value
+        # }
+      }
+    }
+  }
+}
+`
 }
 
 
@@ -139,7 +193,7 @@ export async function spawnProcess(name?: string, tags?: Tag[], newProcessModule
     tags = CommonTags;
   }
   tags = name ? [...tags, { name: "Name", value: name }] : tags;
-  tags = [...tags, { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' }];
+  tags = [...tags, { name: 'Authority', value: AOAuthority }];
 
   const result = await ao.spawn({
     module: newProcessModule ? newProcessModule : AOModule,
@@ -185,4 +239,68 @@ export async function installPackage(name: string, process: string) {
   const result = await runLua(code, process);
   const parsed = parseOutupt(result);
   return parsed;
+}
+
+export async function spawnToken(data: data, process: string, activeNode: Node): Promise<string> {
+  // First, ensure we have a valid tokenId if one exists
+  if (data.tokenId && !data.respawn) {
+    // If we have a tokenId and respawn is false, just run the code on the existing process
+    let code = token.init(data.name, data.ticker, data.denomination, data.totalSupply, data.logo, data.overwrite)
+    code = `ao.send({ Target = "${data.tokenId}", Action = "Eval", Data = [[${code}]] })`
+    await runLua(code, process)
+    return data.tokenId
+  }
+
+  // If we don't have a tokenId or respawn is true, spawn a new token
+  let code = token.init(data.name, data.ticker, data.denomination, data.totalSupply, data.logo, data.overwrite)
+
+  // Use a lock to prevent multiple simultaneous spawns
+  const lockKey = `token-spawn-lock-${activeNode.id}`
+  if (localStorage.getItem(lockKey)) {
+    throw new Error("Token spawn already in progress")
+  }
+
+  try {
+    localStorage.setItem(lockKey, "true")
+
+    let tokenSpawner = `local process = ao.spawn(ao.env.Module.Id,{
+    Tags = { ["Name"] = "${data.name}",["Authority"] = ao.authorities[1] }
+})
+return process
+`
+    const res = await runLua(tokenSpawner, process)
+    const spawnTags = res.Spawns[0].Tags
+    const ref = spawnTags.find((x: any) => x.name == "Reference")?.value
+    console.log("new process ref", ref)
+
+    // run this in while loop until process is found
+    while (true) {
+      // fetch spawned process id from graphql
+      try {
+        const processId = await findSpawnedProcess(process, ref)
+        console.log("processId", processId)
+        data.tokenId = processId
+        break
+      } catch (e: any) {
+        console.log(e)
+        console.log("retrying....waiting for process to spawn")
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    // Clear flags after successful spawn
+    data.respawn = false
+    data.overwrite = false
+    updateNodeData(activeNode.id, data)
+
+    // once token is spawned, run the code on the new process
+    code = `ao.send({ Target = "${data.tokenId}", Action = "Eval", Data = [[${code}]] })`
+    await runLua(code, process)
+
+    return data.tokenId
+  } catch (e: any) {
+    throw new Error(e.message)
+  } finally {
+    localStorage.removeItem(lockKey)
+  }
 }
