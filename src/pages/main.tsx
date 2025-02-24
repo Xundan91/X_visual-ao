@@ -2,12 +2,12 @@
 // import BlocklyComponent from '@/blockly';
 // import { xmlToLua } from '@/blockly/utils/xml';
 import FlowPanel from '@/components/flow-panel';
-import { Edge, Edges } from '@/edges';
+import { Edge, Edges, TEdges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
 import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
 import { getCode, getConnectedNodes } from '@/lib/events';
 import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
-import { attachables, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
+import { attachables, nodeConfigs, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
@@ -119,11 +119,24 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
           type: "default"
         }))
       } else {
+        // Find the source node's config to determine edge type
+        const sourceNode = nodes.find(n => n.id === attachTo)
+        const sourceConfig = nodeConfigs.find(config => config.type === sourceNode?.type)
+        let edgeType = sourceConfig?.outputType || "default"
+
+        // If the edge type is "inherit", find the incoming edge type
+        if (edgeType === "inherit") {
+          const incomingEdge = edges.find(e => e.target === attachTo)
+          edgeType = incomingEdge?.type as TEdges || "default"
+        }
+
+        console.log("Adding edge from", sourceNode?.type, "with type", edgeType)
+
         setEdges(edges => edges.concat({
           id: `${attachTo!}-${id}`,
           source: attachTo!,
           target: id,
-          type: "message"
+          type: edgeType
         }))
       }
 
@@ -198,11 +211,20 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
           // If node had both incoming and outgoing edges, connect them
           if (incomingEdge && outgoingEdge) {
+            const sourceNode = nodes.find(n => n.id === incomingEdge.source)
+            const sourceConfig = nodeConfigs.find(config => config.type === sourceNode?.type)
+            let edgeType = sourceConfig?.outputType || "default"
+
+            // If the edge type is "inherit", use the incoming edge type
+            if (edgeType === "inherit") {
+              edgeType = incomingEdge.type as TEdges
+            }
+
             filteredEdges.push({
               id: `${incomingEdge.source}-${outgoingEdge.target}`,
               source: incomingEdge.source,
               target: outgoingEdge.target,
-              type: "message"
+              type: edgeType
             })
           }
 

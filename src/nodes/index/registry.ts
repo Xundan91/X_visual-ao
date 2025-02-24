@@ -14,6 +14,7 @@ import { CodeblockSidebar } from "../codeblock";
 import { CodeblockNode } from "../codeblock";
 import { TokenNode } from "../token";
 import { TokenSidebar } from "../token";
+import { TEdges } from "@/edges";
 
 export type TNodeType =
     | "start"
@@ -28,7 +29,10 @@ export type TNodeType =
 export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token"]
 export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock"]
 
-export const attachables: TNodeType[] = ["handler"]
+export const attachables: TNodeType[] = ["handler", "token"]
+
+// Define possible edge types
+// export type TEdgeType = "default" | "message" | "tokenId";
 
 // Define a configuration interface for a node:
 export interface NodeConfig {
@@ -38,6 +42,7 @@ export interface NodeConfig {
     NodeComponent: React.FC<any>;
     SidebarComponent: React.FC<any>;
     embedFunction?: (inputs: TNodeData) => string;
+    outputType: TEdges; // What type of edge should be used when this is the source
 }
 
 // Create an array of node configurations – adding a new node now only means adding a new entry here.
@@ -48,6 +53,7 @@ const nodeConfigs: NodeConfig[] = [
         icon: CodeIcon,
         NodeComponent: StartNode,
         SidebarComponent: () => null,  // No sidebar needed
+        outputType: "default"
     },
     {
         type: "annotation",
@@ -55,6 +61,7 @@ const nodeConfigs: NodeConfig[] = [
         icon: CodeIcon,
         NodeComponent: AnnotationNode,
         SidebarComponent: () => null,
+        outputType: "default"
     },
     // 
     {
@@ -62,28 +69,32 @@ const nodeConfigs: NodeConfig[] = [
         name: "Handler",
         icon: Workflow,
         NodeComponent: HandlerNode,
-        SidebarComponent: HandlerSidebar
+        SidebarComponent: HandlerSidebar,
+        outputType: "message"
     },
     {
         type: "token",
         name: "Token",
         icon: Coins,
         NodeComponent: TokenNode,
-        SidebarComponent: TokenSidebar
+        SidebarComponent: TokenSidebar,
+        outputType: "tokenId"
     },
     {
         type: "send-message",
         name: "Send Message",
         icon: MessageSquareShare,
         NodeComponent: SendMessageNode,
-        SidebarComponent: SendMessageSidebar
+        SidebarComponent: SendMessageSidebar,
+        outputType: "inherit"
     },
     {
         type: "codeblock",
         name: "Code Block",
         icon: CodeIcon,
         NodeComponent: CodeblockNode,
-        SidebarComponent: CodeblockSidebar
+        SidebarComponent: CodeblockSidebar,
+        outputType: "inherit"
     }
 
 ];
@@ -95,6 +106,7 @@ if (process.env.NODE_ENV == "development") {
         icon: SquareDashed,
         NodeComponent: TemplateNode,
         SidebarComponent: TemplateSidebar,
+        outputType: "default"
     });
 }
 

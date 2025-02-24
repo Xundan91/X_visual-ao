@@ -1,6 +1,6 @@
 import { EdgeProps, getBezierPath } from '@xyflow/react';
 
-const MessageEdge = ({
+const TokenIdEdge = ({
     id,
     sourceX,
     sourceY,
@@ -44,10 +44,10 @@ const MessageEdge = ({
                 dominantBaseline="middle"
                 className='text-center text-[10px]'
             >
-                msg
+                id
             </text>
         </>
     );
 };
 
-export default MessageEdge; 
+export default TokenIdEdge; 
