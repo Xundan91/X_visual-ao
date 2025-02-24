@@ -44,7 +44,7 @@ export function formatLua(code: string) {
     return (require("lua-format").Beautify(code, {
       RenameVariables: false,
       RenameGlobals: false,
-      SolveMath: true
+      SolveMath: false
     }) as string).split("\n").slice(8).join("\n")
   } catch (e: any) {
     console.log(e)

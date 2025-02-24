@@ -1,4 +1,4 @@
-import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins, SquareDashed, Plus } from "lucide-react";
+import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins, SquareDashed, Plus, GitBranch } from "lucide-react";
 
 // Import your node components and (if available) sidebar editors
 import StartNode from "@/nodes/index/start";
@@ -14,6 +14,7 @@ import { CodeblockSidebar } from "../codeblock";
 import { CodeblockNode } from "../codeblock";
 import { TokenNode } from "../token";
 import { TokenSidebar } from "../token";
+import { ConditionalNode, ConditionalSidebar } from "../conditional";
 import { TEdges } from "@/edges";
 
 export type TNodeType =
@@ -24,12 +25,13 @@ export type TNodeType =
     | "token"
     | "send-message"
     | "codeblock"
+    | "conditional"
     | "template";
 
 export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token"]
-export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock"]
+export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock", "conditional"]
 
-export const attachables: TNodeType[] = ["handler", "token"]
+export const attachables: TNodeType[] = ["handler", "token", "conditional"]
 
 // Define possible edge types
 // export type TEdgeType = "default" | "message" | "tokenId";
@@ -95,8 +97,15 @@ const nodeConfigs: NodeConfig[] = [
         NodeComponent: CodeblockNode,
         SidebarComponent: CodeblockSidebar,
         outputType: "inherit"
+    },
+    {
+        type: "conditional",
+        name: "Conditional",
+        icon: GitBranch,
+        NodeComponent: ConditionalNode,
+        SidebarComponent: ConditionalSidebar,
+        outputType: "inherit"
     }
-
 ];
 
 if (process.env.NODE_ENV == "development") {

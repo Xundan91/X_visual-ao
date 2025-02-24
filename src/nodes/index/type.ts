@@ -8,6 +8,7 @@ import { data as HandlerNodeData } from "@/nodes/handler"
 import { data as TokenNodeData } from "@/nodes/token"
 import { data as CodeblockNodeData } from "@/nodes/codeblock"
 import { data as SendMessageNodeData } from "@/nodes/send-message"
+import { data as ConditionalNodeData } from "@/nodes/conditional"
 
 import { data as TemplateNodeData } from "@/nodes/_template"
 
@@ -25,5 +26,6 @@ export type TNodeData = { attachable?: boolean | true } & (
     | TokenNodeData
     | CodeblockNodeData
     | SendMessageNodeData
+    | ConditionalNodeData
     | TemplateNodeData
 )
