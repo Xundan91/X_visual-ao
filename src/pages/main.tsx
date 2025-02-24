@@ -213,6 +213,14 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         // Delete all connected nodes and their edges
         setNodes(nodes => nodes.filter(n => !nodesToDelete.has(n.id)))
         setEdges(edges => edges.filter(e => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target)))
+
+        globals.setActiveNode(undefined)
+        globals.setAttach(undefined)
+        globals.toggleSidebar(false)
+        globals.setAvailableNodes([])
+        globals.resetNodes()
+        globals.setFlowIsRunning(false)
+        globals.setOrder({})
       } else {
         // ask for confirmation
         if (!confirm("Are you sure you want to delete this node?")) return
@@ -249,6 +257,13 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
           return filteredEdges
         })
+        globals.setActiveNode(undefined)
+        globals.setAttach(undefined)
+        globals.toggleSidebar(false)
+        globals.setAvailableNodes([])
+        globals.resetNodes()
+        globals.setFlowIsRunning(false)
+        globals.setOrder({})
       }
     }) as EventListener
 

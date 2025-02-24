@@ -54,9 +54,9 @@ export default function TopBar() {
         </div>
         <div className="flex items-center gap-2">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger disabled={!globalState.activeProcess}>
+                {/* <DialogTrigger disabled={!globalState.activeProcess}>
                     <Button disabled={!globalState.activeProcess} variant="ghost" className="h-12 rounded-xl"><AppWindowMac />Templates</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="!bg-white">
                     <DialogHeader>
                         <DialogTitle>Templates</DialogTitle>
