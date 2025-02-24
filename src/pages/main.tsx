@@ -37,7 +37,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
   const { setCenter, setViewport } = useReactFlow();
-
+  const { setActiveNode } = useGlobalState()
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -156,13 +156,31 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     const updateNodeDataListener = ((e: CustomEvent) => {
       const id = e.detail.id
       const data = e.detail.data
-      setNodes(nodes => nodes.map(n => n.id === id ? { ...n, data: { ...n.data, ...data } } : n))
+
+      setNodes(nodes => {
+        const targetNode = nodes.find(n => n.id === id)
+        if (!targetNode) return nodes
+
+        const updatedNode = {
+          ...targetNode,
+          data: { ...targetNode.data, ...data }
+        } as Node
+
+        // Update the global active node if this is the currently active node
+        if (globals.activeNode?.id === id) {
+          // setTimeout(() => globals.setActiveNode(updatedNode), 0)
+          // globals.setActiveNode(updatedNode)
+        }
+
+        return nodes.map(n => n.id === id ? updatedNode : n)
+      })
+
       console.log("updateNodeDataListener", id, data)
     }) as EventListener
 
     window.addEventListener("update-node-data", updateNodeDataListener)
     return () => window.removeEventListener("update-node-data", updateNodeDataListener)
-  }, [nodes, setEdges, globals.activeProcess])
+  }, [setNodes, globals.setActiveNode, globals.activeNode?.id])
 
   // delete node
   useEffect(() => {

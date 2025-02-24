@@ -28,7 +28,7 @@ export default function FlowPanel() {
             resetNode(activeNode.id)
             addRunningNode(activeNode)
 
-            let code = await getCode(activeNode!.id, activeNode!.data)
+            let code = await getCode(activeNode!.id)
 
             if (activeNode.type === "token") {
                 // Only spawn token if we don't have a tokenId or respawn is true
@@ -45,7 +45,7 @@ export default function FlowPanel() {
                     }
                 }
                 // code = `tokens = tokens or {}\ntokens["${data.name}"] = "${data.tokenId}"`
-                code = await getCode(activeNode.id, activeNode.data)
+                code = await getCode(activeNode.id)
             }
 
             console.log("running", code)
@@ -80,7 +80,7 @@ export default function FlowPanel() {
         if (activeNode) {
             // Show code only for the active node
             try {
-                code = await getCode(activeNode.id, activeNode.data)
+                code = await getCode(activeNode.id)
                 code = `-- [ ${activeNode.id} ]\n${code}`
             } catch (e) {
                 code = `-- [ ${activeNode.id} ]\n-- Error generating code: ${e}`

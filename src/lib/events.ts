@@ -43,10 +43,18 @@ export function getConnectedNodes(id: string): TConnectedNodes {
     return connectedNodes
 }
 
-export function getCode(id: string, data: {}): Promise<string> {
+export function getCode(nodeId: string, nodeData?: any): Promise<string> {
     return new Promise((resolve) => {
-        dispatchEvent(new CustomEvent("get-code", {
-            detail: { id, data, callback: resolve }
-        }))
-    })
+        const event = new CustomEvent("get-code", {
+            detail: {
+                id: nodeId,
+                data: nodeData,
+                callback: (code: string) => {
+                    resolve(code);
+                }
+            }
+        });
+
+        window.dispatchEvent(event);
+    });
 }

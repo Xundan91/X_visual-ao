@@ -35,8 +35,9 @@ export function CodeblockNode(props: Node) {
         const getCodeListener = ((e: CustomEvent) => {
             const me = e.detail.id == props.id
             if (!me) return
-
-            const inputs = (e.detail.data || props.data) as data
+            console.log("getCodeListener", e.detail.data)
+            console.log("getCodeListener", props.data)
+            const inputs = e.detail.data ? (e.detail.data as data) : (props.data as data)
             e.detail.callback(inputs.code)
         }) as EventListener
 
@@ -61,19 +62,22 @@ export function CodeblockSidebar() {
     const [outputId, setOutputId] = useState<string | null>(null)
     const [output, setOutput] = useState<string | null>(null)
     const [prompt, setPrompt] = useState<string | null>(null)
-    const { activeNode, activeProcess } = useGlobalState()
+    const { activeNode, activeProcess, setActiveNode } = useGlobalState()
 
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return
         const nodeData = activeNode?.data as data
-        setCode(nodeData?.code || "")
+        if (nodeData.code) {
+            setCode(nodeData?.code || "")
+        }
     }, [activeNode?.id])
 
-    // updates the node data in localStorage when the input data updates
+    // updates the node data when the input data updates
     useEffect(() => {
-        updateNodeData(activeNode?.id!, { code })
-    }, [code])
+        if (!activeNode) return
+        updateNodeData(activeNode.id, { code });
+    }, [code]);
 
 
     return <div>
