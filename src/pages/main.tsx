@@ -521,7 +521,6 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setActiveNode(node)
         globals.toggleSidebar(true)
         setTimeout(() => setCenter(node.position.x + NodeSizes.normal.width / 2, node.position.y + NodeSizes.normal.height / 2, { duration: 500, zoom: 0.8 }), 100)
-
       }
     }
   }

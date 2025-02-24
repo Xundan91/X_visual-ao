@@ -206,7 +206,7 @@ export function ConditionalSidebar() {
             <>
                 {/* Left-hand side */}
                 <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
-                    <SmolText className="h-4 p-0">Left Value</SmolText>
+                    <SmolText className="h-4 p-0 ml-2">Left Value</SmolText>
                     <ToggleButton
                         className="mb-0.5"
                         nameType={lhsType}
@@ -215,7 +215,6 @@ export function ConditionalSidebar() {
                 </div>
                 <Input
                     type="text"
-                    className="border-y border-x-0 bg-muted"
                     value={lhs}
                     onChange={(e) => {
                         if (lhsType === "VARIABLE") {
@@ -228,9 +227,9 @@ export function ConditionalSidebar() {
                 />
 
                 {/* Operator */}
-                <SmolText className="h-4 p-0 px-2 mt-4">Operator</SmolText>
+                <SmolText className="h-4 p-0 ml-4 mt-4">Operator</SmolText>
                 <Select value={operator} onValueChange={setOperator}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-white">
                         <SelectValue placeholder="Select an operator" />
                     </SelectTrigger>
                     <SelectContent>
@@ -244,7 +243,7 @@ export function ConditionalSidebar() {
 
                 {/* Right-hand side */}
                 <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
-                    <SmolText className="h-4 p-0">Right Value</SmolText>
+                    <SmolText className="h-4 p-0 ml-2">Right Value</SmolText>
                     <ToggleButton
                         className="mb-0.5"
                         nameType={rhsType}
@@ -253,7 +252,6 @@ export function ConditionalSidebar() {
                 </div>
                 <Input
                     type="text"
-                    className="border-y border-x-0 bg-muted"
                     value={rhs}
                     onChange={(e) => {
                         if (rhsType === "VARIABLE") {
@@ -267,9 +265,9 @@ export function ConditionalSidebar() {
             </>
         ) : (
             <>
-                <SmolText className="h-4 p-0 px-2 mt-4">Advanced Condition</SmolText>
+                <SmolText className="h-4 p-0 ml-4 mt-4">Advanced Condition</SmolText>
                 <textarea
-                    className="w-full p-2 border rounded bg-muted"
+                    className="flex w-full bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     rows={5}
                     value={advancedCondition}
                     onChange={(e) => setAdvancedCondition(e.target.value)}
@@ -278,12 +276,9 @@ export function ConditionalSidebar() {
             </>
         )}
 
-        <SmolText className="h-4 p-0 pl-2 mt-4">Generated Lua Code</SmolText>
-        <div className="bg-muted p-2 text-xs border-y">
-            <pre className="overflow-scroll">
-                {code}
-            </pre>
-        </div>
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
+            {code}
+        </pre>
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             This node will conditionally execute the connected nodes if the condition evaluates to true.<br /><br />
