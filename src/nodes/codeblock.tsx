@@ -35,8 +35,6 @@ export function CodeblockNode(props: Node) {
         const getCodeListener = ((e: CustomEvent) => {
             const me = e.detail.id == props.id
             if (!me) return
-            console.log("getCodeListener", e.detail.data)
-            console.log("getCodeListener", props.data)
             const inputs = e.detail.data ? (e.detail.data as data) : (props.data as data)
             e.detail.callback(inputs.code)
         }) as EventListener

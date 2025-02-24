@@ -133,6 +133,8 @@ export function ConditionalSidebar() {
         setRhsType(nodeData?.rhsType || "TEXT");
         setUseAdvanced(nodeData?.useAdvanced || false);
         setAdvancedCondition(nodeData?.advancedCondition || "");
+
+        embed(nodeData)
     }, [activeNode?.id]);
 
     // updates the node data when the input data updates
