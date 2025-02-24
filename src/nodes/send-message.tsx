@@ -12,7 +12,6 @@ import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
 import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 import { Tag } from "@/lib/types";
-import { embed } from "./_template";
 import { getCode, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { CommonActions } from "@/lib/constants";
@@ -48,15 +47,26 @@ export function SendMessageNode(props: Node) {
             const inputs = (e.detail.data || props.data) as data
             const { target, targetType, action, actionType, data, dataType, tags } = inputs
 
-            const targetCode = targetType == "TEXT" ? `"${target}"` : `${target}`
-            const actionCode = actionType == "TEXT" ? `"${action}"` : `${action}`
-            const dataCode = dataType == "TEXT" ? `"${data}"` : `${data}`
-            const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
+            // Create async function to handle code generation
+            const generateCode = async () => {
+                const targetCode = targetType == "TEXT" ? `"${target}"` : `${target}`
+                const actionCode = actionType == "TEXT" ? `"${action}"` : `${action}`
+                const dataCode = dataType == "TEXT" ? `"${data}"` : `${data}`
+                const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
 
-            let code = `Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})`
+                let code = `Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})`
 
-            code = formatLua(code)
-            e.detail.callback(code)
+                code = formatLua(code)
+                return code
+            }
+
+            // Execute the async code generation
+            generateCode()
+                .then(code => e.detail.callback(code))
+                .catch(err => {
+                    console.error("Error generating code:", err)
+                    e.detail.callback("")
+                })
         }) as EventListener
 
         window.addEventListener("get-code", getCodeListener)
@@ -92,6 +102,9 @@ export function SendMessageSidebar() {
 
     const { activeNode, activeProcess } = useGlobalState()
 
+    // Add this state for code display
+    const [code, setCode] = useState("")
+
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return
@@ -110,7 +123,11 @@ export function SendMessageSidebar() {
         if (!activeNode) return
         const newNodeData: data = { target, targetType, action, actionType, data, dataType, tags }
         activeNode.data = newNodeData
-        dispatchEvent(new CustomEvent("update-node-data", { detail: { id: activeNode?.id, data: newNodeData } }))
+        updateNodeData(activeNode.id, newNodeData)
+
+        embed(newNodeData).then((code) => {
+            setCode(code)
+        })
     }, [target, targetType, action, actionType, data, dataType, tags])
 
     // helper function to toggle the input type between text and variable
@@ -175,9 +192,17 @@ export function SendMessageSidebar() {
     }
 
     function embed(inputs: data) {
-        return getCode(activeNode?.id!, inputs)
+        return new Promise<string>(async (resolve) => {
+            try {
+                const code = await getCode(activeNode?.id!, inputs)
+                setCode(code)
+                resolve(code)
+            } catch (err) {
+                console.error("Error embedding code:", err)
+                resolve("")
+            }
+        })
     }
-
 
     return <div>
         <div className="flex items-end">
@@ -329,7 +354,7 @@ export function SendMessageSidebar() {
         </div>
 
         <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
-            {embed({ target, action, data, tags, targetType, actionType, dataType })}
+            {code}
         </pre>
     </div>
 }

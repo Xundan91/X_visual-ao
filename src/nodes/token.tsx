@@ -8,10 +8,10 @@ import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
 import { AlertTriangle, Loader, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
-import { parseOutupt, runLua } from "@/lib/aos";
+import { parseOutupt, runLua, spawnToken } from "@/lib/aos";
 import Link from "next/link";
 import { SubRootNodesAvailable, TNodeType } from "./index/registry";
-import { getCode, updateNodeData } from "@/lib/events";
+import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua } from "@/lib/utils";
 import { token } from "@/blueprints"
 import { Switch } from "@/components/ui/switch";
@@ -37,7 +37,7 @@ export interface data {
 
 // react flow node component
 export function TokenNode(props: Node) {
-    const { setAvailableNodes } = useGlobalState()
+    const { setAvailableNodes, activeProcess } = useGlobalState()
 
     // get code event
     useEffect(() => {
@@ -46,22 +46,68 @@ export function TokenNode(props: Node) {
             if (!me) return
 
             const inputs = (e.detail.data || props.data) as data
-            const { name, ticker, totalSupply, denomination, logo, overwrite } = inputs
+            const { name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn } = inputs
 
-            let code = token.init(
-                name,
-                ticker,
-                denomination,
-                totalSupply,
-                logo,
-                overwrite
-            )
-            e.detail.callback(code)
+            // Create async function to handle code generation
+            const generateCode = async () => {
+                let code = ""
+                // Only spawn a new token if there's no tokenId OR respawn is explicitly true
+                if ((!tokenId && !inputs.tokenId) || respawn) {
+                    try {
+                        // Use a lock to prevent multiple simultaneous spawns
+                        const lockKey = `token-spawn-lock-${props.id}`
+                        if (localStorage.getItem(lockKey)) {
+                            throw new Error("Token already spawned or respawn is already in progress")
+                        }
+                        localStorage.setItem(lockKey, "true")
+
+                        const newTokenId = await spawnToken(inputs, activeProcess, props)
+                        inputs.tokenId = newTokenId
+                        // Clear respawn flag after successful spawn
+                        inputs.respawn = false
+                        // Update the node data to persist the new tokenId
+                        updateNodeData(props.id, inputs)
+
+                        localStorage.removeItem(lockKey)
+                    } catch (err) {
+                        localStorage.removeItem(`token-spawn-lock-${props.id}`)
+                        throw err
+                    }
+                }
+
+                // Use the existing or new tokenId to generate code
+                code = `tokens = tokens or {}\ntokens["${name}"] = "${inputs.tokenId}"\n`
+
+                const connectedNodes = getConnectedNodes(props.id)
+                let body = code
+
+                const iterateNode = async (node: any) => {
+                    if (Array.isArray(node)) {
+                        for (const n of node) {
+                            await iterateNode(n)
+                        }
+                    } else {
+                        const nodeCode = await getCode(node.id, node.data)
+                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`
+                    }
+                }
+
+                for (const node of connectedNodes) {
+                    await iterateNode(node)
+                }
+                e.detail.callback(body)
+            }
+
+            // Execute the async code generation
+            generateCode().catch(err => {
+                console.error("Error generating code:", err)
+                e.detail.callback("")
+            })
         }) as EventListener
 
         window.addEventListener("get-code", getCodeListener)
         return () => window.removeEventListener("get-code", getCodeListener)
-    }, [props])
+    }, [props, activeProcess])
 
     const Icon = NodeIconMapping[props.type as TNodeType]
     return <NodeContainer {...props} onAddClick={() => setAvailableNodes(SubRootNodesAvailable)}>
@@ -81,7 +127,7 @@ export function TokenSidebar() {
     const [overwrite, setOverwrite] = useState(false)
     const [respawn, setRespawn] = useState(false)
     const [tokenId, setTokenId] = useState<string>("")
-
+    const [code, setCode] = useState<string>("")
     // necessary states
     const [runningCode, setRunningCode] = useState(false)
     const [outputId, setOutputId] = useState<string | null>(null)
@@ -125,12 +171,16 @@ export function TokenSidebar() {
         const newNodeData: data = { name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn }
         activeNode.data = newNodeData
         updateNodeData(activeNode.id, newNodeData)
+
+        embed({ name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn }).then((code) => {
+            setCode(code)
+        })
     }, [name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn])
 
-    function embed(inputs: data) {
+    async function embed(inputs: data) {
         if (!inputs.logo)
             inputs.logo = "nHIO6wFuyEKZ03glfjbpFiKObP782Sp425q4akilT44"
-        return getCode(activeNode?.id!, inputs)
+        return await getCode(activeNode?.id!, inputs)
     }
 
 
@@ -234,7 +284,7 @@ export function TokenSidebar() {
         }
 
         <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
-            {embed({ name, ticker, totalSupply, denomination, logo, overwrite })}
+            {code}
         </pre>
     </div>
 }

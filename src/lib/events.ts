@@ -43,21 +43,10 @@ export function getConnectedNodes(id: string): TConnectedNodes {
     return connectedNodes
 }
 
-export function getCode(id: string, data: {}): string {
-    let code: string | undefined = undefined
-    dispatchEvent(new CustomEvent("get-code", {
-        detail: { id, data, callback: (_: string) => code = _ }
-    }))
-
-    let tries = 0
-    while (code == undefined && tries < maxTries) {
-        tries++
-        console.log("waiting for code")
-    }
-
-    if (code == undefined) {
-        console.error("failed to get code")
-        return ""
-    }
-    return code as string
+export function getCode(id: string, data: {}): Promise<string> {
+    return new Promise((resolve) => {
+        dispatchEvent(new CustomEvent("get-code", {
+            detail: { id, data, callback: resolve }
+        }))
+    })
 }

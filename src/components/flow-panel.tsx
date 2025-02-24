@@ -16,32 +16,32 @@ export default function FlowPanel() {
 
     async function runThis() {
         if (!activeNode) return
-        let code = getCode(activeNode!.id, activeNode!.data)
-
-        if (activeNode.type === "token") {
-            setFlowIsRunning(true)
-            setNodeRunning(true)
-            resetNode(activeNode.id)
-            addRunningNode(activeNode)
-
-            // if current active node is a token node
-            // spawn a new process form the activeProcess for the token and store its id in active node data
-            // if a process was spawned already, just run the code on that process
-            const data = activeNode.data as TokenData
-            try {
-                code = await spawnToken(data, activeProcess, activeNode, code)
-            } catch (e: any) {
-                addErrorNode(activeNode!)
-                addOutput({ type: "error", message: e.message })
-                return
-            }
-        }
 
         try {
             setFlowIsRunning(true)
             setNodeRunning(true)
             resetNode(activeNode.id)
             addRunningNode(activeNode)
+
+            let code = await getCode(activeNode!.id, activeNode!.data)
+
+            if (activeNode.type === "token") {
+                // Only spawn token if we don't have a tokenId or respawn is true
+                const data = activeNode.data as TokenData
+                if (!data.tokenId || data.respawn) {
+                    try {
+                        const tokenId = await spawnToken(data, activeProcess, activeNode)
+                        data.tokenId = tokenId
+                        updateNodeData(activeNode.id, data)
+                    } catch (e: any) {
+                        addErrorNode(activeNode!)
+                        addOutput({ type: "error", message: e.message })
+                        return
+                    }
+                }
+                // code = `tokens = tokens or {}\ntokens["${data.name}"] = "${data.tokenId}"`
+                code = await getCode(activeNode.id, activeNode.data)
+            }
 
             console.log("running", code)
             const res = await runLua(code, activeProcess)
@@ -70,11 +70,11 @@ export default function FlowPanel() {
     if (!activeNode) return null
 
     return <Panel position="top-center" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
-        <Button disabled={flowIsRunning || nodeRunning} className="aspect-square h-full w-full" variant="ghost" onClick={runThis}>
-            {flowIsRunning || nodeRunning ? <Loader size={25} color="green" className="animate-spin" /> : <PlayIcon size={25} color="green" fill="green" />}
+        <Button key="run-button" disabled={flowIsRunning || nodeRunning} className="aspect-square h-full w-full" variant="ghost" onClick={runThis}>
+            {flowIsRunning || nodeRunning ? <Loader key="loader" size={25} color="green" className="animate-spin" /> : <PlayIcon key="play-icon" size={25} color="green" fill="green" />}
         </Button>
-        <Button variant="ghost" className="aspect-square h-full w-full" onClick={deleteThis}>
-            <Trash2 size={25} color="red" />
+        <Button key="delete-button" variant="ghost" className="aspect-square h-full w-full" onClick={deleteThis}>
+            <Trash2 key="trash-icon" size={25} color="red" />
         </Button>
     </Panel>
 }

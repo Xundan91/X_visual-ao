@@ -4,8 +4,8 @@
 import FlowPanel from '@/components/flow-panel';
 import { Edge, Edges, TEdges } from '@/edges';
 import { useGlobalState } from '@/hooks/useGlobalStore';
-import { installAPM, installPackage, parseOutupt, runLua } from '@/lib/aos';
-import { getCode, getConnectedNodes } from '@/lib/events';
+import { installAPM, installPackage, parseOutupt, runLua, spawnToken } from '@/lib/aos';
+import { getCode, getConnectedNodes, updateNodeData } from '@/lib/events';
 import { customNodes, Node, NodeEmbedFunctionMapping, Nodes, NodeSizes } from '@/nodes/index';
 import { attachables, nodeConfigs, RootNodesAvailable, SubRootNodesAvailable, TNodeType } from '@/nodes/index/registry';
 import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
@@ -13,6 +13,7 @@ import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
 import { BoxIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { data as TokenData } from '@/nodes/token';
 import { toast } from 'sonner';
 
 const defaultNodes = [
@@ -415,11 +416,32 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
         globals.setFlowIsRunning(true)
         for (const node of rootNodes) {
-          const code = getCode(node.id, node.data)
-          console.log(node.id, code)
-          fullCode += `\n-- [ ${node.id} ]\n${code}\n`
-
           try {
+            let code = await getCode(node.id, node.data)
+            console.log(node.id, code)
+
+            // Handle token nodes specially, similar to flow-panel.tsx
+            if (node.type === "token") {
+              // Only spawn token if we don't have a tokenId or respawn is true
+              const data = node.data as TokenData
+              if (!data.tokenId || data.respawn) {
+                try {
+                  globals.addRunningNode(node)
+                  const tokenId = await spawnToken(data, globals.activeProcess, node)
+                  data.tokenId = tokenId
+                  updateNodeData(node.id, data)
+                } catch (e: any) {
+                  globals.addErrorNode(node)
+                  globals.addOutput({ type: "error", message: e.message })
+                  continue // Skip to next node
+                }
+              }
+              // code = `tokens = tokens or {}\ntokens["${data.name}"] = "${data.tokenId}"`
+              code = await getCode(node.id, node.data)
+            }
+
+            fullCode += `\n-- [ ${node.id} ]\n${code}\n`
+
             globals.addRunningNode(node)
             const res = await runLua(code, globals.activeProcess)
             console.log(node.id, res)
@@ -439,18 +461,6 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         globals.setFlowIsRunning(false)
 
         console.log("fullCode", fullCode)
-
-        // globals.setFlowIsRunning(true)
-        // try {
-        //   const res = await runLua(fullCode, globals.activeProcess)
-        //   console.log("res", res)
-        // } catch (e: any) {
-        //   console.log(e)
-        //   toast.error("Error running code")
-        // } finally {
-        //   globals.setFlowIsRunning(false)
-        // }
-
         break;
       }
       case "add-node": {
@@ -472,10 +482,10 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     <div className="w-full h-[calc(100%-20px)]">
       <div className="h-5 flex items-center px-1 border-b text-xs">
         {globals.activeProcess && <>
-          <BoxIcon size={14} className='mr-1' strokeWidth={1.2} />{globals.activeProcess}
+          <BoxIcon key="process-icon" size={14} className='mr-1' strokeWidth={1.2} />{globals.activeProcess}
           {globals.activeNode && <>
-            <div className='px-1.5 text-base'>/</div>
-            <div>{globals.activeNode?.id}</div>
+            <div key="separator-1" className='px-1.5 text-base'>/</div>
+            <div key="node-id">{globals.activeNode?.id}</div>
             {/* {
               globals.editingNode && <>
                 <div className='px-1.5 text-base'>/</div>
