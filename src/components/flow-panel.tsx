@@ -12,6 +12,7 @@ import { data as TokenData } from "@/nodes/token"
 import { AOAuthority, AOModule } from "@/lib/constants"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Node } from "@/nodes/index"
+import { SmolText } from "./right-sidebar"
 
 export default function FlowPanel() {
     const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
@@ -120,16 +121,17 @@ export default function FlowPanel() {
     if (!activeNode) {
         // Return a simplified panel when no node is active
         return (
-            <Panel position="top-center" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+            <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
                 <Button
                     key="show-code-button"
                     disabled={!activeProcess || flowIsRunning}
-                    className="aspect-square h-full w-full"
+                    className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
                     variant="ghost"
                     onClick={showFullCode}
                     title="Show full code"
                 >
                     <Code key="code-icon" size={25} color="#555" />
+                    <span className="text-xs font-medium">Full Code</span>
                 </Button>
 
                 <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
@@ -146,22 +148,39 @@ export default function FlowPanel() {
         )
     }
 
-    return <Panel position="top-center" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
-        <Button key="run-button" disabled={flowIsRunning || nodeRunning} className="aspect-square h-full w-full" variant="ghost" onClick={runThis}>
-            {flowIsRunning || nodeRunning ? <Loader key="loader" size={25} color="green" className="animate-spin" /> : <PlayIcon key="play-icon" size={25} color="green" fill="green" />}
-        </Button>
-        <Button key="delete-button" variant="ghost" className="aspect-square h-full w-full" onClick={deleteThis}>
-            <Trash2 key="trash-icon" size={25} color="red" />
+    return <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+        <Button
+            key="run-button"
+            disabled={flowIsRunning || nodeRunning}
+            className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
+            variant="ghost"
+            onClick={runThis}
+        >
+            {flowIsRunning || nodeRunning ?
+                <Loader key="loader" size={20} color="green" className="animate-spin" /> :
+                <PlayIcon key="play-icon" size={20} color="green" fill="green" />
+            }
+            <span className="text-xs font-medium">Run</span>
         </Button>
         <Button
             key="show-code-button"
             disabled={flowIsRunning}
-            className="aspect-square h-full w-full"
+            className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
             variant="ghost"
             onClick={showFullCode}
             title="Show node code"
         >
-            <Code key="code-icon" size={25} color="#555" />
+            <Code key="code-icon" size={20} color="#555" />
+            <span className="text-xs font-medium">Code</span>
+        </Button>
+        <Button
+            key="delete-button"
+            variant="ghost"
+            className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
+            onClick={deleteThis}
+        >
+            <Trash2 key="trash-icon" size={20} color="red" />
+            <span className="text-xs font-medium">Delete</span>
         </Button>
 
         <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
