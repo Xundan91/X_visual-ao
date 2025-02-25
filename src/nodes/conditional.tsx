@@ -70,7 +70,7 @@ export function ConditionalNode(props: Node) {
                         }
                     } else {
                         const nodeCode = await getCode(node.id, node.data);
-                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`;
+                        body += nodeCode;
                     }
                 };
 
@@ -93,11 +93,10 @@ export function ConditionalNode(props: Node) {
                     conditionCode = `${lhsCode} ${operator} ${rhsCode}`;
                 }
 
-                const code = formatLua(`
-                if ${conditionCode} then
-                    ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
-                end
-                `);
+                let code = `if ${conditionCode} then
+    ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
+end`;
+                code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
 
                 e.detail.callback(code);
             };
@@ -165,7 +164,7 @@ export function ConditionalSidebar() {
         updateNodeData(activeNode.id, newNodeData);
 
         embed(newNodeData).then((code) => {
-            setCode(code);
+            setCode(code.trim());
         });
     }, [lhs, lhsType, operator, rhs, rhsType, useAdvanced, advancedCondition]);
 
@@ -193,7 +192,7 @@ export function ConditionalSidebar() {
         return new Promise<string>(async (resolve) => {
             try {
                 const code = await getCode(activeNode?.id!, inputs);
-                setCode(code);
+                setCode(code.trim());
                 resolve(code);
             } catch (err) {
                 console.error("Error embedding code:", err);

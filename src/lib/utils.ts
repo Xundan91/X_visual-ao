@@ -40,12 +40,14 @@ export function sanitizeVariableName(name: string) {
 }
 
 export function formatLua(code: string) {
+  code = `${code}`
+
   try {
     return (require("lua-format").Beautify(code, {
       RenameVariables: false,
       RenameGlobals: false,
       SolveMath: false
-    }) as string).split("\n").slice(8).join("\n")
+    }) as string).split("\n").slice(4).join("\n").trim() + ""
   } catch (e: any) {
     console.log(e)
     return code

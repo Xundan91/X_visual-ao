@@ -13,6 +13,7 @@ import Link from "next/link";
 import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 import { updateNodeData } from "@/lib/events";
 import Editor from "@monaco-editor/react"
+import { formatLua } from "@/lib/utils";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -36,7 +37,9 @@ export function CodeblockNode(props: Node) {
             const me = e.detail.id == props.id
             if (!me) return
             const inputs = e.detail.data ? (e.detail.data as data) : (props.data as data)
-            e.detail.callback(inputs.code)
+            let code = inputs.code
+            code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
+            e.detail.callback(code)
         }) as EventListener
 
         window.addEventListener("get-code", getCodeListener)
@@ -55,10 +58,6 @@ export function CodeblockSidebar() {
     // input states according to node data (modify as needed)
     const [code, setCode] = useState("")
 
-    // necessary states
-    const [runningCode, setRunningCode] = useState(false)
-    const [outputId, setOutputId] = useState<string | null>(null)
-    const [output, setOutput] = useState<string | null>(null)
     const [prompt, setPrompt] = useState<string | null>(null)
     const { activeNode, activeProcess, setActiveNode } = useGlobalState()
 
@@ -67,7 +66,7 @@ export function CodeblockSidebar() {
         if (!activeNode) return
         const nodeData = activeNode?.data as data
         if (nodeData.code) {
-            setCode(nodeData?.code || "")
+            setCode(nodeData?.code.trim() || "")
         }
     }, [activeNode?.id])
 

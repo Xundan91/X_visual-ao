@@ -88,15 +88,15 @@ export function TokenNode(props: Node) {
                         }
                     } else {
                         const nodeCode = await getCode(node.id, node.data)
-                        if (body.includes(`-- [ ${node.id} ]`)) return
-                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`
+                        if (body.includes(`-- [start:${node.id}]`)) return
+                        body += nodeCode
                     }
                 }
 
                 for (const node of connectedNodes) {
                     await iterateNode(node)
                 }
-                e.detail.callback(body)
+                e.detail.callback(`\n\n-- [start:${props.id}]\n${formatLua(body)}\n-- [end:${props.id}]\n`)
             }
 
             // Execute the async code generation
@@ -174,7 +174,7 @@ export function TokenSidebar() {
         updateNodeData(activeNode.id, newNodeData)
 
         embed({ name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn }).then((code) => {
-            setCode(code)
+            setCode(code.trim())
         })
     }, [name, ticker, totalSupply, denomination, logo, overwrite, tokenId, respawn])
 

@@ -54,7 +54,7 @@ export function LoopNode(props: Node) {
                         }
                     } else {
                         const nodeCode = await getCode(node.id, node.data);
-                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`;
+                        body += nodeCode;
                     }
                 };
 
@@ -64,7 +64,7 @@ export function LoopNode(props: Node) {
 
                 // If body is empty, add a placeholder comment
                 if (body.trim() === "") {
-                    body = "\n  -- Add nodes to the graph to add code here\n";
+                    body = "-- Add nodes to the graph to add code here";
                 }
 
                 let code = ""
@@ -75,16 +75,14 @@ end`
                 } else {
 
 
-                    code = `-- loop count checker
+                    code = `
 ${props.id.replaceAll("-", "_")} = 1
 while ${inputs.condition} do
-${body}
-
-${props.id.replaceAll("-", "_")} = ${props.id.replaceAll("-", "_")} + 1
+    ${body}
 end`
                 }
 
-                code = formatLua(code)
+                code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
 
                 e.detail.callback(code);
             };
@@ -165,7 +163,7 @@ export function LoopSidebar() {
     // takes in input data and returns a string of lua code via promise
     async function embed(inputs: data) {
         const code = await getCode(activeNode?.id!, inputs);
-        setCode(code);
+        setCode(code.trim());
         return code;
     }
 

@@ -52,8 +52,8 @@ export function HandlerNode(props: Node) {
                         }
                     } else {
                         const nodeCode = await getCode(node.id, node.data)
-                        if (body.includes(`-- [ ${node.id} ]`)) return
-                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`
+                        if (body.includes(`-- [start:${node.id}]`)) return
+                        body += nodeCode
                     }
                 }
 
@@ -61,14 +61,14 @@ export function HandlerNode(props: Node) {
                     await iterateNode(node)
                 }
 
-                const code = formatLua(`Handlers.add(
-                    "${inputs.name}",
-                    { Action = "${inputs.action}" },
-                    function(msg)
-                        ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
-                    end
-                )`)
+                let code = `Handlers.add(
+    "${inputs.name}",
+    { Action = "${inputs.action}" },
+    function(msg)
+        ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
+    end)`
 
+                code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
                 e.detail.callback(code)
             }
 
@@ -132,7 +132,7 @@ export function HandlerSidebar() {
         updateNodeData(activeNode?.id, newNodeData)
 
         embed({ name, action }).then((code) => {
-            setCode(code)
+            setCode(code.trim())
         })
     }, [name, action, activeNode])
 

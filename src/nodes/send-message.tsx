@@ -55,8 +55,7 @@ export function SendMessageNode(props: Node) {
                 const tagsCode = tags.length > 0 ? tags.map(tag => `["${tag.name}"] = ${tag.type == "TEXT" ? `"${tag.value}"` : `${tag.value}`}`).join(",") : ""
 
                 let code = `Send({${target ? `Target = ${targetCode},` : ""}${action ? `Action = ${actionCode},` : ""}${data ? `Data = ${dataCode},` : ""}${tags.length > 0 ? `Tags = {${tagsCode}}` : ""}})`
-
-                code = formatLua(code)
+                code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
                 return code
             }
 
@@ -195,7 +194,7 @@ export function SendMessageSidebar() {
         return new Promise<string>(async (resolve) => {
             try {
                 const code = await getCode(activeNode?.id!, inputs)
-                setCode(code)
+                setCode(code.trim())
                 resolve(code)
             } catch (err) {
                 console.error("Error embedding code:", err)
