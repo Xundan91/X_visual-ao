@@ -1,4 +1,4 @@
-import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins, SquareDashed, Plus, GitBranch } from "lucide-react";
+import { LucideIcon, CodeIcon, Workflow, MessageSquareShare, FunctionSquareIcon, DownloadCloud, Send, Coins, SquareDashed, Plus, GitBranch, Repeat } from "lucide-react";
 
 // Import your node components and (if available) sidebar editors
 import StartNode from "@/nodes/index/start";
@@ -15,6 +15,7 @@ import { CodeblockNode } from "../codeblock";
 import { TokenNode } from "../token";
 import { TokenSidebar } from "../token";
 import { ConditionalNode, ConditionalSidebar } from "../conditional";
+import { LoopNode, LoopSidebar } from "../loop";
 import { TEdges } from "@/edges";
 
 export type TNodeType =
@@ -26,12 +27,13 @@ export type TNodeType =
     | "send-message"
     | "codeblock"
     | "conditional"
+    | "loop"
     | "template";
 
-export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token"]
-export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock", "conditional"]
+export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token", "loop"]
+export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock", "conditional", "loop"]
 
-export const attachables: TNodeType[] = ["handler", "token", "conditional"]
+export const attachables: TNodeType[] = ["handler", "token", "conditional", "loop"]
 
 // Define possible edge types
 // export type TEdgeType = "default" | "message" | "tokenId";
@@ -105,6 +107,14 @@ const nodeConfigs: NodeConfig[] = [
         NodeComponent: ConditionalNode,
         SidebarComponent: ConditionalSidebar,
         outputType: "inherit"
+    },
+    {
+        type: "loop",
+        name: "Loop",
+        icon: Repeat,
+        NodeComponent: LoopNode,
+        SidebarComponent: LoopSidebar,
+        outputType: "loop"
     }
 ];
 

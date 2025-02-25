@@ -1,0 +1,299 @@
+import NodeContainer from "@/nodes/node";
+import { Handle, Position } from "@xyflow/react";
+import { keyToNode, Node, NodeIconMapping } from "@/nodes/index";
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { useGlobalState } from "@/hooks/useGlobalStore";
+import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
+import { Loader, Play, Repeat } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Ansi from "ansi-to-react";
+import { parseOutupt, runLua } from "@/lib/aos";
+import Link from "next/link";
+import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
+import { formatLua, sanitizeVariableName } from "@/lib/utils";
+
+// Common values for loop inputs
+const CommonValues = {
+    "not done": "not done",
+    "x < retries": "x < retries",
+    "x < #array": "x < #array",
+};
+
+// data field structure for react-node custom node
+export interface data {
+    loopType: "condition" | "range";
+    condition: string;
+    startIndex: number;
+    endIndex: number;
+    stepValue: number;
+}
+
+// react flow node component
+export function LoopNode(props: Node) {
+    const { setAvailableNodes } = useGlobalState();
+
+    // get code event
+    useEffect(() => {
+        const getCodeListener = ((e: CustomEvent) => {
+            const me = e.detail.id == props.id;
+            if (!me) return;
+
+            const inputs = (e.detail.data || props.data) as data;
+
+            // Create async function to handle code generation
+            const generateCode = async () => {
+                const connectedNodes = getConnectedNodes(props.id);
+                let body = "";
+
+                const iterateNode = async (node: any) => {
+                    if (Array.isArray(node)) {
+                        for (const n of node) {
+                            await iterateNode(n);
+                        }
+                    } else {
+                        const nodeCode = await getCode(node.id, node.data);
+                        body += `\n-- [ ${node.id} ]\n${nodeCode}\n`;
+                    }
+                };
+
+                for (const node of connectedNodes) {
+                    await iterateNode(node);
+                }
+
+                // If body is empty, add a placeholder comment
+                if (body.trim() === "") {
+                    body = "\n  -- Add nodes to the graph to add code here\n";
+                }
+
+                let code = ""
+                if (inputs.loopType == "range") {
+                    code = `for ${props.id.replaceAll("-", "_")} = ${inputs.startIndex}, ${inputs.endIndex}, ${inputs.stepValue} do
+    ${body}
+end`
+                } else {
+
+
+                    code = `-- loop count checker
+${props.id.replaceAll("-", "_")} = 1
+while ${inputs.condition} do
+${body}
+
+${props.id.replaceAll("-", "_")} = ${props.id.replaceAll("-", "_")} + 1
+end`
+                }
+
+                code = formatLua(code)
+
+                e.detail.callback(code);
+            };
+
+            // Execute the async code generation
+            generateCode().catch(err => {
+                console.error("Error generating code:", err);
+                e.detail.callback("");
+            });
+        }) as EventListener;
+
+        window.addEventListener("get-code", getCodeListener);
+        return () => window.removeEventListener("get-code", getCodeListener);
+    }, [props]);
+
+    const Icon = NodeIconMapping[props.type as TNodeType];
+    return <NodeContainer {...props} onAddClick={() => setAvailableNodes(SubRootNodesAvailable)}>
+        {Icon ? <Icon size={30} strokeWidth={1} /> : <Repeat size={30} strokeWidth={1} />}
+        <div className="text-center">{keyToNode(props.type as TNodeType) || "Loop"}</div>
+    </NodeContainer>;
+}
+
+// react sidebar component that appears when a node is selected
+export function LoopSidebar() {
+    // Loop type
+    const [loopType, setLoopType] = useState<"condition" | "range">("condition");
+
+    // While loop condition
+    const [condition, setCondition] = useState("i < 10");
+
+    // For loop indices
+    const [startIndex, setStartIndex] = useState(0);
+    const [endIndex, setEndIndex] = useState(10);
+    const [stepValue, setStepValue] = useState(1);
+
+    // Code preview
+    const [code, setCode] = useState("");
+
+    const { activeNode, activeProcess } = useGlobalState();
+
+    // updates the data in sidebar when the node is selected
+    useEffect(() => {
+        if (!activeNode) return;
+        const nodeData = activeNode?.data as data;
+
+        // Set values from node data
+        setLoopType(nodeData?.loopType || "condition");
+        setCondition(nodeData?.condition || "i < 10");
+        setStartIndex(nodeData?.startIndex ?? 0);
+        setEndIndex(nodeData?.endIndex ?? 10);
+        setStepValue(nodeData?.stepValue ?? 1);
+
+        embed(nodeData);
+    }, [activeNode?.id]);
+
+    // updates the node data when the input data updates
+    useEffect(() => {
+        if (!activeNode) return;
+
+        const newNodeData: data = {
+            loopType,
+            condition,
+            startIndex,
+            endIndex,
+            stepValue,
+        };
+
+        activeNode.data = newNodeData;
+        updateNodeData(activeNode.id, newNodeData);
+
+        embed(newNodeData).then((code) => {
+            setCode(code);
+        });
+    }, [loopType, condition, startIndex, endIndex, stepValue]);
+
+
+
+    // takes in input data and returns a string of lua code via promise
+    async function embed(inputs: data) {
+        const code = await getCode(activeNode?.id!, inputs);
+        setCode(code);
+        return code;
+    }
+
+    return <div>
+        <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+            <SmolText className="h-4 p-0">Loop Type</SmolText>
+        </div>
+
+        <div className="flex gap-1 mt-2 mb-4 px-2">
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLoopType("condition")}
+                className={`flex-1 h-7 rounded-md border ${loopType === "condition" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
+            >
+                Condition
+            </Button>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLoopType("range")}
+                className={`flex-1 h-7 rounded-md border ${loopType === "range" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
+            >
+                Range
+            </Button>
+        </div>
+
+        {loopType === "condition" ? (
+            <>
+                <SmolText className="h-4 p-0 ml-2 mt-4">Loop Condition</SmolText>
+                <Input
+                    type="text"
+                    placeholder="When should the loop continue? (e.g., i < 10)"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                />
+                <div className="flex flex-wrap gap-1 px-2 mt-1">
+                    {Object.entries(CommonValues).map(([key, value]) => {
+                        const kv = value.replaceAll("x", activeNode?.id!).replaceAll("-", "_")
+                        return <Button
+                            key={`cond-${kv}`}
+                            data-active={condition === kv}
+                            variant="ghost"
+                            onClick={() => setCondition(kv)}
+                            className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
+                        >
+                            {key}
+                        </Button>
+                    })}
+                </div>
+            </>
+        ) : (
+            <>
+                <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
+                    <SmolText className="h-4 p-0 ml-2">Count Settings</SmolText>
+                </div>
+                <div className="flex gap-2 px-2 mt-1">
+                    <div className="flex flex-col flex-1">
+                        <SmolText className="h-4 p-0">From</SmolText>
+                        <Input
+                            type="number"
+                            placeholder="0"
+                            value={startIndex}
+                            onChange={(e) => setStartIndex(parseInt(e.target.value) || 0)}
+                            className="h-8"
+                        />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                        <SmolText className="h-4 p-0">To</SmolText>
+                        <Input
+                            type="number"
+                            placeholder="10"
+                            value={endIndex}
+                            onChange={(e) => setEndIndex(parseInt(e.target.value) || 0)}
+                            className="h-8"
+                        />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                        <SmolText className="h-4 p-0">Change By</SmolText>
+                        <Input
+                            type="number"
+                            placeholder="1"
+                            value={stepValue}
+                            onChange={(e) => {
+                                let val = parseInt(e.target.value);
+                                // Prevent zero step value
+                                if (val == 0) {
+                                    // If changing from 1 to 0, make it -1
+                                    // If changing from -1 to 0, make it 1
+                                    val = stepValue > 0 ? -1 : 1;
+                                }
+
+                                // Enforce step direction based on index range
+                                if (startIndex < endIndex && val < 0) {
+                                    // For ascending range, step must be positive
+                                    val = Math.abs(val);
+                                } else if (startIndex > endIndex && val > 0) {
+                                    // For descending range, step must be negative
+                                    val = -Math.abs(val);
+                                }
+
+                                setStepValue(val || 1);
+                            }}
+                            className="h-8"
+                        />
+                    </div>
+                </div>
+            </>
+        )}
+
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
+            {code}
+        </pre>
+
+
+
+        <div className="text-muted-foreground text-xs p-2 mt-4">
+            {loopType === "condition" ? (
+                <>
+                    This loop will repeat as long as the condition is true.<br />
+                    The code inside the loop will run over and over until the condition becomes false.
+                </>
+            ) : (
+                <>
+                    This loop will count from {startIndex} to {endIndex} by steps of {stepValue}.<br />
+                    The code inside the loop will run once for each number in that range.
+                </>
+            )}
+        </div>
+    </div>;
+} 
