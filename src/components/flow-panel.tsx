@@ -84,9 +84,8 @@ export default function FlowPanel() {
             // Show code only for the active node
             try {
                 code = await getCode(activeNode.id)
-                code = `-- [ ${activeNode.id} ]\n${code}`
             } catch (e) {
-                code = `-- [ ${activeNode.id} ]\n-- Error generating code: ${e}`
+                code = `-- [error:${activeNode.id}]\n-- Error generating code: ${e}`
             }
         } else {
             // Show code for all connected nodes when no node is selected
@@ -108,15 +107,14 @@ export default function FlowPanel() {
             // Generate code for each node
             for (const node of rootNodes) {
                 try {
-                    const nodeCode = await getCode(node.id, node.data)
-                    code += `\n-- [ ${node.id} ]\n${nodeCode}\n`
+                    code += await getCode(node.id, node.data)
                 } catch (e) {
-                    code += `\n-- [ ${node.id} ]\n-- Error generating code: ${e}\n`
+                    code += `\n-- [error:${node.id}]\n-- Error generating code: ${e}\n`
                 }
             }
         }
 
-        setFullCode(code || "-- No code generated")
+        setFullCode(code.trim() || "-- No code generated")
         setShowCodeDialog(true)
     }
 
