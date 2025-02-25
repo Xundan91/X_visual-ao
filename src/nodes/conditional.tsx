@@ -9,6 +9,7 @@ import { SubRootNodesAvailable, TNodeType } from "./index/registry";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 // data field structure for react-node custom node
 export interface data {
@@ -32,6 +33,17 @@ const operators = [
     { value: "and", label: "and" },
     { value: "or", label: "or" },
 ];
+
+// Common values for condition inputs
+const CommonValues = {
+    "ao.id": "ao.id",
+    "msg.From": "msg.From",
+    "msg.Data": "msg.Data",
+    "msg.Target": "msg.Target",
+    "true": "true",
+    "false": "false",
+    "nil": "nil"
+}
 
 // react flow node component
 export function ConditionalNode(props: Node) {
@@ -112,7 +124,7 @@ export function ConditionalNode(props: Node) {
 export function ConditionalSidebar() {
     // input states according to node data
     const [lhs, setLhs] = useState("");
-    const [lhsType, setLhsType] = useState<InputTypes>("TEXT");
+    const [lhsType, setLhsType] = useState<InputTypes>("VARIABLE");
     const [operator, setOperator] = useState("==");
     const [rhs, setRhs] = useState("");
     const [rhsType, setRhsType] = useState<InputTypes>("TEXT");
@@ -127,7 +139,7 @@ export function ConditionalSidebar() {
         if (!activeNode) return;
         const nodeData = activeNode?.data as data;
         setLhs(nodeData?.lhs || "");
-        setLhsType(nodeData?.lhsType || "TEXT");
+        setLhsType(nodeData?.lhsType || "VARIABLE");
         setOperator(nodeData?.operator || "==");
         setRhs(nodeData?.rhs || "");
         setRhsType(nodeData?.rhsType || "TEXT");
@@ -217,6 +229,7 @@ export function ConditionalSidebar() {
                 </div>
                 <Input
                     type="text"
+                    placeholder={lhsType === "VARIABLE" ? "Enter variable name (e.g. msg.From)" : "Enter text value"}
                     value={lhs}
                     onChange={(e) => {
                         if (lhsType === "VARIABLE") {
@@ -227,6 +240,21 @@ export function ConditionalSidebar() {
                         }
                     }}
                 />
+                {lhsType === "VARIABLE" && (
+                    <div className="flex flex-wrap gap-1 px-2 mt-1">
+                        {Object.entries(CommonValues).map(([key, value]) => (
+                            <Button
+                                key={`lhs-${key}`}
+                                data-active={lhs === value}
+                                variant="ghost"
+                                onClick={() => setLhs(value)}
+                                className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
+                            >
+                                {key}
+                            </Button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Operator */}
                 <SmolText className="h-4 p-0 ml-4 mt-4">Operator</SmolText>
@@ -254,6 +282,7 @@ export function ConditionalSidebar() {
                 </div>
                 <Input
                     type="text"
+                    placeholder={rhsType === "VARIABLE" ? "Enter variable name (e.g. balance)" : "Enter text value (e.g. 100)"}
                     value={rhs}
                     onChange={(e) => {
                         if (rhsType === "VARIABLE") {
@@ -264,6 +293,21 @@ export function ConditionalSidebar() {
                         }
                     }}
                 />
+                {rhsType === "VARIABLE" && (
+                    <div className="flex flex-wrap gap-1 px-2 mt-1">
+                        {Object.entries(CommonValues).map(([key, value]) => (
+                            <Button
+                                key={`rhs-${key}`}
+                                data-active={rhs === value}
+                                variant="ghost"
+                                onClick={() => setRhs(value)}
+                                className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
+                            >
+                                {key}
+                            </Button>
+                        ))}
+                    </div>
+                )}
             </>
         ) : (
             <>
