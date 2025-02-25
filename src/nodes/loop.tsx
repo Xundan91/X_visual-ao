@@ -23,11 +23,12 @@ const CommonValues = {
 
 // data field structure for react-node custom node
 export interface data {
-    loopType: "condition" | "range";
+    loopType: "condition" | "range" | "iterator";
     condition: string;
     startIndex: number;
     endIndex: number;
     stepValue: number;
+    iteratorVariable: string;
 }
 
 // react flow node component
@@ -115,13 +116,17 @@ export function LoopNode(props: Node) {
                     code = `for ${props.id.replaceAll("-", "_")} = ${inputs.startIndex}, ${inputs.endIndex}, ${inputs.stepValue} do
     ${body}
 end`
-                } else {
-
-
+                } else if (inputs.loopType == "condition") {
                     code = `
 ${props.id.replaceAll("-", "_")} = 1
 while ${inputs.condition} do
     ${body}
+end`
+                } else if (inputs.loopType == "iterator") {
+                    code = `${props.id.replaceAll("-", "_")} = 1
+for i, item in pairs(${inputs.iteratorVariable}) do
+    ${body}
+${props.id.replaceAll("-", "_")} = ${props.id.replaceAll("-", "_")} + 1
 end`
                 }
 
@@ -151,7 +156,7 @@ end`
 // react sidebar component that appears when a node is selected
 export function LoopSidebar() {
     // Loop type
-    const [loopType, setLoopType] = useState<"condition" | "range">("range");
+    const [loopType, setLoopType] = useState<"condition" | "range" | "iterator">("range");
 
     // While loop condition
     const [condition, setCondition] = useState("");
@@ -160,6 +165,9 @@ export function LoopSidebar() {
     const [startIndex, setStartIndex] = useState(0);
     const [endIndex, setEndIndex] = useState(10);
     const [stepValue, setStepValue] = useState(1);
+
+    // Iterator variable
+    const [iteratorVariable, setIteratorVariable] = useState("");
 
     // Code preview
     const [code, setCode] = useState("");
@@ -177,6 +185,7 @@ export function LoopSidebar() {
         setStartIndex(nodeData?.startIndex ?? 0);
         setEndIndex(nodeData?.endIndex ?? 10);
         setStepValue(nodeData?.stepValue ?? 1);
+        setIteratorVariable(nodeData?.iteratorVariable || "");
 
         embed(nodeData);
     }, [activeNode?.id]);
@@ -191,6 +200,7 @@ export function LoopSidebar() {
             startIndex,
             endIndex,
             stepValue,
+            iteratorVariable,
         };
 
         activeNode.data = newNodeData;
@@ -199,13 +209,11 @@ export function LoopSidebar() {
         embed(newNodeData).then((code) => {
             setCode(code);
         });
-    }, [loopType, condition, startIndex, endIndex, stepValue]);
-
-
+    }, [loopType, condition, startIndex, endIndex, stepValue, iteratorVariable]);
 
     // takes in input data and returns a string of lua code via promise
     async function embed(inputs: data) {
-        const code = await getCode(activeNode?.id!, inputs);
+        let code = await getCode(activeNode?.id!, inputs);
         setCode(code.trim());
         return code;
     }
@@ -231,6 +239,14 @@ export function LoopSidebar() {
                 className={`flex-1 h-7 rounded-md border ${loopType === "condition" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
             >
                 Condition
+            </Button>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLoopType("iterator")}
+                className={`flex-1 h-7 rounded-md border ${loopType === "iterator" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
+            >
+                Iterator
             </Button>
         </div>
 
@@ -258,7 +274,7 @@ export function LoopSidebar() {
                     })}
                 </div>
             </>
-        ) : (
+        ) : loopType === "range" ? (
             <>
                 <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
                     <SmolText className="h-4 p-0 ml-2">Count Settings</SmolText>
@@ -292,22 +308,14 @@ export function LoopSidebar() {
                             value={stepValue}
                             onChange={(e) => {
                                 let val = parseInt(e.target.value);
-                                // Prevent zero step value
                                 if (val == 0) {
-                                    // If changing from 1 to 0, make it -1
-                                    // If changing from -1 to 0, make it 1
                                     val = stepValue > 0 ? -1 : 1;
                                 }
-
-                                // Enforce step direction based on index range
                                 if (startIndex < endIndex && val < 0) {
-                                    // For ascending range, step must be positive
                                     val = Math.abs(val);
                                 } else if (startIndex > endIndex && val > 0) {
-                                    // For descending range, step must be negative
                                     val = -Math.abs(val);
                                 }
-
                                 setStepValue(val || 1);
                             }}
                             className="h-8"
@@ -315,13 +323,21 @@ export function LoopSidebar() {
                     </div>
                 </div>
             </>
+        ) : (
+            <>
+                <SmolText className="h-4 p-0 ml-2 mt-4">Variable to Iterate</SmolText>
+                <Input
+                    type="text"
+                    placeholder="Enter table/array variable name"
+                    value={iteratorVariable}
+                    onChange={(e) => setIteratorVariable(e.target.value)}
+                />
+            </>
         )}
 
         <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
             {code}
         </pre>
-
-
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             {loopType === "condition" ? (
@@ -329,10 +345,15 @@ export function LoopSidebar() {
                     This loop will repeat as long as the condition is true.<br />
                     The code inside the loop will run over and over until the condition becomes false.
                 </>
-            ) : (
+            ) : loopType === "range" ? (
                 <>
                     This loop will count from {startIndex} to {endIndex} by steps of {stepValue}.<br />
                     The code inside the loop will run once for each number in that range.
+                </>
+            ) : (
+                <>
+                    This loop will iterate through each item in the {iteratorVariable} table/array.<br />
+                    The code inside the loop will run once for each item in the collection.
                 </>
             )}
         </div>
