@@ -1,5 +1,6 @@
 import { TNodeType } from "@/nodes/index/registry"
 import { Node } from "@/nodes/index"
+import { Edge } from "@/edges"
 
 export function addNode(type: TNodeType, extraDetail?: {}) {
     dispatchEvent(new CustomEvent("add-node", { detail: { type, ...extraDetail } }))
@@ -15,6 +16,14 @@ export function runNode(id: string, extraDetail?: {}) {
 
 export function updateNodeData(id: string, data: {}) {
     dispatchEvent(new CustomEvent("update-node-data", { detail: { id, data } }))
+}
+
+export function addEdge(edge: Edge) {
+    dispatchEvent(new CustomEvent("add-edge", { detail: { edge } }))
+}
+
+export function removeEdge(id: string) {
+    dispatchEvent(new CustomEvent("remove-edge", { detail: { id } }))
 }
 
 const maxTries = 1000

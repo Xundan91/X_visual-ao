@@ -3,6 +3,7 @@ import DashedEdge from "./dashed";
 import MessageEdge from "./message";
 import TokenIdEdge from "./token-id";
 import LoopEdge from "./loop";
+import LoopEndEdge from "./loop-end";
 export interface Edge {
     id: string;
     source: string;
@@ -16,7 +17,8 @@ const Edges = {
     dashed: DashedEdge,
     message: MessageEdge,
     tokenId: TokenIdEdge,
-    loop: LoopEdge
+    loop: LoopEdge,
+    loopEnd: LoopEndEdge
 }
 
 type TEdges = keyof typeof Edges | "inherit"

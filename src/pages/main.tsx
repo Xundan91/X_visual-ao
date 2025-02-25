@@ -271,6 +271,28 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     return () => window.removeEventListener("delete-node", deleteNodeListener)
   }, [nodes, setEdges, edges])
 
+  // add edge
+  useEffect(() => {
+    const addEdgeListener = ((e: CustomEvent) => {
+      const edge = e.detail.edge
+      setEdges(edges => edges.concat(edge))
+    }) as EventListener
+
+    window.addEventListener("add-edge", addEdgeListener)
+    return () => window.removeEventListener("add-edge", addEdgeListener)
+  }, [setEdges])
+
+  // remove edge
+  useEffect(() => {
+    const removeEdgeListener = ((e: CustomEvent) => {
+      const id = e.detail.id
+      setEdges(edges => edges.filter(e => e.id !== id))
+    }) as EventListener
+
+    window.addEventListener("remove-edge", removeEdgeListener)
+    return () => window.removeEventListener("remove-edge", removeEdgeListener)
+  }, [setEdges])
+
   // load nodes and edges from localStorage
   useEffect(() => {
     if (!globals.activeProcess) return
@@ -349,8 +371,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       const id = e.detail.id
       const result: any[] = []
 
-      // Find direct connections from source node
-      const directEdges = edges.filter(edge => edge.source === id)
+      // Find direct connections from source node, ignoring loopEnd edges
+      const directEdges = edges.filter(edge => edge.source === id && edge.type !== 'loopEnd')
 
       // Sort edges by y position of target nodes (top to bottom)
       const sortedEdges = directEdges.sort((a, b) => {
@@ -364,8 +386,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         const currentNode = nodes.find(n => n.id === currentId)
         if (!currentNode) return null
 
-        // Find nodes connected to current node
-        const nextEdges = edges.filter(edge => edge.source === currentId)
+        // Find nodes connected to current node, ignoring loopEnd edges
+        const nextEdges = edges.filter(edge => edge.source === currentId && edge.type !== 'loopEnd')
 
         // Sort child edges by y position
         const sortedNextEdges = nextEdges.sort((a, b) => {
@@ -581,6 +603,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
           const e_ = e.filter(e__ => e__.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes((e__ as any).id))
           onNodesChange(e_ as any)
         }}
+        onNodeDrag={() => { updateNodeData("", {}) }}
         onPaneClick={() => {
           globals.setActiveNode(undefined)
           globals.toggleSidebar(false)

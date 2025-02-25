@@ -11,7 +11,7 @@ import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
 import { SubRootNodesAvailable, TNodeType } from "./index/registry";
-import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
+import { getCode, getConnectedNodes, removeEdge, addEdge, TConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 
 // Common values for loop inputs
@@ -33,6 +33,49 @@ export interface data {
 // react flow node component
 export function LoopNode(props: Node) {
     const { setAvailableNodes } = useGlobalState();
+    const [lastNode, setLastNode] = useState<Node>();
+
+    useEffect(() => {
+        const walkNode = (node: TConnectedNodes) => {
+            if (Array.isArray(node)) {
+                for (const n of node) {
+                    console.log("walking node", n);
+                    walkNode(n as TConnectedNodes);
+                }
+            } else {
+                setLastNode(node);
+            }
+        }
+
+        function getLastNode() {
+            const connectedNodes = getConnectedNodes(props.id);
+            console.log("connected nodes", connectedNodes);
+            if (connectedNodes.length > 0) {
+                walkNode(connectedNodes);
+            }
+        }
+
+        window.addEventListener("update-node-data", getLastNode)
+        window.addEventListener("delete-node", () => setTimeout(getLastNode, 100))
+        return () => {
+            window.removeEventListener("update-node-data", getLastNode)
+            window.removeEventListener("delete-node", getLastNode)
+        }
+    }, [setLastNode])
+
+    useEffect(() => {
+        if (!lastNode) return;
+        console.log("last node", lastNode);
+        // when last node changes, remove all edges with the id `endloop-${props.id}`
+        // add a new edge with the id `endloop-${props.id}`
+        removeEdge(`endloop-${props.id}`)
+        addEdge({
+            id: `endloop-${props.id}`,
+            source: lastNode.id,
+            target: props.id,
+            type: "loopEnd"
+        })
+    }, [lastNode]);
 
     // get code event
     useEffect(() => {
@@ -108,10 +151,10 @@ end`
 // react sidebar component that appears when a node is selected
 export function LoopSidebar() {
     // Loop type
-    const [loopType, setLoopType] = useState<"condition" | "range">("condition");
+    const [loopType, setLoopType] = useState<"condition" | "range">("range");
 
     // While loop condition
-    const [condition, setCondition] = useState("i < 10");
+    const [condition, setCondition] = useState("");
 
     // For loop indices
     const [startIndex, setStartIndex] = useState(0);
@@ -129,8 +172,8 @@ export function LoopSidebar() {
         const nodeData = activeNode?.data as data;
 
         // Set values from node data
-        setLoopType(nodeData?.loopType || "condition");
-        setCondition(nodeData?.condition || "i < 10");
+        setLoopType(nodeData?.loopType || "range");
+        setCondition(nodeData?.condition || "");
         setStartIndex(nodeData?.startIndex ?? 0);
         setEndIndex(nodeData?.endIndex ?? 10);
         setStepValue(nodeData?.stepValue ?? 1);
@@ -176,18 +219,18 @@ export function LoopSidebar() {
             <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setLoopType("condition")}
-                className={`flex-1 h-7 rounded-md border ${loopType === "condition" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
-            >
-                Condition
-            </Button>
-            <Button
-                variant="ghost"
-                size="sm"
                 onClick={() => setLoopType("range")}
                 className={`flex-1 h-7 rounded-md border ${loopType === "range" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
             >
                 Range
+            </Button>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLoopType("condition")}
+                className={`flex-1 h-7 rounded-md border ${loopType === "condition" ? "border-primary bg-primary/10" : "border-muted-foreground/30"}`}
+            >
+                Condition
             </Button>
         </div>
 
