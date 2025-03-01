@@ -12,6 +12,7 @@ import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { useGlobalState } from "@/hooks/useGlobalStore";
+import { Button } from "@/components/ui/button";
 
 export function GenerateNode(node: NodeConfig) {
 
@@ -187,6 +188,23 @@ export function GenerateSidebar(node_: NodeConfig) {
                                     }
                                 }}
                             />
+                            {inputConfig.values && (
+                                <div className="flex items-center gap-1 ml-3 mt-1 text-xs text-muted-foreground">
+                                    {inputConfig.values.map((value) => (
+                                        <Button
+                                            key={value}
+                                            data-active={nodeData[input] == value}
+                                            variant="ghost"
+                                            onClick={() => {
+                                                setNodeData(prev => ({ ...prev, [input]: value }));
+                                            }}
+                                            className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
+                                        >
+                                            {value}
+                                        </Button>
+                                    ))}
+                                </div>
+                            )}
                         </>
                     )}
 
