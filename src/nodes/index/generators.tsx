@@ -94,26 +94,40 @@ export function GenerateSidebar(node_: NodeConfig) {
 
         const hasInputs = Object.keys(node_.inputs || {}).length > 0;
 
+        // Load initial data when active node changes
         useEffect(() => {
             if (!activeNode) return;
-            // Initialize nodeData with default values for all inputs
+
+            // Initialize nodeData with values from active node
             const initialData: Record<string, any> = {};
             if (node_.inputs) {
                 Object.keys(node_.inputs).forEach((input) => {
-                    // Use type assertion since we know the structure
                     initialData[input] = (activeNode.data as Record<string, any>)?.[input] || "";
                     initialData[`${input}Type`] = (activeNode.data as Record<string, any>)?.[`${input}Type`] || "TEXT";
                 });
             }
             setNodeData(initialData);
             embed(initialData)
-        }, []);
+        }, [activeNode?.id]);
 
+        // Only update node data when nodeData changes, not when activeNode changes
         useEffect(() => {
             if (!activeNode) return;
-            updateNodeData(activeNode.id, nodeData);
-            embed(nodeData)
-        }, [nodeData, activeNode]);
+
+            // Skip if nodeData is empty (prevents overwriting on node change)
+            if (Object.keys(nodeData).length === 0) return;
+
+            // Only update if this node's data actually changed
+            const currentData = activeNode.data as Record<string, any>;
+            const hasChanges = Object.keys(nodeData).some(key =>
+                nodeData[key] !== currentData[key]
+            );
+
+            if (hasChanges) {
+                updateNodeData(activeNode.id, nodeData);
+                embed(nodeData);
+            }
+        }, [nodeData]);
 
         type InputTypes = "TEXT" | "VARIABLE";
         type InputField = string;
