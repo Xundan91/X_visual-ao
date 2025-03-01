@@ -1,5 +1,5 @@
 import { Node } from '@/nodes/index';
-import { TNodeType } from '@/nodes/index/registry';
+import { TNodeType } from '@/nodes/index/type';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { create } from 'zustand'
 
