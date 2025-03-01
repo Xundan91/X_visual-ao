@@ -5,10 +5,10 @@ import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { addNode } from "@/lib/events"
 import { Input } from "@/components/ui/input"
-import { NodeIconMapping } from "@/nodes/index"
-import { nodeConfigs, TNodeType } from "@/nodes/index/registry"
+import { NodeIconMapping } from "@/nodes/index/index"
+import { nodeConfigs } from "@/nodes/index/registry"
 import { Button } from "./ui/button"
-
+import { TNodeType } from "@/nodes/index/type"
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
 }
@@ -81,27 +81,33 @@ function AvailableNodes() {
             <div className="p-2 grid w-full items-start justify-start grid-cols-[repeat(auto-fill,minmax(7rem,0fr))] gap-2">
                 {/* Show enabled nodes first */}
                 {filteredNodes
-                    .filter(type => availableNodes.includes(type))
-                    .map((type, index) => (
-                        <NodeTemplate
-                            disabled={false}
-                            key={`enabled-${index}`}
-                            type={type}
-                            Icon={NodeIconMapping[type] || FileQuestion}
-                        />
-                    ))}
-
-                {/* Then show disabled nodes */}
+                    .map((type, index) => {
+                        if (!nodeConfigs.find((node) => node.type == type)?.community) {
+                            return <NodeTemplate
+                                disabled={false}
+                                key={`enabled-${index}`}
+                                type={type}
+                                Icon={NodeIconMapping[type] || FileQuestion}
+                            />
+                        }
+                    })}
+            </div>
+            <div className="my-4 w-[90%] mx-auto bg-muted-foreground/30 h-[1px] flex items-center justify-center" >
+                <div className="text-muted-foreground/70 bg-[#f2f2f2] w-fit px-1 text-sm text-center mx-auto">community nodes</div>
+            </div>
+            <div className="p-2 grid w-full items-start justify-start grid-cols-[repeat(auto-fill,minmax(7rem,0fr))] gap-2">
+                {/* Show enabled nodes first */}
                 {filteredNodes
-                    .filter(type => !availableNodes.includes(type))
-                    .map((type, index) => (
-                        <NodeTemplate
-                            disabled={true}
-                            key={`disabled-${index}`}
-                            type={type}
-                            Icon={NodeIconMapping[type] || FileQuestion}
-                        />
-                    ))}
+                    .map((type, index) => {
+                        if (nodeConfigs.find((node) => node.type == type)?.community) {
+                            return <NodeTemplate
+                                disabled={false}
+                                key={`enabled-${index}`}
+                                type={type}
+                                Icon={NodeIconMapping[type] || FileQuestion}
+                            />
+                        }
+                    })}
             </div>
         </>
     );
@@ -119,7 +125,9 @@ function NodeData({ activeNode }: { activeNode: Node }) {
             {
                 nodeConfigs.map((node) => {
                     if (node.type == activeNode.type) {
-                        return <node.SidebarComponent />
+                        if (node.SidebarComponent) {
+                            return <node.SidebarComponent />
+                        }
                     }
                 })
             }

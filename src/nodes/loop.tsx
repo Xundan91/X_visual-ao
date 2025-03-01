@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
-import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { SubRootNodesAvailable } from "./index/registry";
+import { TNodeType } from "./index/type";
 import { getCode, getConnectedNodes, removeEdge, addEdge, TConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 
@@ -252,7 +253,7 @@ export function LoopSidebar() {
 
         {loopType === "condition" ? (
             <>
-                <SmolText className="h-4 p-0 ml-2 mt-4">Loop Condition</SmolText>
+                <SmolText className="h-4 p-0 ml-4 mt-4">Loop Condition</SmolText>
                 <Input
                     type="text"
                     placeholder="When should the loop continue? (e.g., i < 10)"
@@ -281,7 +282,7 @@ export function LoopSidebar() {
                 </div>
                 <div className="flex gap-2 px-2 mt-1">
                     <div className="flex flex-col flex-1">
-                        <SmolText className="h-4 p-0">From</SmolText>
+                        <SmolText className="h-4 p-0 ml-2">From</SmolText>
                         <Input
                             type="number"
                             placeholder="0"
@@ -291,7 +292,7 @@ export function LoopSidebar() {
                         />
                     </div>
                     <div className="flex flex-col flex-1">
-                        <SmolText className="h-4 p-0">To</SmolText>
+                        <SmolText className="h-4 p-0 ml-2">To</SmolText>
                         <Input
                             type="number"
                             placeholder="10"
@@ -301,7 +302,7 @@ export function LoopSidebar() {
                         />
                     </div>
                     <div className="flex flex-col flex-1">
-                        <SmolText className="h-4 p-0">Change By</SmolText>
+                        <SmolText className="h-4 p-0 ml-2">Change By</SmolText>
                         <Input
                             type="number"
                             placeholder="1"
@@ -325,7 +326,7 @@ export function LoopSidebar() {
             </>
         ) : (
             <>
-                <SmolText className="h-4 p-0 ml-2 mt-4">Variable to Iterate</SmolText>
+                <SmolText className="h-4 p-0 ml-4 mt-4">Variable to Iterate</SmolText>
                 <Input
                     type="text"
                     placeholder="Enter table/array variable name"

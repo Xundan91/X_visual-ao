@@ -5,8 +5,6 @@ import StartNode from "@/nodes/index/start";
 import AnnotationNode from "@/nodes/index/annotation";
 import { TNodeData } from "@/nodes/index/type";
 
-import { TemplateSidebar } from "@/nodes/_template";
-import { TemplateNode } from "@/nodes/_template";
 import { HandlerNode, HandlerSidebar } from "@/nodes/handler";
 import { SendMessageSidebar } from "../send-message";
 import { SendMessageNode } from "../send-message";
@@ -17,18 +15,10 @@ import { TokenSidebar } from "../token";
 import { ConditionalNode, ConditionalSidebar } from "../conditional";
 import { LoopNode, LoopSidebar } from "../loop";
 import { TEdges } from "@/edges";
+import * as CommunityNodes from "@/nodes/community";
+import { TNodeType } from "@/nodes/index/type";
+import { GenerateNode, GenerateSidebar } from "./generators";
 
-export type TNodeType =
-    | "start"
-    | "add-node"
-    | "annotation"
-    | "handler"
-    | "token"
-    | "send-message"
-    | "codeblock"
-    | "conditional"
-    | "loop"
-    | "template";
 
 export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token", "loop"]
 export const SubRootNodesAvailable: TNodeType[] = ["send-message", "codeblock", "conditional", "loop"]
@@ -42,11 +32,23 @@ export const attachables: TNodeType[] = ["handler", "token", "conditional", "loo
 export interface NodeConfig {
     type: TNodeType;
     name: string; // Friendly display name
-    icon: LucideIcon;
-    NodeComponent: React.FC<any>;
-    SidebarComponent: React.FC<any>;
-    embedFunction?: (inputs: TNodeData) => string;
+    icon?: LucideIcon;
+    iconName?: string;
+    NodeComponent?: React.FC<any>;
+    SidebarComponent?: React.FC<any>;
     outputType: TEdges; // What type of edge should be used when this is the source
+    inputs?: {
+        [name: string]: {
+            type: "text" | "number" | "boolean"
+            label?: string;
+            showVariableToggle?: boolean
+            input: "normal" | "dropdown" | "checkbox"
+            values?: string[]
+            placeholder?: string
+        }
+    }
+    community?: boolean
+    codeGenerator?: (inputs: TNodeData) => string;
 }
 
 // Create an array of node configurations – adding a new node now only means adding a new entry here.
@@ -115,18 +117,27 @@ const nodeConfigs: NodeConfig[] = [
         NodeComponent: LoopNode,
         SidebarComponent: LoopSidebar,
         outputType: "loop"
-    }
+    },
+    ...Object.values(CommunityNodes).map(node => {
+        if (!node.NodeComponent) {
+            //generate node component
+            node.NodeComponent = GenerateNode(node)
+        }
+        if (!node.SidebarComponent) {
+            //generate sidebar component
+            node.SidebarComponent = GenerateSidebar(node)
+        }
+        return {
+            type: node.type as TNodeType,
+            name: node.name,
+            iconName: node.iconName,
+            outputType: node.outputType,
+            codeGenerator: node.codeGenerator,
+            NodeComponent: node.NodeComponent,
+            SidebarComponent: node.SidebarComponent,
+            community: true
+        }
+    })
 ];
-
-if (process.env.NODE_ENV == "development") {
-    nodeConfigs.push({
-        type: "template",
-        name: "Template",
-        icon: SquareDashed,
-        NodeComponent: TemplateNode,
-        SidebarComponent: TemplateSidebar,
-        outputType: "default"
-    });
-}
 
 export { nodeConfigs };

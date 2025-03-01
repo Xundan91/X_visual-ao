@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
-import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { SubRootNodesAvailable } from "./index/registry";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { TNodeType } from "./index/type";
 
 // data field structure for react-node custom node
 export interface data {
@@ -221,7 +222,7 @@ export function ConditionalSidebar() {
                 <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
                     <SmolText className="h-4 p-0 ml-2">Left Value</SmolText>
                     <ToggleButton
-                        className="mb-0.5"
+                        className="mb-0.5 mr-2"
                         nameType={lhsType}
                         onClick={() => handleTypeToggle(lhsType, setLhsType, lhs, setLhs)}
                     />
@@ -258,7 +259,7 @@ export function ConditionalSidebar() {
                 {/* Operator */}
                 <SmolText className="h-4 p-0 ml-4 mt-4">Operator</SmolText>
                 <Select value={operator} onValueChange={setOperator}>
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className="bg-white">
                         <SelectValue placeholder="Select an operator" />
                     </SelectTrigger>
                     <SelectContent>
@@ -274,7 +275,7 @@ export function ConditionalSidebar() {
                 <div className="flex mt-4 px-2 items-end gap-1 justify-between h-5">
                     <SmolText className="h-4 p-0 ml-2">Right Value</SmolText>
                     <ToggleButton
-                        className="mb-0.5"
+                        className="mb-0.5 mr-2"
                         nameType={rhsType}
                         onClick={() => handleTypeToggle(rhsType, setRhsType, rhs, setRhs)}
                     />

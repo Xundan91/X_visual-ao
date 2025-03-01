@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
-import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { SubRootNodesAvailable } from "./index/registry";
+import { TNodeType } from "./index/type";
 import { updateNodeData } from "@/lib/events";
 import Editor from "@monaco-editor/react"
 import { formatLua } from "@/lib/utils";
@@ -81,7 +82,7 @@ export function CodeblockSidebar() {
         <SmolText className="h-4 p-0 ml-4 mt-4">Ask AI to write code for you (coming soon)</SmolText>
         <textarea
             disabled
-            className="flex w-full max-h-[20vh] min-h-[20px] bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            className="flex w-[97%] mx-auto rounded max-h-48 min-h-10 h-10 bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             placeholder="Prompt for AI"
             value={prompt || ""}
             rows={1}
@@ -106,5 +107,8 @@ export function CodeblockSidebar() {
                 lineDecorationsWidth: 0
             }}
         />
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
+            {formatLua(code)}
+        </pre>
     </div>
 }

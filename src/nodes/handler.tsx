@@ -1,12 +1,13 @@
 import NodeContainer from "@/nodes/node";
 import { Handle, Position } from "@xyflow/react";
 import { keyToNode, Node, NodeIconMapping } from "@/nodes/index";
-import { RootNodesAvailable, SubRootNodesAvailable, TNodeType } from "@/nodes/index/registry";
+import { RootNodesAvailable, SubRootNodesAvailable } from "@/nodes/index/registry";
+import { TNodeType } from "@/nodes/index/type";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { InputTypes, SmolText, ToggleButton } from "@/components/right-sidebar";
-import { Loader, Play, Plus } from "lucide-react";
+import { Loader, LucideIcon, Play, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";

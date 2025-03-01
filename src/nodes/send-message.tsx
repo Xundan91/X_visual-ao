@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
-import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { SubRootNodesAvailable } from "./index/registry";
+import { TNodeType } from "./index/type";
 import { Tag } from "@/lib/types";
 import { getCode, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
@@ -278,7 +279,7 @@ export function SendMessageSidebar() {
             <div key={index} className="grid grid-cols-2 items-center justify-center gap-0">
                 <div></div>
                 <ToggleButton
-                    className="ml-auto mr-14 mb-0.5"
+                    className="ml-auto mr-16 mb-0.5"
                     nameType={tag.type}
                     onClick={() => setTags(tags.map((t, i) => {
                         if (i === index) {
@@ -290,10 +291,9 @@ export function SendMessageSidebar() {
                         return t
                     }))}
                 />
-                <div className="flex items-center col-span-2">
+                <div className="flex items-center col-span-2 w-[97%] mx-auto gap-1">
                     <Input
                         data-error={tag.name.length <= 0}
-                        className=""
                         placeholder="TagName"
                         value={tag.name}
                         onChange={(e) => setTags(tags.map((t, i) =>
@@ -301,7 +301,6 @@ export function SendMessageSidebar() {
                         ))}
                     />
                     <Input
-                        className=""
                         placeholder="TagValue"
                         value={tag.value}
                         onChange={(e) => {
@@ -319,7 +318,7 @@ export function SendMessageSidebar() {
                     />
                     <Button
                         variant="ghost"
-                        className="p-0 rounded-none border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
+                        className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
                         onClick={() => removeTag(index)}
                     >
                         <Minus size={22} className="m-0 p-0 w-full h-full" />
@@ -330,22 +329,20 @@ export function SendMessageSidebar() {
 
         <SmolText className="h-4 p-0 ml-4 mt-4">Add New Tag</SmolText>
         {/* New tag input */}
-        <div className="flex items-center">
+        <div className="flex items-center w-[97%] mx-auto gap-1">
             <Input
-                className=""
                 placeholder="TagName"
                 value={newTagKey}
                 onChange={(e) => setNewTagKey(e.target.value)}
             />
             <Input
-                className=""
                 placeholder="TagValue"
                 value={newTagValue}
                 onChange={(e) => setNewTagValue(e.target.value)}
             />
             <Button
                 variant="ghost"
-                className="p-0 rounded-none border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
+                className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
                 onClick={() => addTag("TEXT")}
             >
                 <Plus size={22} className="m-0 p-0 w-full h-full" />

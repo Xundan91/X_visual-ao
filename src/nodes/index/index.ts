@@ -1,22 +1,28 @@
-import { LucideIcon } from "lucide-react";
-import { nodeConfigs, TNodeType } from "./registry";
-import { TNodeData } from "./type"
+import { FileQuestion, LucideIcon } from "lucide-react";
+import { nodeConfigs } from "./registry";
+import { TNodeData, TNodeType } from "./type"
 
 // Build the component mapping for react-flow nodes
 export const Nodes: Record<TNodeType, React.FC<any>> = nodeConfigs.reduce((acc, config) => {
-    acc[config.type as TNodeType] = config.NodeComponent;
+    acc[config.type as TNodeType] = config.NodeComponent as React.FC<any>;
     return acc;
 }, {} as Record<TNodeType, React.FC<any>>);
 
 // Create the node icon mapping so both your flow and sidebar use the same icons
 export const NodeIconMapping: Record<TNodeType, LucideIcon> = nodeConfigs.reduce((acc, config) => {
-    acc[config.type as TNodeType] = config.icon;
+    if (config.icon) {
+        acc[config.type as TNodeType] = config.icon;
+    } else if (config.iconName) {
+        acc[config.type as TNodeType] = require("lucide-react")[config.iconName];
+    } else {
+        acc[config.type as TNodeType] = FileQuestion;
+    }
     return acc;
 }, {} as Record<TNodeType, LucideIcon>);
 
-export const NodeEmbedFunctionMapping: Record<TNodeType, (inputs: TNodeData) => string> = nodeConfigs.reduce((acc, config) => {
-    if (config.embedFunction) {
-        acc[config.type as TNodeType] = config.embedFunction;
+export const NodeCodeGeneratorMapping: Record<TNodeType, (inputs: TNodeData) => string> = nodeConfigs.reduce((acc, config) => {
+    if (config.codeGenerator) {
+        acc[config.type as TNodeType] = config.codeGenerator;
     }
     return acc;
 }, {} as Record<TNodeType, (inputs: TNodeData) => string>);

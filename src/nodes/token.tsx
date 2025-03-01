@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import Ansi from "ansi-to-react";
 import { parseOutupt, runLua, spawnToken } from "@/lib/aos";
 import Link from "next/link";
-import { SubRootNodesAvailable, TNodeType } from "./index/registry";
+import { SubRootNodesAvailable } from "./index/registry";
+import { TNodeType } from "./index/type";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua } from "@/lib/utils";
 import { token } from "@/blueprints"

@@ -1,7 +1,6 @@
 // import { replaceXMLFieldValue, xmlToLua } from "@/blockly/utils/xml"
 import { Edge } from "@/edges"
 import { Node } from "@/nodes/index"
-import { TNodeType } from "@/nodes/index/registry"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -52,4 +51,15 @@ export function formatLua(code: string) {
     console.log(e)
     return code
   }
+}
+
+export const convertor = {
+  // text inside quotes ""
+  text: (input: string) => input ? (input.startsWith('"') && input.endsWith('"') ? input : `"${input}"`) : "",
+  // strip starting and ending quotes
+  variable: (input: string) => input ? input.replace(/^["']+|["']+$/g, '') : "",
+  // convert to number
+  number: (input: string) => convertor.variable(input || "").replace(/[^0-9]/g, '') || "",
+  // convert to boolean
+  boolean: (input: string) => convertor.variable(input || "") == "true" || false
 }

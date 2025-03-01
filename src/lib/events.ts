@@ -1,4 +1,4 @@
-import { TNodeType } from "@/nodes/index/registry"
+import { TNodeType } from "@/nodes/index/type"
 import { Node } from "@/nodes/index"
 import { Edge } from "@/edges"
 

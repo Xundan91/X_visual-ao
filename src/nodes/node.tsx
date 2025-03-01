@@ -6,7 +6,7 @@ import { Node } from "@/nodes/index"
 import { ChevronsLeft, ChevronsRight, Loader, MoveLeft, MoveRight, Plus, StepBack, Trash } from "lucide-react"
 import { PropsWithChildren } from "react"
 
-interface NodeContainerProps extends PropsWithChildren<Node> {
+export interface NodeContainerProps extends PropsWithChildren<Node> {
     onDelete?: (nodeId: string) => void
     onRunFromHere?: (nodeId: string) => void
     onAddClick?: () => void

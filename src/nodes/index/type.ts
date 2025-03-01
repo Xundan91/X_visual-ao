@@ -1,26 +1,22 @@
-// import { data as HandlerAddNodeData } from "./core/handler-add"
-// import { data as AOSendNodeData } from "./core/ao-send"
-// import { data as FunctionNodeData } from "./core/function"
-// import { data as InstallPackageNodeData } from "./core/install-package"
-// import { data as CreateTokenNodeData } from "./core/token"
-// import { data as TransferNodeData } from "./core/transfer"
 import { data as HandlerNodeData } from "@/nodes/handler"
 import { data as TokenNodeData } from "@/nodes/token"
 import { data as CodeblockNodeData } from "@/nodes/codeblock"
 import { data as SendMessageNodeData } from "@/nodes/send-message"
 import { data as ConditionalNodeData } from "@/nodes/conditional"
 import { data as LoopNodeData } from "@/nodes/loop"
+import { TCommunityNodeType, TCommunityNodeData } from "../community/type"
 
-import { data as TemplateNodeData } from "@/nodes/_template"
-
-// export type TNodeData = any
-//     | HandlerAddNodeData
-//     | AOSendNodeData
-//     | FunctionNodeData
-//     | InstallPackageNodeData
-//     | CreateTokenNodeData
-//     | TransferNodeData
-//     | TemplateNodeData
+export type TNodeType =
+    | "start"
+    | "add-node"
+    | "annotation"
+    | "handler"
+    | "token"
+    | "send-message"
+    | "codeblock"
+    | "conditional"
+    | "loop"
+    | TCommunityNodeType;
 
 export type TNodeData = { attachable?: boolean | true } & (
     | HandlerNodeData
@@ -29,5 +25,5 @@ export type TNodeData = { attachable?: boolean | true } & (
     | SendMessageNodeData
     | ConditionalNodeData
     | LoopNodeData
-    | TemplateNodeData
+    | TCommunityNodeData
 )
