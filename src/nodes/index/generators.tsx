@@ -192,6 +192,11 @@ export function GenerateSidebar(node_: NodeConfig) {
         }
 
         return <div>
+            {
+                !hasInputs && (
+                    <SmolText className="text-muted-foreground text-center">No inputs</SmolText>
+                )
+            }
             {hasInputs && Object.keys(node_.inputs!).map((input) => {
                 const inputConfig = node_.inputs![input];
 
@@ -302,7 +307,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                 </div>
             })}
             <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
-                {formatLua(code)}
+                {formatLua(code) || "-- Lua code will appear here"}
             </pre>
         </div>
     }

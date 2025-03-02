@@ -8,10 +8,12 @@ import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup, } from "@/components/ui/resizable"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "@/components/ui/tooltip"
-import { Plus, X, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Plus, X, ChevronDown, ChevronUp, Trash2, Save, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { convertor, TextOrVariable, TConverted } from "@/lib/utils";
+import { convertor, TextOrVariable, TConverted, sanitizeVariableName } from "@/lib/utils";
 import { GenerateNode, GenerateSidebar } from "@/nodes/index/generators";
+import { useGlobalState } from "@/hooks/useGlobalStore";
+import { Node } from "@/nodes/index";
 
 // inputs:
 // - node name
@@ -42,10 +44,17 @@ interface NodeInputs {
 }
 
 export default function NodeBuildder() {
-    const [node, setNode] = useState<Partial<NodeConfig>>({ inputs: {} });
+    const [node, setNode] = useState<NodeConfig>({
+        name: "",
+        type: "" as any,
+        iconName: "",
+        outputType: "inherit",
+        inputs: {}
+    });
     const [iconSearch, setIconSearch] = useState("");
     const [selectedIcon, setSelectedIcon] = useState<string>("");
     const [newInputKey, setNewInputKey] = useState("");
+    const [sidebarComponent, setSidebarComponent] = useState<React.FC<any>>(() => null);
 
     // Get all Lucide icons and filter out non-icon exports
     const iconList = Object.entries(LucideIcons).map(([name]) => name).filter((name) => !name.endsWith("Icon"));
@@ -53,23 +62,32 @@ export default function NodeBuildder() {
     // Filter icons based on search
     const filteredIcons = iconList
         .filter(name => name.toLowerCase().includes(iconSearch.toLowerCase()))
-        .slice(0, 25); // Limit to first 100 icons for performance
+        .slice(0, 25); // Limit to first N icons for performance
 
     useEffect(() => {
-        console.log(node);
+        // const _ = GenerateSidebar(node as NodeConfig)
+        // setSidebarComponent(_)
+        console.log(node)
     }, [node]);
+
 
     const addInput = () => {
         if (!newInputKey || !node.inputs) return;
+
+        // Default input configuration
+        const defaultInput: InputConfig = {
+            input: "normal",
+            type: "text",
+            label: newInputKey,
+            placeholder: newInputKey,
+            showVariableToggle: false
+        };
+
         setNode(prev => ({
             ...prev,
             inputs: {
                 ...prev.inputs,
-                [newInputKey]: {
-                    type: "text",
-                    input: "normal",
-                    showVariableToggle: false
-                }
+                [newInputKey]: defaultInput
             }
         }));
         setNewInputKey("");
@@ -86,42 +104,87 @@ export default function NodeBuildder() {
         if (!node.inputs) return;
         const currentInputs = node.inputs as NodeInputs;
 
-        // Special handling for dropdown values
-        if (field === 'values' && currentInputs[key]?.input === 'dropdown') {
-            const values = value as TConverted[];
+        // Special handling for input type changes
+        if (field === 'input') {
+            let updatedInput = {
+                ...currentInputs[key],
+                [field]: value,
+            };
+
+            // Handle input type changes while preserving values where possible
+            if (value === 'dropdown') {
+                updatedInput = {
+                    ...updatedInput,
+                    // Keep existing values if they exist
+                    values: currentInputs[key]?.values || [],
+                    showVariableToggle: false,
+                    type: currentInputs[key]?.type === 'boolean' ? 'text' : currentInputs[key]?.type || 'text',
+                };
+            } else if (value === 'checkbox') {
+                updatedInput = {
+                    ...updatedInput,
+                    type: 'boolean',
+                    showVariableToggle: false,
+                    // Convert to single value array
+                    values: currentInputs[key]?.values?.length ?
+                        [currentInputs[key].values[0]] :
+                        [{ type: "TEXT", value: "false" }],
+                };
+            } else if (value === 'normal') {
+                updatedInput = {
+                    ...updatedInput,
+                    // Convert to single value array
+                    values: currentInputs[key]?.values?.length ?
+                        [currentInputs[key].values[0]] :
+                        [{ type: "TEXT", value: "" }],
+                    showVariableToggle: false,
+                };
+            }
+
             setNode(prev => ({
                 ...prev,
                 inputs: {
                     ...currentInputs,
-                    [key]: {
-                        ...currentInputs[key],
-                        values
-                    }
+                    [key]: updatedInput
                 }
             }));
             return;
         }
 
-        // If changing to dropdown, initialize values as empty array of TextOrVariable objects
-        if (field === 'input' && value === 'dropdown') {
-            setNode(prev => ({
-                ...prev,
-                inputs: {
-                    ...currentInputs,
-                    [key]: {
-                        ...currentInputs[key],
-                        input: value,
-                        showVariableToggle: false,
-                        type: currentInputs[key]?.type === 'boolean' ? 'text' : currentInputs[key]?.type || 'text',
-                        values: []
-                    }
-                }
-            }));
-            return;
-        }
+        // Special handling for type changes
+        if (field === 'type') {
+            // Don't allow changing type for checkbox inputs
+            if (currentInputs[key]?.input === 'checkbox') return;
 
-        // If changing to checkbox type, force boolean data type
-        if (field === 'input' && value === 'checkbox') {
+            // Don't allow boolean type for dropdown or normal inputs
+            if (value === 'boolean' && ['dropdown', 'normal'].includes(currentInputs[key]?.input)) return;
+
+            // If changing to number type, convert all values to VARIABLE type
+            if (value === 'number') {
+                const currentValues = currentInputs[key]?.values || [];
+                const updatedValues = currentValues.map(val => {
+                    const currentValue = typeof val === 'string' ? val : val.value;
+                    return {
+                        type: "VARIABLE" as const,
+                        value: currentValue
+                    };
+                });
+
+                setNode(prev => ({
+                    ...prev,
+                    inputs: {
+                        ...currentInputs,
+                        [key]: {
+                            ...currentInputs[key],
+                            [field]: value,
+                            values: updatedValues,
+                            showVariableToggle: false
+                        }
+                    }
+                }));
+                return;
+            }
+
             setNode(prev => ({
                 ...prev,
                 inputs: {
@@ -129,24 +192,51 @@ export default function NodeBuildder() {
                     [key]: {
                         ...currentInputs[key],
                         [field]: value,
-                        type: 'boolean',
-                        showVariableToggle: false
                     }
                 }
             }));
             return;
         }
 
-        // Don't allow changing data type if input type is checkbox
-        if (field === 'type' && currentInputs[key]?.input === 'checkbox') {
+        // Special handling for values array
+        if (field === 'values' && currentInputs[key]?.input === 'dropdown') {
+            // If type is number, force all new values to be VARIABLE type
+            if (currentInputs[key]?.type === 'number') {
+                const newValues = (value as (string | TConverted)[]).map(val => {
+                    const currentValue = typeof val === 'string' ? val : val.value;
+                    return {
+                        type: "VARIABLE" as const,
+                        value: currentValue
+                    };
+                });
+
+                setNode(prev => ({
+                    ...prev,
+                    inputs: {
+                        ...currentInputs,
+                        [key]: {
+                            ...currentInputs[key],
+                            values: newValues
+                        }
+                    }
+                }));
+                return;
+            }
+
+            setNode(prev => ({
+                ...prev,
+                inputs: {
+                    ...currentInputs,
+                    [key]: {
+                        ...currentInputs[key],
+                        values: value
+                    }
+                }
+            }));
             return;
         }
 
-        // Don't allow boolean type for dropdown inputs
-        if (field === 'type' && value === 'boolean' && currentInputs[key]?.input === 'dropdown') {
-            return;
-        }
-
+        // Default handling for other fields
         setNode(prev => ({
             ...prev,
             inputs: {
@@ -184,13 +274,62 @@ export default function NodeBuildder() {
     return (
         <div className="flex flex-col h-screen">
             <TopBar />
-            <div className="w-full border-b">
-                <div className="text-xl font-light p-2 px-6">Node Builder</div>
+            <div className="w-full border-b flex items-center p-2 px-6">
+                <div className="text-xl font-light">Node Builder</div>
+                <Button
+                    variant="outline"
+                    className="ml-auto"
+                    onClick={() => {
+                        const json = JSON.stringify(node, null, 2);
+                        const blob = new Blob([json], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${node.type || 'node'}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }}
+                >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                </Button>
+                <Button
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'application/json';
+                        input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (!file) return;
+
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                try {
+                                    const json = JSON.parse(e.target?.result as string);
+                                    setNode(json);
+                                    if (json.iconName) {
+                                        setSelectedIcon(json.iconName);
+                                    }
+                                } catch (err) {
+                                    console.error('Failed to parse JSON:', err);
+                                }
+                            };
+                            reader.readAsText(file);
+                        };
+                        input.click();
+                    }}
+                >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import
+                </Button>
             </div>
             <ResizablePanelGroup direction="horizontal" className="">
                 <ResizablePanel defaultSize={35} minSize={20} maxSize={50} className="p-2 h-[calc(100vh-120px)] !overflow-y-scroll">
                     <SmolText className="ml-2 mt-2 text-lg font-semibold">Node Name</SmolText>
                     <Input placeholder="Enter friendly display name (e.g. Send Message)"
+                        value={node.name}
                         onChange={(e) => setNode((node) => { return { ...node, name: e.target.value, type: e.target.value.toLowerCase().replace(/ /g, "-").replaceAll(/[^a-z0-9-]/g, "") as any } })}
                     />
                     <SmolText className="ml-2 mt-2 text-lg font-semibold">Node Type</SmolText>
@@ -312,46 +451,84 @@ export default function NodeBuildder() {
                                         />
                                     </div>
 
-                                    {input.input === 'dropdown' && (
-                                        <div className="space-y-4">
-                                            <div className="text-sm font-medium">Values</div>
-                                            <div className="space-y-2">
-                                                {((input.values || []) as TConverted[]).map((val: TConverted, idx: number) => (
+                                    <div className="space-y-4">
+                                        <div className="text-sm font-medium">Values</div>
+                                        <div className="space-y-2">
+                                            {((input.values || []) as (string | TConverted)[]).map((val, idx) => {
+                                                const value = typeof val === 'string' ? val : val.value;
+                                                const type = typeof val === 'string' ? 'TEXT' as const : val.type;
+
+                                                return (
                                                     <div key={idx} className="flex items-center gap-2">
                                                         <Input
-                                                            value={val.value}
+                                                            value={value}
                                                             onChange={(e) => {
-                                                                const newValues = [...(input.values || [])] as TConverted[];
-                                                                newValues[idx] = {
-                                                                    ...newValues[idx],
-                                                                    value: e.target.value
-                                                                };
+                                                                const newValues = [...(input.values || [])] as (string | TConverted)[];
+                                                                if (typeof val === 'string') {
+                                                                    newValues[idx] = e.target.value;
+                                                                } else {
+                                                                    let newValue = e.target.value;
+
+                                                                    // Handle number type inputs
+                                                                    if (input.type === 'number') {
+                                                                        // Always treat as variable for number type
+                                                                        // newValue = sanitizeVariableName(newValue);
+                                                                        // sanitize as number (remove all non-numeric characters)
+                                                                        newValue = newValue.replace(/[^0-9]/g, '');
+                                                                    } else if (val.type === "VARIABLE") {
+                                                                        // Regular variable sanitization for non-number types
+                                                                        newValue = sanitizeVariableName(newValue);
+                                                                    }
+
+                                                                    newValues[idx] = {
+                                                                        ...val,
+                                                                        value: newValue
+                                                                    };
+                                                                }
                                                                 updateInput(key, 'values', newValues);
                                                             }}
                                                             placeholder={`Value ${idx + 1}`}
                                                         />
                                                         <div className="flex items-center gap-2">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className={val.type === "TEXT" ? "bg-green-400/20" : ""}
-                                                                onClick={() => updateDropdownValueType(key, idx, "TEXT")}
-                                                            >
-                                                                Text
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className={val.type === "VARIABLE" ? "bg-green-400/20" : ""}
-                                                                onClick={() => updateDropdownValueType(key, idx, "VARIABLE")}
-                                                            >
-                                                                Variable
-                                                            </Button>
+                                                            {typeof val !== 'string' && input.type !== 'number' && (
+                                                                <>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className={type === "TEXT" ? "bg-green-400/20" : ""}
+                                                                        onClick={() => {
+                                                                            const newValues = [...(input.values || [])] as TConverted[];
+                                                                            newValues[idx] = {
+                                                                                type: "TEXT",
+                                                                                value: value
+                                                                            };
+                                                                            updateInput(key, 'values', newValues);
+                                                                        }}
+                                                                    >
+                                                                        Text
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className={type === "VARIABLE" ? "bg-green-400/20" : ""}
+                                                                        onClick={() => {
+                                                                            const newValues = [...(input.values || [])] as TConverted[];
+                                                                            newValues[idx] = {
+                                                                                type: "VARIABLE",
+                                                                                value: sanitizeVariableName(value)
+                                                                            };
+                                                                            updateInput(key, 'values', newValues);
+                                                                        }}
+                                                                    >
+                                                                        Variable
+                                                                    </Button>
+                                                                </>
+                                                            )}
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 onClick={() => {
-                                                                    const newValues = [...(input.values || [])] as TConverted[];
+                                                                    const newValues = [...(input.values || [])] as (string | TConverted)[];
                                                                     newValues.splice(idx, 1);
                                                                     updateInput(key, 'values', newValues);
                                                                 }}
@@ -360,28 +537,33 @@ export default function NodeBuildder() {
                                                             </Button>
                                                         </div>
                                                     </div>
-                                                ))}
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full"
-                                                    onClick={() => {
-                                                        const newValues = [...(input.values || []), {
-                                                            type: "TEXT" as TextOrVariable,
-                                                            value: ""
-                                                        }] as TConverted[];
-                                                        updateInput(key, 'values', newValues);
-                                                    }}
-                                                >
-                                                    <Plus className="w-4 h-4 mr-2" /> Add Value
-                                                </Button>
-                                            </div>
+                                                );
+                                            })}
+                                            <Button
+                                                variant="outline"
+                                                className="w-full"
+                                                onClick={() => {
+                                                    const isVariable = input.type === 'number' || false;
+                                                    const defaultValue = input.type === 'number' ? "0" : "New Value";
+                                                    const newValues = [
+                                                        ...(input.values || []),
+                                                        {
+                                                            type: isVariable ? "VARIABLE" : "TEXT" as const,
+                                                            value: isVariable ? sanitizeVariableName(defaultValue) : defaultValue
+                                                        }
+                                                    ];
+                                                    updateInput(key, 'values', newValues);
+                                                }}
+                                            >
+                                                <Plus className="w-4 h-4 mr-2" /> Add Value
+                                            </Button>
                                         </div>
-                                    )}
+                                    </div>
 
                                     <div className="flex items-center justify-center space-x-2">
-                                        <div data-disabled={input.input != "normal"} className="text-sm font-medium data-[disabled=true]:text-muted-foreground/80">Show Variable Toggle</div>
+                                        <div data-disabled={input.input != "normal" || input.type == "number"} className="text-sm font-medium data-[disabled=true]:text-muted-foreground/80">Show Variable Toggle</div>
                                         <Switch
-                                            disabled={input.input != "normal"}
+                                            disabled={input.input != "normal" || input.type == "number"}
                                             checked={input.showVariableToggle || false}
                                             onCheckedChange={(checked) => updateInput(key, 'showVariableToggle', checked)}
                                         />
@@ -395,19 +577,39 @@ export default function NodeBuildder() {
                 <ResizableHandle />
                 <ResizablePanel>
                     <ResizablePanelGroup direction="vertical">
-                        <ResizablePanel defaultSize={50} className="flex items-center justify-center">
-                            <div className="bg-white w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
-                                {(() => {
-                                    if (!node.iconName) return null;
-                                    const Icon = LucideIcons[node.iconName as keyof typeof LucideIcons] as React.FC<any>;
-                                    return <Icon className="w-10 h-10" strokeWidth={1.2} />
-                                })()}
-                                {node.name}
-                            </div>
+                        <ResizablePanel defaultSize={50} className="flex items-center justify-center gap-5">
+                            <ResizablePanelGroup direction="horizontal">
+                                {/* node component */}
+                                <ResizablePanel defaultSize={50} minSize={30} className="flex items-center justify-center">
+                                    <div className="bg-white w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
+                                        {(() => {
+                                            if (!node.iconName) return null;
+                                            const Icon = LucideIcons[node.iconName as keyof typeof LucideIcons] as React.FC<any>;
+                                            return <Icon className="w-10 h-10" strokeWidth={1.2} />
+                                        })()}
+                                        {node.name}
+                                    </div>
+                                </ResizablePanel>
+                                <ResizableHandle />
+                                <ResizablePanel defaultSize={50} minSize={30}>
+                                    {/* sidebar component */}
+                                    <div className="h-full">
+                                        <div className="h-14 border-b">
+                                            <div className="p-2 pb-0">{node.name}</div>
+                                            <SmolText className="pt-0 pb-2.5">{node.type}</SmolText>
+                                        </div>
+                                        {(() => {
+                                            const SidebarComponent = GenerateSidebar(node as NodeConfig);
+                                            return <SidebarComponent />
+                                        })()}
+                                    </div>
+                                </ResizablePanel>
+                            </ResizablePanelGroup>
                         </ResizablePanel>
                         <ResizableHandle />
-                        <ResizablePanel defaultSize={50}>
-                            <pre className="text-xs p-5">{JSON.stringify(node, null, 2)}</pre>
+                        <ResizablePanel defaultSize={25} maxSize={50} minSize={20} className="!overflow-scroll p-4 relative">
+                            <SmolText className="pt-0 pb-4">Node JSON</SmolText>
+                            <pre className="text-xs">{JSON.stringify(node, null, 2)}</pre>
                         </ResizablePanel>
                     </ResizablePanelGroup>
                 </ResizablePanel>
