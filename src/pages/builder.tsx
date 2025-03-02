@@ -277,7 +277,7 @@ export default function NodeBuildder() {
         <div className="flex flex-col h-screen">
             <TopBar />
             <div className="w-full border-b flex items-center p-2 px-6">
-                <div className="text-xl font-light">Node Builder</div>
+                <div className="text-xl font-light">Node Builder [experimental ⚠]</div>
                 <Button
                     variant="outline"
                     className="ml-auto"
