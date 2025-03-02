@@ -89,7 +89,34 @@ export function GenerateNode(node: NodeConfig) {
 export function GenerateSidebar(node_: NodeConfig) {
     const SidebarComponent: FC<any> = () => {
         const { activeNode } = useGlobalState()
-        const [nodeData, setNodeData] = useState<Record<string, any>>({});
+
+        // Define action types and reducer
+        type NodeDataAction =
+            | { type: 'SET_INITIAL_DATA'; payload: Record<string, any> }
+            | { type: 'UPDATE_FIELD'; payload: { field: string; value: any } }
+            | { type: 'UPDATE_MULTIPLE'; payload: Record<string, any> };
+
+        const nodeDataReducer = (state: Record<string, any>, action: NodeDataAction): Record<string, any> => {
+            switch (action.type) {
+                case 'SET_INITIAL_DATA':
+                    return action.payload;
+                case 'UPDATE_FIELD':
+                    return {
+                        ...state,
+                        [action.payload.field]: action.payload.value
+                    };
+                case 'UPDATE_MULTIPLE':
+                    return {
+                        ...state,
+                        ...action.payload
+                    };
+                default:
+                    return state;
+            }
+        };
+
+        // Replace useState with useReducer
+        const [nodeData, dispatch] = useReducer(nodeDataReducer, {});
         const [code, setCode] = useState<string>("");
 
         const hasInputs = Object.keys(node_.inputs || {}).length > 0;
@@ -98,7 +125,6 @@ export function GenerateSidebar(node_: NodeConfig) {
         useEffect(() => {
             if (!activeNode) return;
 
-            // Initialize nodeData with values from active node
             const initialData: Record<string, any> = {};
             if (node_.inputs) {
                 Object.keys(node_.inputs).forEach((input) => {
@@ -106,7 +132,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                     initialData[`${input}Type`] = (activeNode.data as Record<string, any>)?.[`${input}Type`] || "TEXT";
                 });
             }
-            setNodeData(initialData);
+            dispatch({ type: 'SET_INITIAL_DATA', payload: initialData });
             embed(initialData)
         }, [activeNode?.id]);
 
@@ -137,18 +163,18 @@ export function GenerateSidebar(node_: NodeConfig) {
             value: string
         ) {
             const newType = currentType === "TEXT" ? "VARIABLE" : "TEXT";
-
-            // If switching to variable type, sanitize the value
             let sanitizedValue = value;
             if (newType === "VARIABLE") {
                 sanitizedValue = sanitizeVariableName(value);
             }
 
-            setNodeData(prev => ({
-                ...prev,
-                [field]: sanitizedValue,
-                [`${field}Type`]: newType
-            }));
+            dispatch({
+                type: 'UPDATE_MULTIPLE',
+                payload: {
+                    [field]: sanitizedValue,
+                    [`${field}Type`]: newType
+                }
+            });
         }
 
         // takes in input data and returns a string of lua code via promise
@@ -196,9 +222,9 @@ export function GenerateSidebar(node_: NodeConfig) {
 
                                     if (type === "VARIABLE") {
                                         const sanitized = sanitizeVariableName(value);
-                                        setNodeData(prev => ({ ...prev, [input]: sanitized }));
+                                        dispatch({ type: 'UPDATE_FIELD', payload: { field: input, value: sanitized } });
                                     } else {
-                                        setNodeData(prev => ({ ...prev, [input]: value }));
+                                        dispatch({ type: 'UPDATE_FIELD', payload: { field: input, value } });
                                     }
                                 }}
                             />
@@ -206,15 +232,21 @@ export function GenerateSidebar(node_: NodeConfig) {
                                 <div className="flex items-center gap-1 ml-3 mt-1 text-xs text-muted-foreground">
                                     {inputConfig.values.map((value) => (
                                         <Button
-                                            key={value}
+                                            key={typeof value == "string" ? value : value.value}
                                             data-active={nodeData[input] == value}
                                             variant="ghost"
                                             onClick={() => {
-                                                setNodeData(prev => ({ ...prev, [input]: value }));
+                                                dispatch({
+                                                    type: 'UPDATE_MULTIPLE',
+                                                    payload: {
+                                                        [input]: typeof value == "string" ? value : value.value,
+                                                        [`${input}Type`]: typeof value == "string" ? "TEXT" : value.type
+                                                    }
+                                                });
                                             }}
                                             className="p-0 m-0 h-4 px-2 py-0.5 text-xs rounded-full border border-dashed border-muted-foreground/30 data-[active=true]:border-muted-foreground/100 data-[active=true]:bg-muted-foreground/10 data-[active=false]:text-muted-foreground/60 data-[active=false]:hover:bg-muted-foreground/5"
                                         >
-                                            {value}
+                                            {typeof value == "string" ? value : value.value}
                                         </Button>
                                     ))}
                                 </div>
@@ -229,18 +261,18 @@ export function GenerateSidebar(node_: NodeConfig) {
                             </div>
                             <Select
                                 value={nodeData[input] || ""}
-                                onValueChange={(value) => setNodeData((prev) => ({
-                                    ...prev,
-                                    [input]: value
-                                }))}
+                                onValueChange={(value) => dispatch({
+                                    type: 'UPDATE_FIELD',
+                                    payload: { field: input, value }
+                                })}
                             >
                                 <SelectTrigger className="bg-white">
                                     <SelectValue placeholder={inputConfig.placeholder || ""} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {inputConfig.values?.map((value) => (
-                                        <SelectItem key={value} value={value}>
-                                            {value}
+                                        <SelectItem key={typeof value == "string" ? value : value.value} value={typeof value == "string" ? value : value.value}>
+                                            {typeof value == "string" ? value : value.value}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -253,13 +285,15 @@ export function GenerateSidebar(node_: NodeConfig) {
                             <SmolText className="h-4 p-0 text-sm">{inputConfig.label}</SmolText>
                             <Switch
                                 className="mt-0.5"
-                                checked={nodeData[input] || false}
+                                checked={nodeData[input] == "true" || false}
                                 onCheckedChange={(checked) => {
-                                    setNodeData(prev => ({
-                                        ...prev,
-                                        [input]: checked,
-                                        [`${input}Type`]: "VARIABLE"
-                                    }));
+                                    dispatch({
+                                        type: 'UPDATE_MULTIPLE',
+                                        payload: {
+                                            [input]: checked ? "true" : "false",
+                                            [`${input}Type`]: "VARIABLE"
+                                        }
+                                    });
                                 }}
                             />
                         </div>

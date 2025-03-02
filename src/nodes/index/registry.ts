@@ -18,6 +18,7 @@ import { TEdges } from "@/edges";
 import * as CommunityNodes from "@/nodes/community";
 import { TNodeType } from "@/nodes/index/type";
 import { GenerateNode, GenerateSidebar } from "./generators";
+import { TConverted } from "@/lib/utils";
 
 
 export const RootNodesAvailable: TNodeType[] = ["handler", "codeblock", "token", "loop"]
@@ -43,7 +44,8 @@ export interface NodeConfig {
             label?: string;
             showVariableToggle?: boolean
             input: "normal" | "dropdown" | "checkbox"
-            values?: string[]
+            // values?: string[] | { value: string, type: "VARIABLE" }[]
+            values?: (string | TConverted)[]
             placeholder?: string
         }
     }

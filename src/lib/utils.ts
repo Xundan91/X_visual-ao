@@ -52,14 +52,15 @@ export function formatLua(code: string) {
     return code
   }
 }
-
+export type TextOrVariable = "TEXT" | "VARIABLE"
+export type TConverted = { value: string, type: TextOrVariable }
 export const convertor = {
   // text inside quotes ""
-  text: (input: string) => input ? (input.startsWith('"') && input.endsWith('"') ? input : `"${input}"`) : "",
+  text: (input: string): TConverted => input ? (input.startsWith('"') && input.endsWith('"') ? { value: input, type: "TEXT" } : { value: `"${input}"`, type: "TEXT" }) : { value: "", type: "TEXT" },
   // strip starting and ending quotes
-  variable: (input: string) => input ? input.replace(/^["']+|["']+$/g, '') : "",
+  variable: (input: string): TConverted => input ? { value: input.replace(/^["']+|["']+$/g, ''), type: "VARIABLE" } : { value: "", type: "VARIABLE" },
   // convert to number
-  number: (input: string) => convertor.variable(input || "").replace(/[^0-9]/g, '') || "",
+  number: (input: string): TConverted => ({ value: convertor.variable(input || "").value.replace(/[^0-9]/g, '') || "", type: "VARIABLE" }),
   // convert to boolean
-  boolean: (input: string) => convertor.variable(input || "") == "true" || false
+  boolean: (input: string): TConverted => ({ value: (convertor.variable(input || "").value == "true") ? "true" : "false", type: "VARIABLE" })
 }
