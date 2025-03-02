@@ -8,11 +8,12 @@ import { NodeIconMapping } from ".";
 import { Input } from "@/components/ui/input";
 import { SmolText, ToggleButton } from "@/components/right-sidebar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatLua, sanitizeVariableName } from "@/lib/utils";
+import { formatLua, sanitizeVariableName, TConverted } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Button } from "@/components/ui/button";
+import { processTemplate } from "@/lib/processTemplate";
 
 export function GenerateNode(node: NodeConfig) {
 
@@ -49,7 +50,8 @@ export function GenerateNode(node: NodeConfig) {
                     }
 
                     let code = "";
-                    if (node.codeGenerator) {
+                    console.log(node.codeTemplate)
+                    if (node.codeTemplate) {
                         const inputsClone = { ...inputs };
                         Object.keys(inputsClone).forEach(key => {
                             if (inputsClone[`${key}Type`] == "VARIABLE") {
@@ -57,7 +59,7 @@ export function GenerateNode(node: NodeConfig) {
                             }
                         });
 
-                        code = node.codeGenerator(inputsClone as TNodeData);
+                        code = processTemplate(node.codeTemplate, inputsClone as TNodeData);
                     } else {
                         code = "-- there is no code generator for this node";
                     }
@@ -87,8 +89,9 @@ export function GenerateNode(node: NodeConfig) {
 }
 
 export function GenerateSidebar(node_: NodeConfig) {
-    const SidebarComponent: FC<any> = () => {
+    const SidebarComponent: FC<any> = ({ previewNode }) => {
         const { activeNode } = useGlobalState()
+        const currentNode = previewNode || node_;
 
         // Define action types and reducer
         type NodeDataAction =
@@ -119,40 +122,47 @@ export function GenerateSidebar(node_: NodeConfig) {
         const [nodeData, dispatch] = useReducer(nodeDataReducer, {});
         const [code, setCode] = useState<string>("");
 
-        const hasInputs = Object.keys(node_.inputs || {}).length > 0;
+        const hasInputs = Object.keys(currentNode.inputs || {}).length > 0;
 
         // Load initial data when active node changes
         useEffect(() => {
-            if (!activeNode) return;
+            if (!activeNode && !previewNode) return;
 
             const initialData: Record<string, any> = {};
-            if (node_.inputs) {
-                Object.keys(node_.inputs).forEach((input) => {
-                    initialData[input] = (activeNode.data as Record<string, any>)?.[input] || "";
-                    initialData[`${input}Type`] = (activeNode.data as Record<string, any>)?.[`${input}Type`] || "TEXT";
+            if (currentNode.inputs) {
+                Object.keys(currentNode.inputs).forEach((input) => {
+                    initialData[input] = (activeNode?.data as Record<string, any>)?.[input] || "";
+                    initialData[`${input}Type`] = (activeNode?.data as Record<string, any>)?.[`${input}Type`] || "TEXT";
                 });
             }
             dispatch({ type: 'SET_INITIAL_DATA', payload: initialData });
             embed(initialData)
-        }, [activeNode?.id]);
+        }, [activeNode?.id, previewNode]);
+
+        // Update preview when code template changes
+        useEffect(() => {
+            if (Object.keys(nodeData).length > 0) {
+                embed(nodeData);
+            }
+        }, [currentNode.codeTemplate]);
 
         // Only update node data when nodeData changes, not when activeNode changes
         useEffect(() => {
-            if (!activeNode) return;
+            if (!activeNode && !previewNode) return;
 
             // Skip if nodeData is empty (prevents overwriting on node change)
             if (Object.keys(nodeData).length === 0) return;
 
             // Only update if this node's data actually changed
-            const currentData = activeNode.data as Record<string, any>;
+            const currentData = activeNode?.data as Record<string, any>;
             const hasChanges = Object.keys(nodeData).some(key =>
-                nodeData[key] !== currentData[key]
+                nodeData[key] !== currentData?.[key]
             );
 
-            if (hasChanges) {
+            if (hasChanges && activeNode) {
                 updateNodeData(activeNode.id, nodeData);
-                embed(nodeData);
             }
+            embed(nodeData);
         }, [nodeData]);
 
         type InputTypes = "TEXT" | "VARIABLE";
@@ -178,17 +188,62 @@ export function GenerateSidebar(node_: NodeConfig) {
         }
 
         // takes in input data and returns a string of lua code via promise
-        function embed(inputs: Record<string, any>) {
-            return new Promise<string>(async (resolve) => {
-                try {
-                    const code = await getCode(activeNode?.id!, inputs);
-                    setCode(code.trim());
-                    resolve(code);
-                } catch (err) {
-                    console.error("Error embedding code:", err);
-                    resolve("");
+        async function embed(inputs: Record<string, any>) {
+            // If we're in preview mode (builder)
+            if (previewNode) {
+                if (!currentNode.codeTemplate) {
+                    setCode("-- No code template defined");
+                    return "";
                 }
-            });
+
+                try {
+                    const processedCode = processTemplate(currentNode.codeTemplate, inputs as TNodeData);
+                    setCode(processedCode);
+                    return processedCode;
+                } catch (err) {
+                    console.error("Error processing template:", err);
+                    setCode("-- Error processing template");
+                    return "";
+                }
+            }
+
+            // If we're in normal mode (flow editor)
+            try {
+                const connectedNodes = activeNode ? await getConnectedNodes(activeNode.id) : [];
+                let body = "";
+
+                const iterateNode = async (node: any) => {
+                    if (Array.isArray(node)) {
+                        for (const n of node) {
+                            await iterateNode(n);
+                        }
+                    } else {
+                        const nodeCode = await getCode(node.id, node.data);
+                        if (!body.includes(`-- [start:${node.id}]`)) {
+                            body += nodeCode;
+                        }
+                    }
+                };
+
+                for (const node of connectedNodes) {
+                    await iterateNode(node);
+                }
+
+                let code = "";
+                if (currentNode.codeTemplate) {
+                    code = processTemplate(currentNode.codeTemplate, inputs as TNodeData);
+                } else {
+                    code = "-- there is no code template for this node";
+                }
+
+                const finalCode = `\n\n-- [start:${activeNode?.id}]\n${formatLua(code)}\n-- [end:${activeNode?.id}]\n\n${formatLua(body)}`;
+                setCode(finalCode.trim());
+                return finalCode;
+            } catch (err) {
+                console.error("Error embedding code:", err);
+                setCode("-- Error generating code");
+                return "";
+            }
         }
 
         return <div>
@@ -197,8 +252,8 @@ export function GenerateSidebar(node_: NodeConfig) {
                     <SmolText className="text-muted-foreground text-center">No inputs</SmolText>
                 )
             }
-            {hasInputs && Object.keys(node_.inputs!).map((input) => {
-                const inputConfig = node_.inputs![input];
+            {hasInputs && Object.keys(currentNode.inputs!).map((input) => {
+                const inputConfig = currentNode.inputs![input];
 
                 return <div key={input} className="mt-4">
                     {inputConfig.input === "normal" && (
@@ -235,7 +290,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                             />
                             {inputConfig.values && (
                                 <div className="flex items-center gap-1 ml-3 mt-1 text-xs text-muted-foreground">
-                                    {inputConfig.values.map((value) => (
+                                    {inputConfig.values.map((value: string | TConverted) => (
                                         <Button
                                             key={typeof value == "string" ? value : value.value}
                                             data-active={nodeData[input] == value}
@@ -266,7 +321,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                             </div>
                             <Select
                                 value={nodeData[input] || ""}
-                                onValueChange={(value) => dispatch({
+                                onValueChange={(value: string) => dispatch({
                                     type: 'UPDATE_FIELD',
                                     payload: { field: input, value }
                                 })}
@@ -275,7 +330,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                                     <SelectValue placeholder={inputConfig.placeholder || ""} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {inputConfig.values?.map((value) => (
+                                    {inputConfig.values?.map((value: string | TConverted) => (
                                         <SelectItem key={typeof value == "string" ? value : value.value} value={typeof value == "string" ? value : value.value}>
                                             {typeof value == "string" ? value : value.value}
                                         </SelectItem>

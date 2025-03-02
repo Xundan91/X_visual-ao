@@ -22,9 +22,5 @@ export const templateNode: NodeConfig = {
             values: ["Hello AO!", "gm", convertor.variable("ao.id")],
         }
     },
-    codeGenerator: (data_: TNodeData) => {
-        const inputs = data_ as data
-        console.log(inputs)
-        return `print(${(inputs.varType == "VARIABLE" ? convertor.variable(inputs.var).value : convertor.text(inputs.var).value) || ""})`
-    },
+    codeTemplate: "print({var})"
 }

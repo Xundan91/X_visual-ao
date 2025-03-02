@@ -14,6 +14,8 @@ import { convertor, TextOrVariable, TConverted, sanitizeVariableName } from "@/l
 import { GenerateNode, GenerateSidebar } from "@/nodes/index/generators";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Node } from "@/nodes/index";
+import Editor from "@monaco-editor/react";
+import { processTemplate } from "@/lib/processTemplate";
 
 // inputs:
 // - node name
@@ -573,6 +575,35 @@ export default function NodeBuildder() {
                         ))}
                     </div>
 
+                    <SmolText className="ml-2 mt-2 text-lg font-semibold">Code Template</SmolText>
+                    <div className=" mx-2 rounded overflow-clip border">
+                        <Editor
+                            className="!rounded-"
+                            height="200px"
+                            language="lua"
+                            theme="vs-light"
+                            value={node.codeTemplate || ""}
+                            onChange={(value) => {
+                                setNode(prev => ({
+                                    ...prev,
+                                    codeTemplate: value || ""
+                                }));
+                            }}
+                            options={{
+                                minimap: { enabled: false },
+                                fontSize: 14,
+                                lineNumbers: "on",
+                                folding: false,
+                                scrollBeyondLastLine: false,
+                                lineDecorationsWidth: 5,
+                                lineNumbersMinChars: 2,
+                                renderLineHighlight: "none"
+                            }}
+                        />
+                    </div>
+                    <div className="text-sm text-muted-foreground mx-3">
+                        Use {"{inputName}"} to reference input values.<br /> For example: print({"{var}"}) will use the value of the "var" input.
+                    </div>
                 </ResizablePanel>
                 <ResizableHandle />
                 <ResizablePanel>
@@ -600,7 +631,7 @@ export default function NodeBuildder() {
                                         </div>
                                         {(() => {
                                             const SidebarComponent = GenerateSidebar(node as NodeConfig);
-                                            return <SidebarComponent />
+                                            return <SidebarComponent previewNode={node} />
                                         })()}
                                     </div>
                                 </ResizablePanel>

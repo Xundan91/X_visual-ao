@@ -49,7 +49,7 @@ export interface NodeConfig {
         }
     }
     community?: boolean
-    codeGenerator?: (inputs: TNodeData) => string;
+    codeTemplate?: string; // Lua code template with {varName} placeholders
 }
 
 // Create an array of node configurations – adding a new node now only means adding a new entry here.
@@ -133,7 +133,7 @@ const nodeConfigs: NodeConfig[] = [
             name: node.name,
             iconName: node.iconName,
             outputType: node.outputType,
-            codeGenerator: node.codeGenerator,
+            codeTemplate: node.codeTemplate,
             NodeComponent: node.NodeComponent,
             SidebarComponent: node.SidebarComponent,
             community: true

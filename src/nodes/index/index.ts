@@ -1,6 +1,7 @@
 import { FileQuestion, LucideIcon } from "lucide-react";
 import { nodeConfigs } from "./registry";
 import { TNodeData, TNodeType } from "./type"
+import { processTemplate } from "@/lib/processTemplate";
 
 // Build the component mapping for react-flow nodes
 export const Nodes: Record<TNodeType, React.FC<any>> = nodeConfigs.reduce((acc, config) => {
@@ -21,8 +22,8 @@ export const NodeIconMapping: Record<TNodeType, LucideIcon> = nodeConfigs.reduce
 }, {} as Record<TNodeType, LucideIcon>);
 
 export const NodeCodeGeneratorMapping: Record<TNodeType, (inputs: TNodeData) => string> = nodeConfigs.reduce((acc, config) => {
-    if (config.codeGenerator) {
-        acc[config.type as TNodeType] = config.codeGenerator;
+    if (config.codeTemplate) {
+        acc[config.type as TNodeType] = (inputs: TNodeData) => processTemplate(config.codeTemplate!, inputs);
     }
     return acc;
 }, {} as Record<TNodeType, (inputs: TNodeData) => string>);
