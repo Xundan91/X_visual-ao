@@ -1,6 +1,6 @@
 import { ConnectButton } from "arweave-wallet-kit";
 import { Button } from "./ui/button";
-import { AppWindowMac } from "lucide-react";
+import { AppWindowMac, PencilRuler, Workflow } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Node } from "@xyflow/react";
 import { useState } from "react";
@@ -9,12 +9,14 @@ import { toast } from "sonner";
 import Image from "next/image";
 import vaoLogo from "@/assets/logo.svg"
 import { Template, templates } from "@/templates";
-
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 
 export default function TopBar() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const globalState = useGlobalState()
+    const router = useRouter()
 
     async function importTemplate(template: Template) {
         if (!globalState.activeProcess) return toast.error("No active process")
@@ -49,10 +51,20 @@ export default function TopBar() {
     }
 
     return <div className="border-b bg-white flex justify-between items-center p-2">
-        <div className="px-2 text-lg">
+        <div className="px-2 text-lg flex items-center">
             <Image src={vaoLogo} alt="Visual AO" width={150} height={32} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grow" />
+        <div className="flex items-center gap-2 mr-4">
+            {router.pathname === "/" ? (
+                <Link href="/builder" className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded-md">
+                    <PencilRuler strokeWidth={1.4} size={20} /> Node Builder
+                </Link>
+            ) : (
+                <Link href="/" className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded-md">
+                    <Workflow strokeWidth={1.4} size={20} /> Flow
+                </Link>
+            )}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 {/* <DialogTrigger disabled={!globalState.activeProcess}>
                     <Button disabled={!globalState.activeProcess} variant="ghost" className="h-12 rounded-xl"><AppWindowMac />Templates</Button>
@@ -85,7 +97,7 @@ export default function TopBar() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <ConnectButton id="connect-button" />
         </div>
+        <ConnectButton id="connect-button" />
     </div>
 }
