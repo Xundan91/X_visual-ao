@@ -611,14 +611,18 @@ export default function NodeBuildder() {
                         <ResizablePanel defaultSize={50} className="flex items-center justify-center gap-5">
                             <ResizablePanelGroup direction="horizontal">
                                 {/* node component */}
-                                <ResizablePanel defaultSize={50} minSize={30} className="flex items-center justify-center">
-                                    <div className="bg-white w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
+                                <ResizablePanel defaultSize={50} minSize={30} className="flex flex-col items-center justify-start">
+                                    <div className="bg-white m-10 w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
                                         {(() => {
                                             if (!node.iconName) return null;
                                             const Icon = LucideIcons[node.iconName as keyof typeof LucideIcons] as React.FC<any>;
                                             return <Icon className="w-10 h-10" strokeWidth={1.2} />
                                         })()}
                                         {node.name}
+                                    </div>
+                                    <div className="overflow-scroll">
+                                        <SmolText>Node JSON</SmolText>
+                                        <pre className="text-xs border p-4 rounded">{JSON.stringify(node, null, 2)}</pre>
                                     </div>
                                 </ResizablePanel>
                                 <ResizableHandle />
@@ -636,11 +640,6 @@ export default function NodeBuildder() {
                                     </div>
                                 </ResizablePanel>
                             </ResizablePanelGroup>
-                        </ResizablePanel>
-                        <ResizableHandle />
-                        <ResizablePanel defaultSize={25} maxSize={50} minSize={20} className="!overflow-scroll p-4 relative">
-                            <SmolText className="pt-0 pb-4">Node JSON</SmolText>
-                            <pre className="text-xs">{JSON.stringify(node, null, 2)}</pre>
                         </ResizablePanel>
                     </ResizablePanelGroup>
                 </ResizablePanel>
