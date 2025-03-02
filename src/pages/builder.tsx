@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "@/com
 import { Plus, X, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { convertor, TextOrVariable, TConverted } from "@/lib/utils";
+import { GenerateNode, GenerateSidebar } from "@/nodes/index/generators";
 
 // inputs:
 // - node name
@@ -329,7 +330,7 @@ export default function NodeBuildder() {
                                                             }}
                                                             placeholder={`Value ${idx + 1}`}
                                                         />
-                                                        <div className="flex items-center gap-2 min-w-[140px]">
+                                                        <div className="flex items-center gap-2">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
@@ -393,7 +394,22 @@ export default function NodeBuildder() {
                 </ResizablePanel>
                 <ResizableHandle />
                 <ResizablePanel>
-                    hi
+                    <ResizablePanelGroup direction="vertical">
+                        <ResizablePanel defaultSize={50} className="flex items-center justify-center">
+                            <div className="bg-white w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
+                                {(() => {
+                                    if (!node.iconName) return null;
+                                    const Icon = LucideIcons[node.iconName as keyof typeof LucideIcons] as React.FC<any>;
+                                    return <Icon className="w-10 h-10" strokeWidth={1.2} />
+                                })()}
+                                {node.name}
+                            </div>
+                        </ResizablePanel>
+                        <ResizableHandle />
+                        <ResizablePanel defaultSize={50}>
+                            <pre className="text-xs p-5">{JSON.stringify(node, null, 2)}</pre>
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
                 </ResizablePanel>
             </ResizablePanelGroup>
         </div>
