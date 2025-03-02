@@ -132,13 +132,13 @@ export default function FlowPanel() {
         const startX = startNode.position.x
         const startY = startNode.position.y
         const horizontalSpacing = 300  // Spacing between columns
-        const verticalSpacing = 150    // Minimum vertical spacing between nodes
+        const verticalSpacing = 150    // Minimum spacing between nodes
 
         // Keep track of nodes we've positioned and their levels
         const nodesByLevel = new Map<number, string[]>()
         nodesByLevel.set(0, [startNode.id])
 
-        // First pass: Assign levels to all nodes (BFS)
+        // First pass: Assign levels to all nodes (BFS) while preserving Y-order
         const assignLevels = () => {
             const queue = [{ id: startNode.id, level: 0 }]
             const visited = new Set<string>([startNode.id])
@@ -149,16 +149,16 @@ export default function FlowPanel() {
                 // Get all nodes connected to this node
                 const connectedEdges = edges.filter(edge => edge.source === id)
 
-                // Sort connected nodes by their current Y position
-                const sortedTargets = connectedEdges
+                // Sort connected nodes by Y position
+                const connectedNodes = connectedEdges
                     .map(edge => ({
                         id: edge.target,
-                        y: nodes.find(n => n.id === edge.target)?.position.y || 0
+                        node: nodes.find(n => n.id === edge.target)!
                     }))
-                    .sort((a, b) => a.y - b.y)
-                    .map(item => item.id)
+                    .sort((a, b) => a.node.position.y - b.node.position.y)
 
-                for (const targetId of sortedTargets) {
+                // Process nodes in Y-order
+                for (const { id: targetId } of connectedNodes) {
                     if (!visited.has(targetId)) {
                         visited.add(targetId)
 
@@ -176,7 +176,7 @@ export default function FlowPanel() {
             }
         }
 
-        // Second pass: Position nodes by level while preserving Y order with spacing
+        // Second pass: Position nodes by level while maintaining Y-order
         const positionNodesByLevel = () => {
             // Position the start node
             reactFlowInstance.setNodes(nds =>
@@ -197,49 +197,40 @@ export default function FlowPanel() {
             for (let level = 1; level <= maxLevel; level++) {
                 const nodesAtLevel = nodesByLevel.get(level) || []
 
-                // Calculate x position for this level
-                const x = startX + level * horizontalSpacing
-
-                // Get original Y positions and calculate relative distances
-                const originalPositions = nodesAtLevel
-                    .map(nodeId => {
-                        const node = nodes.find(n => n.id === nodeId)
-                        return {
-                            id: nodeId,
-                            y: node?.position.y || 0
-                        }
-                    })
-                    .sort((a, b) => a.y - b.y)
-
-                // Calculate new Y positions while maintaining relative order and adding minimum spacing
-                let currentY = startY
-                const newPositions = new Map<string, number>()
-
-                originalPositions.forEach((pos, index) => {
-                    if (index === 0) {
-                        // First node starts at startY
-                        newPositions.set(pos.id, currentY)
-                    } else {
-                        // Ensure minimum spacing between nodes
-                        currentY += verticalSpacing
-                        newPositions.set(pos.id, currentY)
+                // Get original Y positions and sort nodes
+                const nodePositions = nodesAtLevel.map(nodeId => {
+                    const node = nodes.find(n => n.id === nodeId)!
+                    const parentEdge = edges.find(e => e.target === nodeId)!
+                    const parentNode = nodes.find(n => n.id === parentEdge.source)!
+                    return {
+                        id: nodeId,
+                        originalY: node.position.y,
+                        parentY: parentNode.position.y
                     }
+                }).sort((a, b) => {
+                    // First sort by parent Y position
+                    if (a.parentY !== b.parentY) {
+                        return a.parentY - b.parentY
+                    }
+                    // Then by original Y position
+                    return a.originalY - b.originalY
                 })
 
-                // Update node positions
-                nodesAtLevel.forEach(nodeId => {
-                    const newY = newPositions.get(nodeId)
-                    if (newY === undefined) return
+                // Calculate vertical distribution
+                const totalHeight = (nodePositions.length - 1) * verticalSpacing
+                const startingY = startY - totalHeight / 2
+
+                // Position each node
+                nodePositions.forEach(({ id }, index) => {
+                    const x = startX + level * horizontalSpacing
+                    const y = startingY + index * verticalSpacing
 
                     reactFlowInstance.setNodes(nds =>
                         nds.map(n => {
-                            if (n.id === nodeId) {
+                            if (n.id === id) {
                                 return {
                                     ...n,
-                                    position: {
-                                        x,
-                                        y: newY
-                                    }
+                                    position: { x, y }
                                 }
                             }
                             return n
