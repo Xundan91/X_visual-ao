@@ -524,7 +524,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
                 } catch (e: any) {
                   // Mark all nodes in this path as error
                   allNodesInPath.forEach(n => globals.addErrorNode(n))
-                  globals.addOutput({ type: "error", message: e.message })
+                  globals.addOutput({ type: "error", message: e.message, preMessage: node.id })
                   continue // Skip to next node
                 }
               }
@@ -538,16 +538,16 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
             if (res.Error) {
               // Mark all nodes in this path as error
               allNodesInPath.forEach(n => globals.addErrorNode(n))
-              globals.addOutput({ type: "error", message: res.Error })
+              globals.addOutput({ type: "error", message: res.Error, preMessage: node.id, aoMessage: res })
             } else {
               // Mark all nodes in this path as success
               allNodesInPath.forEach(n => globals.addSuccessNode(n))
-              globals.addOutput({ type: "output", message: parseOutupt(res) })
+              globals.addOutput({ type: "output", message: parseOutupt(res), preMessage: node.id, aoMessage: res })
             }
           } catch (e: any) {
             console.log(node.id, e)
             globals.addErrorNode(node)
-            globals.addOutput({ type: "error", message: e.message })
+            globals.addOutput({ type: "error", message: e.message, preMessage: node.id })
           }
         }
         globals.setFlowIsRunning(false)

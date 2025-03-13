@@ -3,7 +3,16 @@ import { TNodeType } from '@/nodes/index/type';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { create } from 'zustand'
 
-export type OutputType = { type: "output" | "error" | "success" | "info" | "warning", message: string, preMessage?: string };
+export type AOMessage = {
+    id: string;
+    Output: any;
+    Messages: any[];
+    Spawns: any[];
+    Error?: any;
+}
+
+export type OutputType = { type: "output" | "error" | "success" | "info" | "warning", message: string, preMessage?: string, aoMessage?: AOMessage };
+
 interface GlobalState {
     consoleRef: React.RefObject<ImperativePanelHandle> | null;
     sidebarRef: React.RefObject<ImperativePanelHandle> | null;

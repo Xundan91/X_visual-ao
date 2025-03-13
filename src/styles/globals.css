@@ -14,10 +14,8 @@ body {
   font-family: "DM Sans", sans-serif !important;
 }
 
-*{
-  transition: color 150ms !important;
-  transition: background 150ms !important;
-}
+body, html,div, span{transition: background 150ms !important;}
+
 
 @layer utilities {
   .text-balance {

@@ -43,7 +43,7 @@ export default function FlowPanel() {
                         updateNodeData(activeNode.id, data)
                     } catch (e: any) {
                         addErrorNode(activeNode!)
-                        addOutput({ type: "error", message: e.message })
+                        addOutput({ type: "error", message: e.message, preMessage: activeNode.id })
                         return
                     }
                 }
@@ -56,15 +56,15 @@ export default function FlowPanel() {
             console.log("output", res)
             if (res.Error) {
                 addErrorNode(activeNode!)
-                addOutput({ type: "error", message: res.Error })
+                addOutput({ type: "error", message: res.Error, preMessage: activeNode.id, aoMessage: res })
             } else {
                 addSuccessNode(activeNode!)
-                addOutput({ type: "output", message: parseOutupt(res) })
+                addOutput({ type: "output", message: parseOutupt(res), preMessage: activeNode.id, aoMessage: res })
             }
         } catch (e: any) {
             console.log(e)
             addErrorNode(activeNode!)
-            addOutput({ type: "error", message: e.message })
+            addOutput({ type: "error", message: e.message, preMessage: activeNode.id })
         } finally {
             setNodeRunning(false)
             setFlowIsRunning(false)

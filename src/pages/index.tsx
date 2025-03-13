@@ -6,7 +6,7 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import Main from "./main";
-import Terminal from "@/components/console";
+import Output from "@/components/output";
 import { useEffect, useRef, useState } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { useGlobalState } from "@/hooks/useGlobalStore";
@@ -45,8 +45,8 @@ export default function Index() {
             res.results.forEach(result => {
                 console.log("interval results", result)
                 if (result.Output.print && result.Output.data) {
-                    addOutput({ type: "output", message: result.Output.data as string })
-                    toast(<pre className="max-h-[269px] overflow-scroll"><Ansi>{result.Output.data as string}</Ansi></pre>, { style: { backgroundColor: "whitesmoke" } })
+                    addOutput({ type: "output", message: result.Output.data as string, preMessage: "Incoming Message" })
+                    toast(<pre className="max-h-[269px] overflow-scroll pointer-events-none"><Ansi>{result.Output.data as string}</Ansi></pre>, { className: "!bg-black/50 backdrop-blur", duration: 15000 })
                 }
             })
         }, 2000) as unknown as string
@@ -76,7 +76,7 @@ export default function Index() {
                     <ResizableHandle withHandle />
                     <ResizablePanel ref={consoleRef} minSize={5} maxSize={50} collapsedSize={0} defaultSize={0} collapsible
                         onResize={(current, prev) => { setConsoleSize(current) }}>
-                        <Terminal />
+                        <Output />
                     </ResizablePanel>
                 </ResizablePanelGroup>
             </ResizablePanel>
