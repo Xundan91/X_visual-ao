@@ -1,9 +1,10 @@
 import { execSync } from 'child_process';
+import packageJson from "./package.json" assert { type: "json" };
+
 
 const commitHash = execSync('git log --pretty=format:"%h" -n1')
   .toString()
   .trim();
-
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -11,9 +12,7 @@ const nextConfig = {
   transpilePackages: ["react-blockly"],
   images: {
     unoptimized: true
-  }, env: {
-    commitHash
-  }
+  }, env: { commitHash, version: packageJson.version }
 };
 
 export default nextConfig;
