@@ -63,16 +63,17 @@ const LoopEndEdge = ({
                             cx={x}
                             cy={y}
                             r={12}
-                            fill="#f2f2f299"
-                            strokeWidth={1}
+                            fill={style.fill || "transparent"}
+                            id="edge-circle"
                         />
                         <text
                             x={x}
                             y={y}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            fill='black'
+                            fill={style.fill || 'white'}
                             className='text-center text-[10px]'
+                            id="edge-circle-text"
                         >
                             loop
                         </text>
@@ -130,7 +131,7 @@ const LoopEndEdge = ({
                 return (
                     <polygon
                         points={`${arrowX},${arrowY} ${x1},${y1} ${x2},${y2}`}
-                        fill={style.stroke || 'white'}
+                        fill={style.stroke || 'gray'}
                     />
                 );
             })()}

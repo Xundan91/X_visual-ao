@@ -11,6 +11,7 @@ import vaoLogo from "@/assets/logo.svg"
 import { Template, templates } from "@/templates";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { ThemeToggle } from "./ui/theme-toggle";
 
 
 export default function TopBar() {
@@ -56,15 +57,8 @@ export default function TopBar() {
         </Link>
         <div className="grow" />
         <div className="flex items-center gap-2 mr-4">
-            {router.pathname === "/" ? (
-                <Link href="/builder" className="flex items-center gap-2 hover:bg-muted-foreground/10 px-2 py-1 rounded-md">
-                    <PencilRuler strokeWidth={1.4} size={20} /> Node Builder
-                </Link>
-            ) : (
-                <Link href="/" className="flex items-center gap-2 hover:bg-muted-foreground/10 px-2 py-1 rounded-md">
-                    <Workflow strokeWidth={1.4} size={20} /> Flow
-                </Link>
-            )}
+            <ThemeToggle />
+
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 {/* will add this back when new nodes flow is defined */}
                 {/* <DialogTrigger disabled={!globalState.activeProcess}>

@@ -10,7 +10,7 @@ export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
 
     const handleThemeChange = () => {
-        const newTheme = theme === "light" ? "dark" : "light";
+        const newTheme = theme == "light" ? "dark" : "light";
         setTheme(newTheme);
 
         // Store theme in localStorage for other components
@@ -24,6 +24,7 @@ export function ThemeToggle() {
         <Button
             variant="ghost"
             size="icon"
+            className="hover:bg-muted-foreground/10"
             onClick={handleThemeChange}
         >
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

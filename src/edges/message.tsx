@@ -33,16 +33,17 @@ const MessageEdge = ({
                 cx={labelX}
                 cy={labelY}
                 r={12}
-                fill="#f2f2f299"
-                // stroke="grey"
-                strokeWidth={1}
+                fill={style.fill || "transparent"}
+                id="edge-circle"
             />
             <text
                 x={labelX}
                 y={labelY}
                 textAnchor="middle"
                 dominantBaseline="middle"
+                fill={style.fill || "gray"}
                 className='text-center text-[10px]'
+                id="edge-circle-text"
             >
                 msg
             </text>

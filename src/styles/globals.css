@@ -3,15 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-  --background: #f2f2f2;
-  --foreground: #171717;
-} */
+:root {
+  /* --background: #f2f2f2;
+  --foreground: #171717; */
+}
 
 body {
   /* color: var(--foreground);
   background: var(--background); */
   font-family: "DM Sans", sans-serif !important;
+}
+
+*{
+  transition: color 150ms !important;
+  transition: background 150ms !important;
 }
 
 @layer utilities {
@@ -66,7 +71,7 @@ body {
     --card-foreground: 218 27% 94%; /* Nord Snow Storm - lightest: #ECEFF4 */
     --popover: 222 16% 28%;        /* Nord Polar Night - medium light: #3B4252 */
     --popover-foreground: 218 27% 94%; /* Nord Snow Storm - lightest: #ECEFF4 */
-    --primary: 193 43% 67%;        /* Nord Frost: #88C0D0 */
+    --primary: 200 43% 67%;        /* Nord Frost: #88C0D0 */
     --primary-foreground: 220 16% 22%; /* Nord Polar Night - darkest: #2E3440 */
     --secondary: 222 14% 31%;      /* Nord Polar Night - medium: #434C5E */
     --secondary-foreground: 218 27% 94%; /* Nord Snow Storm - lightest: #ECEFF4 */
@@ -99,9 +104,17 @@ body {
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground;
+  }
+
+  #edge-circle {
+    @apply fill-background;
+  }
+
+  #edge-circle-text {
+    @apply fill-foreground;
   }
 }
 
@@ -124,4 +137,17 @@ textarea {
 
 .react-flow__attribution {
   display: none;
+}
+
+.react-flow__controls-button{
+  background-color: transparent !important;
+
+}
+
+.react-flow__controls{
+  /* color: black !important; */
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(128, 128, 128, 0.2) !important;
+  border-radius: 0.2rem !important;
+  opacity: 0.7 !important;
 }

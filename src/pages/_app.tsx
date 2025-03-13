@@ -7,6 +7,7 @@ import { Steps, Step } from 'intro.js-react';
 import { useEffect, useState } from "react";
 import * as introJs from "intro.js"
 import { onChange, refresh, steps, tutorial } from "@/tutorial";
+import { ThemeProvider } from "@/components/theme-provider";
 
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -42,22 +43,28 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     }}
   >
-    <Steps
-      enabled={enabled}
-      steps={steps}
-      initialStep={0}
-      onChange={onChange}
-      onAfterChange={refresh}
-      onExit={() => { console.log('onExit') }}
-      options={{
-        showBullets: false,
-        showProgress: false,
-        showStepNumbers: false,
-        exitOnOverlayClick: false,
-        exitOnEsc: false,
-      }}
-    />
-    <Component {...pageProps} />
-    <Toaster />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      disableTransitionOnChange={false}
+    >
+      <Steps
+        enabled={enabled}
+        steps={steps}
+        initialStep={0}
+        onChange={onChange}
+        onAfterChange={refresh}
+        onExit={() => { console.log('onExit') }}
+        options={{
+          showBullets: false,
+          showProgress: false,
+          showStepNumbers: false,
+          exitOnOverlayClick: false,
+          exitOnEsc: false,
+        }}
+      />
+      <Component {...pageProps} />
+      <Toaster />
+    </ThemeProvider>
   </ArweaveWalletKit>
 }

@@ -7,16 +7,11 @@ export default function Document() {
       <Head>
         <title>Visual AO</title>
       </Head>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem={false}
-      >
-        <body className="antialiased overflow-hidden">
-          <Main />
-          <NextScript />
-        </body>
-      </ThemeProvider>
+
+      <body className="antialiased overflow-hidden">
+        <Main />
+        <NextScript />
+      </body>
     </Html>
   );
 }

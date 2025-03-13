@@ -22,7 +22,7 @@ export default function StartNode(props: Node) {
                     setAttach(props.id)
                 }}
                 data-willattach={attach == props.id}
-                className="absolute -right-3 bg-muted p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-primary">
+                className="absolute -right-3 bg-muted hover:bg-primary p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-primary">
                 <Plus size={20} />
             </Button>
         </Button>

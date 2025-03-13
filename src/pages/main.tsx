@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { data as TokenData } from '@/nodes/token';
 import { toast } from 'sonner';
 import { TNodeType } from '@/nodes/index/type';
+import { useTheme } from 'next-themes';
 const defaultNodes = [
   {
     id: "start",
@@ -36,6 +37,7 @@ const ignoreChangesForNodes = ["start", "annotation"]
 function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
+  const { theme } = useTheme()
   const { setCenter, setViewport, fitView } = useReactFlow();
   const { setActiveNode } = useGlobalState()
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
@@ -613,7 +615,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
       >
         <FlowPanel />
         <Background variant={BackgroundVariant.Dots} />
-        <MiniMap />
+        <MiniMap bgColor={theme == "dark" ? "#3B4252" : "white"} />
         <Controls />
       </ReactFlow>
     </div>

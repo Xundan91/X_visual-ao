@@ -140,7 +140,7 @@ export function RightSidebar() {
     const { activeNode } = useGlobalState()
 
     return (
-        <div className=" h-screen z-20 transition-all duration-200 border-l">
+        <div className=" h-screen z-20 transition-all duration-200">
             {activeNode ? <NodeData activeNode={activeNode} /> : <AvailableNodes />}
         </div>
     )

@@ -29,7 +29,7 @@ export default function NodeContainer(props: NodeContainerProps) {
     const orderNumber = order[props.id]
 
     return (
-        <div className="relative">
+        <div className="relative bg-muted rounded-md">
             {/* Toolbar */}
             {orderNumber !== undefined && <div className="absolute -left-2 -top-3 bg-muted text-foreground border border-black/30 rounded-full aspect-square w-5 h-5 flex justify-center items-center z-20 text-xs">
                 {orderNumber + 1}
@@ -40,14 +40,15 @@ export default function NodeContainer(props: NodeContainerProps) {
                 data-running={iAmRunning}
                 data-success={iAmSuccess}
                 data-error={iAmError}
-                className={cn(`bg-muted border data-[selected=true]:border-muted-foreground p-2 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28 relative`,
-                    `data-[running=true]:bg-yellow-50 data-[success=true]:bg-green-50 data-[error=true]:bg-red-50`,
+                className={cn(`border data-[selected=true]:border-muted-foreground p-2 rounded-md aspect-square cursor-pointer flex flex-col items-center justify-center w-28 h-28 relative`,
+                    `data-[running=true]:bg-yellow-200/30 data-[success=true]:bg-green-200/30 data-[error=true]:bg-red-200/30`,
                     ` data-[running=true]:border-yellow-500 data-[success=true]:border-green-500 data-[error=true]:border-red-500`,
                 )}>
                 {iAmRunning && <Loader className="absolute top-1 right-1 animate-spin" size={20} />}
                 {props.children}
                 <Handle type="target" position={Position.Left} />
                 {props.data.attachable && <Handle type="source" position={Position.Right} />}
+
                 {props.data.attachable && <Button disabled={flowIsRunning} variant="ghost" onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -55,7 +56,7 @@ export default function NodeContainer(props: NodeContainerProps) {
                     setAttach(props.id)
                     setActiveNode(undefined)
                     if (props.onAddClick) props.onAddClick()
-                }} data-willattach={attach == props.id} className="absolute -right-3 bg-muted p-0 border rounded-full w-6 h-6 flex justify-center items-center data-[willattach=true]:bg-primary">
+                }} data-willattach={attach == props.id} className="absolute -right-3 bg-muted hover:bg-primary p-0 border rounded-full w-5 h-5 flex justify-center items-center data-[willattach=true]:bg-primary">
                     <Plus size={20} />
                 </Button>}
             </div>

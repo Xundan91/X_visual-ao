@@ -322,7 +322,7 @@ export function ConditionalSidebar() {
             </>
         )}
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">
+        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
             {code}
         </pre>
 
