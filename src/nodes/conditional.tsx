@@ -259,7 +259,7 @@ export function ConditionalSidebar() {
                 {/* Operator */}
                 <SmolText className="h-4 p-0 ml-4 mt-4">Operator</SmolText>
                 <Select value={operator} onValueChange={setOperator}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger>
                         <SelectValue placeholder="Select an operator" />
                     </SelectTrigger>
                     <SelectContent>
@@ -313,7 +313,7 @@ export function ConditionalSidebar() {
             <>
                 <SmolText className="h-4 p-0 ml-4 mt-4">Advanced Condition</SmolText>
                 <textarea
-                    className="flex w-full bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    className="flex w-full bg-muted focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     rows={5}
                     value={advancedCondition}
                     onChange={(e) => setAdvancedCondition(e.target.value)}

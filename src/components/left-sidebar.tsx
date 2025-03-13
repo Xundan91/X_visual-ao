@@ -38,7 +38,7 @@ function Process({ processId, name, loading }: { processId: string, name?: strin
         }
     }, [copied])
 
-    return <div data-active={activeProcess === processId} className={`text-sm font-medium  w-full tracking-wider h-9 flex justify-between cursor-pointer data-[active=false]:hover:bg-[#dedede]/30 items-center px-4 py-0.5 data-[active=true]:bg-[#dedede]`} onClick={() => !loading && setActiveProcess(processId)}>
+    return <div data-active={activeProcess === processId} className={`text-sm font-medium  w-full tracking-wider h-9 flex justify-between cursor-pointer data-[active=false]:hover:bg-muted-foreground/10 items-center px-4 py-0.5 data-[active=true]:bg-muted-foreground/20`} onClick={() => !loading && setActiveProcess(processId)}>
         <div className="truncate mr-auto overflow-hidden w-fit">
             {loading ? (
                 <div className="flex items-center gap-2">
@@ -165,19 +165,19 @@ export function LeftSidebar() {
 
             <div className="p-0 flex flex-col">
                 <div className="p-4 flex text-sm items-center gap-2 font-robotoMono tracking-tight">MY PROCESSES
-                    <Button disabled={loading || !address} variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 mr-2.5 w-fit p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
+                    <Button disabled={loading || !address} variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 w-6 mr-2.5 p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
                 </div>
                 <div className="px-4">
                     <Input
                         placeholder="Search Processes"
                         value={searchTerm}
-                        className="mb-4 rounded-md mx-auto bg-white border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+                        className="mb-4 rounded-md mx-auto  border "
                         onChange={(e) => setSearchTerm(e.target.value.trim())}
                     />
                 </div>
                 <DropdownMenu onOpenChange={(open) => { open && tutorial().nextStep() }}>
                     <DropdownMenuTrigger asChild disabled={!address}>
-                        <Button disabled={!address} variant="outline" id="add-process-button" className="mx-4 mb-4 text-sm shadow-none !bg-[#ECEFEF] border-[#D6D7DC] rounded-s-md hover:scale-[101%] transition-all duration-100">
+                        <Button disabled={!address} variant="outline" id="add-process-button" className="mx-4 mb-4 text-sm shadow-none !bg-muted border-muted-foreground/30 rounded-s-md hover:scale-[101%] transition-all duration-100">
                             <PlusIcon size={10} strokeWidth={1.3} />
                             <div className="text-sm tracking-tight">ADD PROCESS</div>
                         </Button>
@@ -186,9 +186,9 @@ export function LeftSidebar() {
                         <Arrow className=" fill-white" />
                         <AlertDialog>
                             <AlertDialogTrigger id="new-process-button">
-                                <Button variant="ghost" className="h-5 rounded-none hover:bg-white bg-white hover:scale-[101%] transition-all duration-100"><TerminalSquare size={10} strokeWidth={1.5} /> CREATE A NEW PROCESS</Button>
+                                <Button variant="ghost" className="h-5 rounded-none !bg-inherit hover:scale-[101%] transition-all duration-100"><TerminalSquare size={10} strokeWidth={1.5} /> CREATE A NEW PROCESS</Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white p-0">
+                            <AlertDialogContent className="bg-muted p-0">
                                 {/* NEW PROCESS */}
                                 <AlertDialogHeader className="border-b p-2 px-4 flex flex-row justify-between items-center">
                                     <AlertDialogTitle>Create a Process</AlertDialogTitle>
@@ -207,9 +207,9 @@ export function LeftSidebar() {
                         </AlertDialog>
                         <AlertDialog>
                             <AlertDialogTrigger>
-                                <Button variant="ghost" className="h-5 rounded-none hover:bg-white bg-white hover:scale-[101%] transition-all duration-100"><Plug size={10} strokeWidth={1.5} className=" rotate-45" /> CONNECT TO A PROCESS</Button>
+                                <Button variant="ghost" className="h-5 rounded-none !bg-inherit hover:scale-[101%] transition-all duration-100"><Plug size={10} strokeWidth={1.5} className=" rotate-45" /> CONNECT TO A PROCESS</Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white p-0">
+                            <AlertDialogContent className="bg-muted p-0">
                                 {/* CONNECT TO A PROCESS */}
                                 <AlertDialogHeader className="border-b p-2 px-4 flex flex-row justify-between items-center">
                                     <AlertDialogTitle>Enter Process ID?</AlertDialogTitle>
@@ -263,7 +263,7 @@ export function LeftSidebar() {
                 <div className="flex justify-between items-center px-4 my-4">
                     <Button
                         variant="outline"
-                        className="text-sm shadow-none !bg-[#ECEFEF] border-[#D6D7DC] rounded-s-md hover:scale-[101%] transition-all duration-100 p-2 gap-1"
+                        className="text-sm shadow-none !bg-muted border-muted-foreground/30 rounded-s-md hover:scale-[101%] transition-all duration-100 p-2 gap-1"
                         onClick={handlePreviousPage}
                         disabled={currentCursorIndex < 0 || loading}
                     >
@@ -272,7 +272,7 @@ export function LeftSidebar() {
                     </Button>
                     <Button
                         variant="outline"
-                        className="text-sm shadow-none !bg-[#ECEFEF] border-[#D6D7DC] rounded-s-md hover:scale-[101%] transition-all duration-100 p-2 gap-1"
+                        className="text-sm shadow-none !bg-muted border-muted-foreground/30 rounded-s-md hover:scale-[101%] transition-all duration-100 p-2 gap-1"
                         onClick={handleNextPage}
                         disabled={processes.length < 10 || loading}
                     >

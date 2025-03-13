@@ -318,7 +318,7 @@ export function SendMessageSidebar() {
                     />
                     <Button
                         variant="ghost"
-                        className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
+                        className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-muted-foreground/10 transition-colors"
                         onClick={() => removeTag(index)}
                     >
                         <Minus size={22} className="m-0 p-0 w-full h-full" />
@@ -342,7 +342,7 @@ export function SendMessageSidebar() {
             />
             <Button
                 variant="ghost"
-                className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-white/50 hover:bg-white transition-colors"
+                className="p-0 rounded border mx-0.5 aspect-square w-9 h-9 bg-muted-foreground/10 transition-colors"
                 onClick={() => addTag("TEXT")}
             >
                 <Plus size={22} className="m-0 p-0 w-full h-full" />

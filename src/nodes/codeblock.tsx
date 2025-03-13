@@ -82,7 +82,7 @@ export function CodeblockSidebar() {
         <SmolText className="h-4 p-0 ml-4 mt-4">Ask AI to write code for you (coming soon)</SmolText>
         <textarea
             disabled
-            className="flex w-[97%] mx-auto rounded max-h-48 min-h-10 h-10 bg-white focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            className="flex w-[97%] mx-auto rounded max-h-48 min-h-10 h-10 bg-muted focus-visible:border-ring border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             placeholder="Prompt for AI"
             value={prompt || ""}
             rows={1}
@@ -105,6 +105,14 @@ export function CodeblockSidebar() {
                 wordWrap: "on",
                 lineNumbersMinChars: 2,
                 lineDecorationsWidth: 0
+            }}
+            onMount={(editor, monaco) => {
+                const theme = localStorage.getItem("theme")
+                if (theme == "dark") {
+                    monaco.editor.setTheme("vs-dark")
+                } else {
+                    monaco.editor.setTheme("vs-light")
+                }
             }}
         />
         <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted border-y border-muted-foreground/30">

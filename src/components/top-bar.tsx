@@ -50,26 +50,27 @@ export default function TopBar() {
         setDialogOpen(false);
     }
 
-    return <div className="border-b bg-white flex justify-between items-center p-2">
-        <div className="px-2 text-lg flex items-center">
-            <Image src={vaoLogo} alt="Visual AO" width={150} height={32} />
-        </div>
+    return <div className="border-b bg-muted flex justify-between items-center p-2">
+        <Link href="/" className="px-2 text-lg flex items-center">
+            <Image src={vaoLogo} alt="Visual AO" width={150} height={32} className="dark:invert dark:opacity-80" />
+        </Link>
         <div className="grow" />
         <div className="flex items-center gap-2 mr-4">
             {router.pathname === "/" ? (
-                <Link href="/builder" className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded-md">
+                <Link href="/builder" className="flex items-center gap-2 hover:bg-muted-foreground/10 px-2 py-1 rounded-md">
                     <PencilRuler strokeWidth={1.4} size={20} /> Node Builder
                 </Link>
             ) : (
-                <Link href="/" className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded-md">
+                <Link href="/" className="flex items-center gap-2 hover:bg-muted-foreground/10 px-2 py-1 rounded-md">
                     <Workflow strokeWidth={1.4} size={20} /> Flow
                 </Link>
             )}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                {/* will add this back when new nodes flow is defined */}
                 {/* <DialogTrigger disabled={!globalState.activeProcess}>
                     <Button disabled={!globalState.activeProcess} variant="ghost" className="h-12 rounded-xl"><AppWindowMac />Templates</Button>
                 </DialogTrigger> */}
-                <DialogContent className="!bg-white">
+                <DialogContent className="!bg-muted">
                     <DialogHeader>
                         <DialogTitle>Templates</DialogTitle>
                         <DialogDescription>

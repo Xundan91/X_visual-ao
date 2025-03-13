@@ -37,7 +37,7 @@ function NodeTemplate({ type, Icon, disabled }: { type: TNodeType, Icon: LucideI
     return (
         <div
             data-disabled={disabled}
-            className="flex flex-col w-28 h-28 border bg-white/50 rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:hover:bg-white/50 data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
+            className="flex flex-col w-28 h-28 border bg-muted hover:bg-muted-foreground/20 transition-colors duration-100 rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
             onClick={addThisNode}
         >
             <Icon size={22} />
@@ -93,7 +93,7 @@ function AvailableNodes() {
                     })}
             </div>
             <div className="my-4 w-[90%] mx-auto bg-muted-foreground/30 h-[1px] flex items-center justify-center" >
-                <div className="text-muted-foreground/70 bg-[#f2f2f2] w-fit px-1 text-sm text-center mx-auto">community nodes</div>
+                <div className="text-muted-foreground/70 bg-background w-fit px-1 text-sm text-center mx-auto">community nodes</div>
             </div>
             <div className="p-2 grid w-full items-start justify-start grid-cols-[repeat(auto-fill,minmax(7rem,0fr))] gap-2">
                 {/* Show enabled nodes first */}

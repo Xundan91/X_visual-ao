@@ -9,9 +9,8 @@ export default function Document() {
       </Head>
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
+        defaultTheme="dark"
         enableSystem={false}
-        disableTransitionOnChange
       >
         <body className="antialiased overflow-hidden">
           <Main />

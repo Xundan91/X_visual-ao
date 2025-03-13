@@ -33,7 +33,13 @@ export default function App({ Component, pageProps }: AppProps) {
     }}
     theme={{
       displayTheme: "light",
-      radius: "minimal"
+      radius: "minimal",
+      // nord
+      accent: {
+        r: 46,
+        g: 52,
+        b: 64
+      }
     }}
   >
     <Steps

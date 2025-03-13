@@ -360,7 +360,7 @@ export default function NodeBuildder() {
                                             title={iconName}>
                                             <Icon />
                                         </TooltipTrigger>
-                                        <TooltipContent sideOffset={2} side="bottom" className="bg-[#cdcdcd] shadow p-1 px-2 text-foreground">
+                                        <TooltipContent sideOffset={2} side="bottom" className="bg-secondary shadow p-1 px-2 text-foreground">
                                             <p>{iconName}</p>
                                         </TooltipContent>
                                     </Tooltip>
@@ -497,7 +497,7 @@ export default function NodeBuildder() {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="sm"
-                                                                        className={type === "TEXT" ? "bg-green-400/20" : ""}
+                                                                        className={`${type === "TEXT" ? "bg-green-400/20" : ""}`}
                                                                         onClick={() => {
                                                                             const newValues = [...(input.values || [])] as TConverted[];
                                                                             newValues[idx] = {
@@ -599,6 +599,14 @@ export default function NodeBuildder() {
                                 lineNumbersMinChars: 2,
                                 renderLineHighlight: "none"
                             }}
+                            onMount={(editor, monaco) => {
+                                const theme = localStorage.getItem("theme");
+                                if (theme == "dark") {
+                                    monaco.editor.setTheme("vs-dark");
+                                } else {
+                                    monaco.editor.setTheme("vs-light");
+                                }
+                            }}
                         />
                     </div>
                     <div className="text-sm text-muted-foreground mx-3">
@@ -612,7 +620,7 @@ export default function NodeBuildder() {
                             <ResizablePanelGroup direction="horizontal">
                                 {/* node component */}
                                 <ResizablePanel defaultSize={50} minSize={30} className="flex flex-col items-center justify-start">
-                                    <div className="bg-white m-10 w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
+                                    <div className=" m-10 w-[114px] h-[114px] rounded-md border flex flex-col items-center justify-center">
                                         {(() => {
                                             if (!node.iconName) return null;
                                             const Icon = LucideIcons[node.iconName as keyof typeof LucideIcons] as React.FC<any>;

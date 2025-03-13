@@ -1,5 +1,4 @@
 import { EdgeProps, getBezierPath } from '@xyflow/react';
-
 const LoopEndEdge = ({
     id,
     sourceX,
@@ -72,6 +71,7 @@ const LoopEndEdge = ({
                             y={y}
                             textAnchor="middle"
                             dominantBaseline="middle"
+                            fill='black'
                             className='text-center text-[10px]'
                         >
                             loop
@@ -130,7 +130,7 @@ const LoopEndEdge = ({
                 return (
                     <polygon
                         points={`${arrowX},${arrowY} ${x1},${y1} ${x2},${y2}`}
-                        fill={style.stroke || 'gray'}
+                        fill={style.stroke || 'white'}
                     />
                 );
             })()}

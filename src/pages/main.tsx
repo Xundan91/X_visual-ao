@@ -612,7 +612,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         }}
       >
         <FlowPanel />
-        <Background variant={BackgroundVariant.Dots} bgColor="#f2f2f2" />
+        <Background variant={BackgroundVariant.Dots} />
         <MiniMap />
         <Controls />
       </ReactFlow>

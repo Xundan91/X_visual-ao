@@ -252,7 +252,7 @@ export default function FlowPanel() {
 
     if (!activeProcess) {
         return (
-            <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+            <Panel position="top-left" className="bg-muted whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
                 <span className="text-xs font-medium">;)</span>
             </Panel>
         )
@@ -261,7 +261,7 @@ export default function FlowPanel() {
     if (!activeNode) {
         // Return a simplified panel when no node is active
         return (
-            <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+            <Panel position="top-left" className="bg-muted whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
                 <Button
                     key="show-code-button"
                     disabled={!activeProcess || flowIsRunning}
@@ -270,7 +270,7 @@ export default function FlowPanel() {
                     onClick={showFullCode}
                     title="Show full code"
                 >
-                    <Code key="code-icon" size={25} color="#555" />
+                    <Code key="code-icon" size={25} />
                     <span className="text-xs font-medium">Full Code</span>
                 </Button>
 
@@ -282,16 +282,16 @@ export default function FlowPanel() {
                     onClick={formatFlow}
                     title="Format flow"
                 >
-                    <Workflow key="format-icon" size={25} color="#555" />
+                    <Workflow key="format-icon" size={25} />
                     <span className="text-xs font-medium">Format</span>
                 </Button>
 
                 <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
-                    <DialogContent className="max-w-3xl bg-white">
+                    <DialogContent className="max-w-3xl bg-muted">
                         <DialogHeader>
                             <DialogTitle>Full Flow Code</DialogTitle>
                         </DialogHeader>
-                        <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-[70vh]">
+                        <div className="bg-muted-foreground/10 p-4 rounded-md overflow-auto max-h-[70vh]">
                             <pre className="text-sm whitespace-pre-wrap">{fullCode}</pre>
                         </div>
                     </DialogContent>
@@ -300,7 +300,7 @@ export default function FlowPanel() {
         )
     }
 
-    return <Panel position="top-left" className="bg-white whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
+    return <Panel position="top-left" className="bg-muted whitespace-nowrap rounded-md p-1 border flex items-center justify-center gap-2">
         <Button
             key="run-button"
             disabled={flowIsRunning || nodeRunning}
@@ -336,11 +336,11 @@ export default function FlowPanel() {
         </Button>
 
         <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
-            <DialogContent className="max-w-3xl bg-white">
+            <DialogContent className="max-w-3xl bg-muted">
                 <DialogHeader>
                     <DialogTitle>Node Code</DialogTitle>
                 </DialogHeader>
-                <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-[70vh]">
+                <div className="bg-muted-foreground/10 p-4 rounded-md overflow-auto max-h-[70vh]">
                     <pre className="text-sm whitespace-pre-wrap">{fullCode}</pre>
                 </div>
             </DialogContent>
