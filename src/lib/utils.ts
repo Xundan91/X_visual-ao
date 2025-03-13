@@ -29,7 +29,7 @@ export function getNodesOrdered(nodes: any, edges: any): Node[] {
 }
 
 export function sanitizeVariableName(name: string) {
-  let sanitized = name.replace(/[^a-zA-Z0-9_\.]/g, '')
+  let sanitized = String(name).replace(/[^a-zA-Z0-9_\.]/g, '')
   // Must start with letter
   if (sanitized.length > 0 && !/^[a-zA-Z]/.test(sanitized)) {
     // strip numbers from start
@@ -56,11 +56,29 @@ export type TextOrVariable = "TEXT" | "VARIABLE"
 export type TConverted = { value: string, type: TextOrVariable }
 export const convertor = {
   // text inside quotes ""
-  text: (input: string): TConverted => input ? (input.startsWith('"') && input.endsWith('"') ? { value: input, type: "TEXT" } : { value: `"${input}"`, type: "TEXT" }) : { value: "", type: "TEXT" },
+  text: (input: string): TConverted => {
+    const strInput = String(input || "");
+    return strInput ?
+      (strInput.startsWith('"') && strInput.endsWith('"') ?
+        { value: strInput, type: "TEXT" } :
+        { value: `"${strInput}"`, type: "TEXT" }) :
+      { value: "", type: "TEXT" };
+  },
   // strip starting and ending quotes
-  variable: (input: string): TConverted => input ? { value: input.replace(/^["']+|["']+$/g, ''), type: "VARIABLE" } : { value: "", type: "VARIABLE" },
+  variable: (input: string): TConverted => {
+    const strInput = String(input || "");
+    return strInput ?
+      { value: strInput.replace(/^["']+|["']+$/g, ''), type: "VARIABLE" } :
+      { value: "", type: "VARIABLE" };
+  },
   // convert to number
-  number: (input: string): TConverted => ({ value: convertor.variable(input || "").value.replace(/[^0-9]/g, '') || "", type: "VARIABLE" }),
+  number: (input: string): TConverted => {
+    const varValue = convertor.variable(input || "").value;
+    return { value: varValue.replace(/[^0-9]/g, '') || "", type: "VARIABLE" };
+  },
   // convert to boolean
-  boolean: (input: string): TConverted => ({ value: (convertor.variable(input || "").value == "true") ? "true" : "false", type: "VARIABLE" })
+  boolean: (input: string): TConverted => {
+    const varValue = convertor.variable(input || "").value;
+    return { value: (varValue === "true") ? "true" : "false", type: "VARIABLE" };
+  }
 }

@@ -322,7 +322,7 @@ export default function FlowPanel() {
             onClick={showFullCode}
             title="Show node code"
         >
-            <Code key="code-icon" size={20} color="#555" />
+            <Code key="code-icon" size={20} />
             <span className="text-xs font-medium">Code</span>
         </Button>
         <Button
