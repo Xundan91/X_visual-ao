@@ -26,7 +26,7 @@ export default function Output() {
         </div>
         {/* scrollable div for output list */}
         {/* always make sure the scroll is at the bottom */}
-        <div id="console-container" className="overflow-scroll h-full scroll-smooth flex flex-col pb-10 gap-0.5 dark:bg-black/50">
+        <div id="console-container" className="overflow-scroll h-full scroll-smooth flex flex-col gap-0.5 dark:bg-black/50">
             {outputs.map((output: OutputType, index) =>
                 <Dialog key={index}>
                     <DialogTrigger data-type={output.type} className="flex items-center justify-start gap-0.5 whitespace-nowrap text-xs font-mono data-[type=error]:text-red-500 data-[type=success]:text-green-500 data-[type=info]:text-blue-500 data-[type=warning]:text-yellow-500 dark:hover:bg-background hover:bg-muted p-1 px-1.5 outline-none">

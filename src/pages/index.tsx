@@ -45,8 +45,8 @@ export default function Index() {
             res.results.forEach(result => {
                 console.log("interval results", result)
                 if (result.Output.print && result.Output.data) {
-                    addOutput({ type: "output", message: result.Output.data as string, preMessage: "Incoming Message" })
-                    toast(<pre className="max-h-[269px] overflow-scroll pointer-events-none"><Ansi>{result.Output.data as string}</Ansi></pre>, { className: "dark:!bg-black/50 bg-white backdrop-blur", duration: 15000 })
+                    addOutput({ type: "output", message: result.Output.data as string })
+                    toast(<pre className="max-h-[269px] overflow-scroll select-none"><Ansi>{result.Output.data as string}</Ansi></pre>, { className: "dark:!bg-black/50 bg-white backdrop-blur", duration: 15000 })
                 }
             })
         }, 2000) as unknown as string
