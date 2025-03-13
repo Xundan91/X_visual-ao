@@ -1,6 +1,6 @@
 export const GOLD_SKY_GQL = "https://arweave-search.goldsky.com/graphql"
 
-export const AppVersion = "2.1.1";
+export const AppVersion = "2.1.2";
 export const AOModule = "Do_Uc2Sju_ffp6Ev0AnLVdPtot15rvMjP-a9VVaA5fM"; // aos 2.0.1
 export const AOScheduler = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA";
 export const AOAuthority = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY";
