@@ -15,6 +15,8 @@ import { TNodeType } from "./index/type";
 import { updateNodeData } from "@/lib/events";
 import Editor from "@monaco-editor/react"
 import { formatLua } from "@/lib/utils";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -61,7 +63,7 @@ export function CodeblockSidebar() {
 
     const [prompt, setPrompt] = useState<string | null>(null)
     const { activeNode, activeProcess, setActiveNode } = useGlobalState()
-
+    const { theme } = useTheme()
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return
@@ -115,8 +117,6 @@ export function CodeblockSidebar() {
                 }
             }}
         />
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-            {formatLua(code)}
-        </pre>
+        <SyntaxHighlighter code={formatLua(code)} theme={theme} />
     </div>
 }

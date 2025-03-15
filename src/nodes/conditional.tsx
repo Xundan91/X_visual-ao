@@ -11,6 +11,8 @@ import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { TNodeType } from "./index/type";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 // data field structure for react-node custom node
 export interface data {
@@ -131,7 +133,7 @@ export function ConditionalSidebar() {
     const [useAdvanced, setUseAdvanced] = useState(false);
     const [advancedCondition, setAdvancedCondition] = useState("");
     const [code, setCode] = useState("");
-
+    const { theme } = useTheme()
     const { activeNode } = useGlobalState();
 
     // updates the data in sidebar when the node is selected
@@ -322,9 +324,7 @@ export function ConditionalSidebar() {
             </>
         )}
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-            {code}
-        </pre>
+        <SyntaxHighlighter code={code} theme={theme} />
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             This node will conditionally execute the connected nodes if the condition evaluates to true.<br /><br />

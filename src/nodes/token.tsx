@@ -16,6 +16,8 @@ import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua } from "@/lib/utils";
 import { token } from "@/blueprints"
 import { Switch } from "@/components/ui/switch";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -136,7 +138,7 @@ export function TokenSidebar() {
     const [output, setOutput] = useState<string | null>(null)
 
     const { activeNode, activeProcess } = useGlobalState()
-
+    const { theme } = useTheme()
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return
@@ -285,8 +287,6 @@ export function TokenSidebar() {
             )
         }
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-            {code}
-        </pre>
+        <SyntaxHighlighter code={code} theme={theme} />
     </div>
 }

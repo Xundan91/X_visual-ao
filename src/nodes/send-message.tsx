@@ -16,6 +16,8 @@ import { Tag } from "@/lib/types";
 import { getCode, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
 import { CommonActions } from "@/lib/constants";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 // This file should be copied and modified to create new nodes
 // Copy inside @nodes/community and rename the file
@@ -101,7 +103,7 @@ export function SendMessageSidebar() {
     const [newTagValue, setNewTagValue] = useState("")
 
     const { activeNode, activeProcess } = useGlobalState()
-
+    const { theme } = useTheme()
     // Add this state for code display
     const [code, setCode] = useState("")
 
@@ -349,8 +351,6 @@ export function SendMessageSidebar() {
             </Button>
         </div>
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-            {code}
-        </pre>
+        <SyntaxHighlighter code={code} theme={theme} />
     </div>
 }

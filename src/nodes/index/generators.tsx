@@ -14,6 +14,8 @@ import { getCode, getConnectedNodes, updateNodeData } from "@/lib/events";
 import { useGlobalState } from "@/hooks/useGlobalStore";
 import { Button } from "@/components/ui/button";
 import { processTemplate } from "@/lib/processTemplate";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 export function GenerateNode(node: NodeConfig) {
 
@@ -92,7 +94,7 @@ export function GenerateSidebar(node_: NodeConfig) {
     const SidebarComponent: FC<any> = ({ previewNode }) => {
         const { activeNode } = useGlobalState()
         const currentNode = previewNode || node_;
-
+        const { theme } = useTheme()
         // Define action types and reducer
         type NodeDataAction =
             | { type: 'SET_INITIAL_DATA'; payload: Record<string, any> }
@@ -361,9 +363,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                     )}
                 </div>
             })}
-            <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-                {formatLua(code) || "-- Lua code will appear here"}
-            </pre>
+            <SyntaxHighlighter code={formatLua(code || "-- lua code will appear here")} theme={theme} />
         </div>
     }
     return SidebarComponent;

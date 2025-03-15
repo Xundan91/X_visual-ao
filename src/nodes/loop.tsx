@@ -14,6 +14,8 @@ import { SubRootNodesAvailable } from "./index/registry";
 import { TNodeType } from "./index/type";
 import { getCode, getConnectedNodes, removeEdge, addEdge, TConnectedNodes, updateNodeData } from "@/lib/events";
 import { formatLua, sanitizeVariableName } from "@/lib/utils";
+import SyntaxHighlighter from "@/components/syntax-highlighter";
+import { useTheme } from "next-themes";
 
 // Common values for loop inputs
 const CommonValues = {
@@ -174,7 +176,7 @@ export function LoopSidebar() {
     const [code, setCode] = useState("");
 
     const { activeNode, activeProcess } = useGlobalState();
-
+    const { theme } = useTheme()
     // updates the data in sidebar when the node is selected
     useEffect(() => {
         if (!activeNode) return;
@@ -336,9 +338,7 @@ export function LoopSidebar() {
             </>
         )}
 
-        <pre className="text-xs mt-6 p-4 w-full overflow-y-scroll bg-muted/50 border-y border-muted-foreground/30">
-            {code}
-        </pre>
+        <SyntaxHighlighter code={code} theme={theme} />
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             {loopType === "condition" ? (
