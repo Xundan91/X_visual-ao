@@ -52,7 +52,7 @@ jobs:
         run: pnpm i
       - name: Build with Next.js
         run: |
-          sed -i '' 's/basePath: "",/basePath: "\/visual-ao",/' next.config.mjs
+          sed -i 's/basePath: "",/basePath: "\/visual-ao",/' next.config.mjs
           pnpm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
