@@ -65,11 +65,13 @@ export function HandlerNode(props: Node) {
                 }
 
                 let code = `Handlers.add(
-    "${inputs.name}",
-    { Action = "${inputs.action}" },
-    function(msg)
+"${inputs.name}",
+{ Action = "${inputs.action}" },
+function(msg)
 ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
-    end)`
+end)
+print("Handler ${inputs.name} added")
+`
 
                 code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
                 e.detail.callback(code)
