@@ -7,20 +7,26 @@ import { Button } from "./ui/button"
 import { Plus } from "lucide-react"
 import { deleteNode, getCode, getConnectedNodes, updateNodeData } from "@/lib/events"
 import { findSpawnedProcess, parseOutupt, runLua, spawnProcess, spawnToken } from "@/lib/aos"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { data as TokenData } from "@/nodes/token"
 import { AOAuthority, AOModule } from "@/lib/constants"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Node } from "@/nodes/index"
 import { SmolText } from "./right-sidebar"
 import { useReactFlow } from "@xyflow/react"
+import SyntaxHighlighter from "./syntax-highlighter"
+import { useTheme } from "next-themes"
+import { Switch } from "./ui/switch"
+import { SelectLabel } from "./ui/select"
 
 export default function FlowPanel() {
     const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
     const [nodeRunning, setNodeRunning] = useState(false)
     const [showCodeDialog, setShowCodeDialog] = useState(false)
+    const [showComments, setShowComments] = useState(true)
     const [fullCode, setFullCode] = useState("")
     const reactFlowInstance = useReactFlow()
+    const { theme } = useTheme()
 
     async function runThis() {
         if (!activeNode) return
@@ -75,7 +81,7 @@ export default function FlowPanel() {
         deleteNode(activeNode!.id)
     }
 
-    async function showFullCode() {
+    async function showFullCode({ comments = true }: { comments?: boolean }) {
         if (!activeProcess) return
 
         let code = ""
@@ -114,9 +120,17 @@ export default function FlowPanel() {
             }
         }
 
+        if (!comments) {
+            code = code.replace(/\n--.*\n/g, "\n")
+        }
+
         setFullCode(code.trim() || "-- No code generated")
         setShowCodeDialog(true)
     }
+
+    useEffect(() => {
+        showFullCode({ comments: showComments })
+    }, [showComments]);
 
     async function formatFlow() {
         if (flowIsRunning) return
@@ -267,7 +281,7 @@ export default function FlowPanel() {
                     disabled={!activeProcess || flowIsRunning}
                     className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
                     variant="ghost"
-                    onClick={showFullCode}
+                    onClick={() => showFullCode({ comments: showComments })}
                     title="Show full code"
                 >
                     <Code key="code-icon" size={25} />
@@ -288,11 +302,15 @@ export default function FlowPanel() {
 
                 <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
                     <DialogContent className="max-w-3xl bg-muted">
-                        <DialogHeader>
+                        <DialogHeader className="flex flex-row items-center justify-between">
                             <DialogTitle>Full Flow Code</DialogTitle>
                         </DialogHeader>
-                        <div className="bg-muted-foreground/10 p-4 rounded-md overflow-auto max-h-[70vh]">
-                            <pre className="text-sm whitespace-pre-wrap">{fullCode}</pre>
+                        <div className="rounded-md overflow-clip border">
+                            <SyntaxHighlighter code={fullCode} theme={theme} style={{ marginTop: "0px", borderTopWidth: "0px", borderBottomWidth: "0px", maxHeight: "70vh", overflowY: "scroll" }} />
+                        </div>
+                        <div className="absolute bottom-0.5 right-6 flex items-center justify-center gap-0.5">
+                            <div className="text-xs font-medium text-muted-foreground">Show comments</div>
+                            <Switch id="enable-comments" checked={showComments} onCheckedChange={setShowComments} className="scale-75" />
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -319,7 +337,7 @@ export default function FlowPanel() {
             disabled={flowIsRunning}
             className="h-12 w-16 flex flex-col items-center justify-center gap-1 p-2"
             variant="ghost"
-            onClick={showFullCode}
+            onClick={() => showFullCode({ comments: showComments })}
             title="Show node code"
         >
             <Code key="code-icon" size={20} />
@@ -337,11 +355,15 @@ export default function FlowPanel() {
 
         <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
             <DialogContent className="max-w-3xl bg-muted">
-                <DialogHeader>
+                <DialogHeader className="flex flex-row items-center mr-5 justify-between">
                     <DialogTitle>Node Code</DialogTitle>
                 </DialogHeader>
-                <div className="bg-muted-foreground/10 p-4 rounded-md overflow-auto max-h-[70vh]">
-                    <pre className="text-sm whitespace-pre-wrap">{fullCode}</pre>
+                <div className="rounded-md overflow-clip border">
+                    <SyntaxHighlighter code={fullCode} theme={theme} style={{ marginTop: "0px", borderTopWidth: "0px", borderBottomWidth: "0px", maxHeight: "70vh", overflowY: "scroll" }} />
+                </div>
+                <div className="absolute bottom-0.5 right-6 flex items-center justify-center gap-0.5">
+                    <div className="text-xs font-medium text-muted-foreground">Show comments</div>
+                    <Switch id="enable-comments" checked={showComments} onCheckedChange={setShowComments} className="scale-75" />
                 </div>
             </DialogContent>
         </Dialog>
