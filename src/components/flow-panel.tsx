@@ -20,7 +20,7 @@ import { Switch } from "./ui/switch"
 import { SelectLabel } from "./ui/select"
 
 export default function FlowPanel() {
-    const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
+    const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode, consoleRef } = useGlobalState()
     const [nodeRunning, setNodeRunning] = useState(false)
     const [showCodeDialog, setShowCodeDialog] = useState(false)
     const [showComments, setShowComments] = useState(false)
@@ -36,6 +36,7 @@ export default function FlowPanel() {
             setNodeRunning(true)
             resetNode(activeNode.id)
             addRunningNode(activeNode)
+            consoleRef?.current?.expand()
 
             let code = await getCode(activeNode!.id)
 
