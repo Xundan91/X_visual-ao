@@ -23,7 +23,7 @@ export default function FlowPanel() {
     const { activeNode, flowIsRunning, setFlowIsRunning, addErrorNode, addOutput, addRunningNode, addSuccessNode, activeProcess, resetNode } = useGlobalState()
     const [nodeRunning, setNodeRunning] = useState(false)
     const [showCodeDialog, setShowCodeDialog] = useState(false)
-    const [showComments, setShowComments] = useState(true)
+    const [showComments, setShowComments] = useState(false)
     const [fullCode, setFullCode] = useState("")
     const reactFlowInstance = useReactFlow()
     const { theme } = useTheme()
@@ -121,8 +121,11 @@ export default function FlowPanel() {
         }
 
         if (!comments) {
-            code = code.replace(/\n--.*\n/g, "\n")
+            code = code.split("\n").filter(line => !line.trim().startsWith("--")).join("\n")
         }
+
+        // collapse multiple empty newlines with or without tab into a single empty line
+        code = code.split("\n\n").filter(line => line.trim() !== "").join("\n")
 
         setFullCode(code.trim() || "-- No code generated")
         setShowCodeDialog(true)

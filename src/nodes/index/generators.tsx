@@ -65,7 +65,7 @@ export function GenerateNode(node: NodeConfig) {
                     } else {
                         code = "-- there is no code generator for this node";
                     }
-                    code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n\n${(formatLua(body))}`
+                    code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]${body ? `\n${body}\n` : "\n"}`
 
                     e.detail.callback(code);
                 };
@@ -211,36 +211,40 @@ export function GenerateSidebar(node_: NodeConfig) {
 
             // If we're in normal mode (flow editor)
             try {
-                const connectedNodes = activeNode ? await getConnectedNodes(activeNode.id) : [];
-                let body = "";
+                // const connectedNodes = activeNode ? await getConnectedNodes(activeNode.id) : [];
+                // let body = "";
 
-                const iterateNode = async (node: any) => {
-                    if (Array.isArray(node)) {
-                        for (const n of node) {
-                            await iterateNode(n);
-                        }
-                    } else {
-                        const nodeCode = await getCode(node.id, node.data);
-                        if (!body.includes(`-- [start:${node.id}]`)) {
-                            body += nodeCode;
-                        }
-                    }
-                };
+                // const iterateNode = async (node: any) => {
+                //     if (Array.isArray(node)) {
+                //         for (const n of node) {
+                //             await iterateNode(n);
+                //         }
+                //     } else {
+                //         const nodeCode = await getCode(node.id, node.data);
+                //         if (!body.includes(`-- [start:${node.id}]`)) {
+                //             body += nodeCode;
+                //         }
+                //     }
+                // };
 
-                for (const node of connectedNodes) {
-                    await iterateNode(node);
-                }
+                // for (const node of connectedNodes) {
+                //     await iterateNode(node);
+                // }
 
-                let code = "";
-                if (currentNode.codeTemplate) {
-                    code = processTemplate(currentNode.codeTemplate, inputs as TNodeData);
-                } else {
-                    code = "-- there is no code template for this node";
-                }
+                // let code = "";
+                // if (currentNode.codeTemplate) {
+                //     code = processTemplate(currentNode.codeTemplate, inputs as TNodeData);
+                // } else {
+                //     code = "-- there is no code template for this node";
+                // }
 
-                const finalCode = `\n\n-- [start:${activeNode?.id}]\n${formatLua(code)}\n-- [end:${activeNode?.id}]\n\n${formatLua(body)}`;
-                setCode(finalCode.trim());
-                return finalCode;
+                // const finalCode = `\n\n-- [start:${activeNode?.id}]\n${formatLua(code)}\n-- [end:${activeNode?.id}]${body ? `\n\n${body}\n` : "\n"}`;
+                // setCode(finalCode.trim());
+                // return finalCode;
+
+                const finalCode = await getCode(activeNode?.id!, inputs)
+                setCode(finalCode.trim())
+                return finalCode.trim()
             } catch (err) {
                 console.error("Error embedding code:", err);
                 setCode("-- Error generating code");
@@ -363,7 +367,7 @@ export function GenerateSidebar(node_: NodeConfig) {
                     )}
                 </div>
             })}
-            <SyntaxHighlighter code={formatLua(code || "-- lua code will appear here")} theme={theme} />
+            <SyntaxHighlighter code={code || "-- lua code will appear here"} theme={theme} />
         </div>
     }
     return SidebarComponent;
