@@ -12,7 +12,7 @@ import { parseOutupt, runLua } from "@/lib/aos";
 import Link from "next/link";
 import { SubRootNodesAvailable } from "./index/registry";
 import { TNodeType } from "./index/type";
-import { updateNodeData } from "@/lib/events";
+import { getCode, updateNodeData } from "@/lib/events";
 import Editor from "@monaco-editor/react"
 import { formatLua } from "@/lib/utils";
 import SyntaxHighlighter from "@/components/syntax-highlighter";
@@ -60,6 +60,7 @@ export function CodeblockNode(props: Node) {
 export function CodeblockSidebar() {
     // input states according to node data (modify as needed)
     const [code, setCode] = useState("")
+    const [codePreview, setCodePreview] = useState("")
 
     const [prompt, setPrompt] = useState<string | null>(null)
     const { activeNode, activeProcess, setActiveNode } = useGlobalState()
@@ -77,6 +78,9 @@ export function CodeblockSidebar() {
     useEffect(() => {
         if (!activeNode) return
         updateNodeData(activeNode.id, { code });
+        getCode(activeNode.id, { code }).then(code => {
+            setCodePreview(code)
+        })
     }, [code]);
 
 
@@ -117,6 +121,6 @@ export function CodeblockSidebar() {
                 }
             }}
         />
-        <SyntaxHighlighter code={formatLua(code)} theme={theme} />
+        <SyntaxHighlighter code={codePreview.trim()} theme={theme} />
     </div>
 }

@@ -68,7 +68,7 @@ export function HandlerNode(props: Node) {
     "${inputs.name}",
     { Action = "${inputs.action}" },
     function(msg)
-        ${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
+${body.length > 0 ? body : "-- Add nodes to the graph to add code here"}
     end)`
 
                 code = `\n\n-- [start:${props.id}]\n${formatLua(code)}\n-- [end:${props.id}]\n`
@@ -162,7 +162,7 @@ export function HandlerSidebar() {
             ))}
         </div>
 
-        <SyntaxHighlighter code={code} theme={theme} />
+        <SyntaxHighlighter code={code.trim()} theme={theme} />
     </div>
 
 }

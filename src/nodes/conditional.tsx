@@ -324,7 +324,7 @@ export function ConditionalSidebar() {
             </>
         )}
 
-        <SyntaxHighlighter code={code} theme={theme} />
+        <SyntaxHighlighter code={code.trim()} theme={theme} />
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             This node will conditionally execute the connected nodes if the condition evaluates to true.<br /><br />

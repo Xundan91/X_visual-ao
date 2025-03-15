@@ -117,18 +117,20 @@ export function LoopNode(props: Node) {
                 let code = ""
                 if (inputs.loopType == "range") {
                     code = `for ${props.id.replaceAll("-", "_")} = ${inputs.startIndex}, ${inputs.endIndex}, ${inputs.stepValue} do
-    ${body}
+${body}
 end`
                 } else if (inputs.loopType == "condition") {
                     code = `
 ${props.id.replaceAll("-", "_")} = 1
 while ${inputs.condition} do
-    ${body}
+${body}
+
+${props.id.replaceAll("-", "_")} = ${props.id.replaceAll("-", "_")} + 1
 end`
                 } else if (inputs.loopType == "iterator") {
                     code = `${props.id.replaceAll("-", "_")} = 1
 for i, item in pairs(${inputs.iteratorVariable}) do
-    ${body}
+${body}
 ${props.id.replaceAll("-", "_")} = ${props.id.replaceAll("-", "_")} + 1
 end`
                 }
@@ -338,7 +340,7 @@ export function LoopSidebar() {
             </>
         )}
 
-        <SyntaxHighlighter code={code} theme={theme} />
+        <SyntaxHighlighter code={code.trim()} theme={theme} />
 
         <div className="text-muted-foreground text-xs p-2 mt-4">
             {loopType === "condition" ? (

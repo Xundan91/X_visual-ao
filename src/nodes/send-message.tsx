@@ -351,6 +351,6 @@ export function SendMessageSidebar() {
             </Button>
         </div>
 
-        <SyntaxHighlighter code={code} theme={theme} />
+        <SyntaxHighlighter code={code.trim()} theme={theme} />
     </div>
 }
