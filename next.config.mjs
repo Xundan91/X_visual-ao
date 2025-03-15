@@ -9,7 +9,7 @@ const commitHash = execSync('git log --pretty=format:"%h" -n1')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  // basePath: "/visual-ao",
+  basePath: "",
   transpilePackages: ["react-blockly"],
   images: {
     unoptimized: true
