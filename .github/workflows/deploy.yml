@@ -43,10 +43,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
-          # Automatically inject basePath in your Next.js configuration file and disable
-          # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
+          # Automatically inject basePath in your Next.js configuration file
           static_site_generator: next
       - name: Install dependencies
         run: pnpm i
@@ -56,6 +53,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
+      - name: Deploy to permaweb
+        id: deploy-permaweb
+        run: |
+          pnpm deploy
 
   # Deployment job
   deploy:
