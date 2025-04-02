@@ -13,8 +13,8 @@ import { useGlobalState } from "@/hooks/useGlobalStore";
 import { getResults } from "@/lib/aos";
 import { toast } from "sonner";
 import Ansi from "ansi-to-react";
-import { tutorial } from "@/tutorial";
 import TopBar from "@/components/top-bar";
+import { Guide } from "@/components/guide";
 
 export default function Index() {
     const consoleRef = useRef<ImperativePanelHandle>(null);
@@ -58,6 +58,7 @@ export default function Index() {
     }, [activeProcess])
 
     return <div className="flex flex-col border h-screen">
+        <Guide />
         <TopBar />
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel maxSize={25} minSize={15} defaultSize={15} className="overflow-visible">
@@ -65,17 +66,13 @@ export default function Index() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
-                {/* <Main /> */}
-                <ResizablePanelGroup direction="vertical" className=" transition-all duration-200">
+                <ResizablePanelGroup direction="vertical" className="transition-all duration-200">
                     <ResizablePanel>
-                        {/* console size to whole number */}
-                        {/* <ReactFlowProvider>
-                        </ReactFlowProvider> */}
                         <Main heightPerc={Math.round(consoleSize)} />
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel ref={consoleRef} minSize={5} maxSize={50} collapsedSize={0} defaultSize={0} collapsible
-                        onResize={(current, prev) => { setConsoleSize(current) }}>
+                        onResize={(current) => { setConsoleSize(current) }}>
                         <Output />
                     </ResizablePanel>
                 </ResizablePanelGroup>

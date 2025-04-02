@@ -1,6 +1,6 @@
 import { ConnectButton } from "arweave-wallet-kit";
 import { Button } from "./ui/button";
-import { AppWindowMac, PencilRuler, Workflow } from "lucide-react";
+import { AppWindowMac, HelpCircle, PencilRuler, Workflow } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Node } from "@xyflow/react";
 import { useState } from "react";

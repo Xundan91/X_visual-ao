@@ -2,7 +2,7 @@ import { useGlobalState } from "@/hooks/useGlobalStore"
 import { findMyPIDs, spawnProcess } from "@/lib/aos"
 import { shortAddress } from "@/lib/utils"
 import { ConnectButton, useActiveAddress } from "arweave-wallet-kit"
-import { ChevronLeft, ChevronRight, CopyIcon, Inbox, Plug, PlusIcon, RefreshCw, TerminalSquare, X, Loader2, Loader, CheckIcon, Workflow, PencilRuler } from "lucide-react"
+import { ChevronLeft, ChevronRight, CopyIcon, Inbox, Plug, PlusIcon, RefreshCw, TerminalSquare, X, Loader2, Loader, CheckIcon, Workflow, PencilRuler, HelpCircle, PenTool } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,7 @@ import { AppVersion } from "@/lib/constants"
 import { execSync } from "child_process"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import { useLocalStorage } from "usehooks-ts"
 
 function Process({ processId, name, loading }: { processId: string, name?: string, loading?: boolean }) {
     const { activeProcess, setActiveProcess } = useGlobalState()
@@ -76,6 +77,9 @@ export function LeftSidebar() {
     const [newProcessName, setNewProcessName] = useState("")
     const [connectProcessId, setConnectProcessId] = useState("")
     const [spawning, setSpawning] = useState(false)
+    const [guideOpen, setGuideOpen] = useLocalStorage("guide-open", false)
+    const [hasSeenGuide, setHasSeenGuide] = useLocalStorage("has-seen-guide", false)
+    const [guideIndex, setGuideIndex] = useLocalStorage("guide-index", 0)
     const router = useRouter()
 
     async function refreshProcesses() {
@@ -162,9 +166,13 @@ export function LeftSidebar() {
         cancelButton?.click()
     }
 
+    function showGuide() {
+        setHasSeenGuide(false)
+        setGuideIndex(0)
+    }
+
     return (
         <>
-
             <div className="p-0 flex flex-col relative h-full">
                 <div className="p-4 flex text-sm items-center gap-2 font-robotoMono tracking-tight">MY PROCESSES
                     <Button disabled={loading || !address} variant="ghost" onClick={refreshProcesses} className="ml-auto h-6 w-6 mr-2.5 p-0"><RefreshCw size={7} strokeWidth={1.3} /></Button>
@@ -282,9 +290,16 @@ export function LeftSidebar() {
                         <ChevronRight size={10} strokeWidth={1.3} />
                     </Button>
                 </div>
-                <div className="absolute bottom-1 left-2 text-xs text-muted-foreground text-center">v{AppVersion} - <Link href={`https://github.com/ankushKun/visual-ao/commit/${process.env.commitHash}`} target="_blank" className="hover:underline">{process.env.commitHash}</Link></div>
-                <div className="absolute bottom-1 right-2 text-muted-foreground text-xs hover:underline">
-                    <Link href="/builder">Node Builder</Link>
+                <div className="absolute bottom-0 flex gap-1 p-1 items-center justify-around w-full px-2">
+                    <Button variant="link" className="p-0 text-muted-foreground" onClick={showGuide}>
+                        <HelpCircle size={5} className="w-5 h-5" />
+                    </Button>
+                    <div className=" text-muted-foreground text-xs hover:underline">
+                        <Link href="/builder">
+                            <PenTool size={5} className="w-5 h-5" />
+                        </Link>
+                    </div>
+                    <div className=" text-xs text-muted-foreground text-center">v{AppVersion} - <Link href={`https://github.com/ankushKun/visual-ao/commit/${process.env.commitHash}`} target="_blank" className="hover:underline">{process.env.commitHash}</Link></div>
                 </div>
             </div>
         </>
