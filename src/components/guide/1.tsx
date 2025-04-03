@@ -38,7 +38,7 @@ export default function Guide1() {
                 <div className="space-y-3 pt-4 flex flex-col w-fit mx-auto">
                     <Button
                         variant="default"
-                        className="bg-secondary text-white py-3 px-6 rounded-lg hover:bg-secondary/80 transition-colors shadow-md"
+                        className="hover:text-foreground py-3 px-6 rounded-lg hover:bg-secondary/80 transition-colors shadow-md"
                         onClick={next}
                     >
                         Give me a walkthrough

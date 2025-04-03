@@ -17,8 +17,8 @@ export default function Guide4() {
             <div className="text-center space-y-4">
                 <h1 className="text-3xl font-medium">Connect & Customise 🔗</h1>
                 <p className="text-muted-foreground text-lg">
-                    You can connect nodes in chains or branch them out to setup execution however you want.<br />
-                    Protip: press alt/option anytime to view the execution order. Happy Hacking!
+                    You can connect nodes in chains or branch <br /> them out to setup execution however you want.<br />
+                    Protip: press alt/option anytime to view the execution order. <br />Happy Hacking!
                 </p>
             </div>
 
