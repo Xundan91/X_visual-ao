@@ -1,14 +1,17 @@
 import { useGlobalState } from "@/hooks/useGlobalStore"
-import { CodeIcon, FileQuestion, LucideIcon, MousePointerClick } from "lucide-react"
+import { CodeIcon, FileQuestion, LucideIcon, MousePointerClick, Plus } from "lucide-react"
 import { keyToNode, Node, Nodes } from "@/nodes/index"
 import { HTMLAttributes, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { addNode } from "@/lib/events"
 import { Input } from "@/components/ui/input"
 import { NodeIconMapping } from "@/nodes/index/index"
-import { nodeConfigs } from "@/nodes/index/registry"
+import { NodeConfig, nodeConfigs } from "@/nodes/index/registry"
 import { Button } from "./ui/button"
 import { TNodeType } from "@/nodes/index/type"
+import { toast } from "sonner"
+import { useLocalStorage } from "usehooks-ts"
+
 export function SmolText({ children, className }: { children: React.ReactNode, className?: HTMLAttributes<HTMLDivElement>["className"] }) {
     return <div className={cn("text-xs text-muted-foreground p-2 pb-0", className)}>{children}</div>
 }
@@ -52,6 +55,7 @@ function NodeTemplate({ type, Icon, disabled }: { type: TNodeType, Icon: LucideI
 function AvailableNodes() {
     // New state for search term
     const [searchTerm, setSearchTerm] = useState("");
+    const [localNodes, setLocalNodes] = useLocalStorage<NodeConfig[]>("local-nodes", [], { initializeWithValue: true });
     const { availableNodes } = useGlobalState()
     const hidden: TNodeType[] = ["add-node", "start", "annotation"];
     const todo: string[] = [];
@@ -65,6 +69,55 @@ function AvailableNodes() {
     let filteredNodes = allNodes.filter((node) =>
         keyToNode(node).toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    function handlerCustomUpload() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target?.result as string) as NodeConfig;
+
+                    if (!json.name) return toast.error("Node name is missing");
+                    if (!json.type) return toast.error("Node type is missing");
+                    if (!json.outputType) return toast.error("Node output type is missing");
+                    if (!json.codeTemplate) return toast.error("Node code template is missing");
+                    if (!json.icon && !json.iconName) return toast.error("Node icon or iconName is missing");
+
+                    // Check if a node with this type already exists in either localNodes or nodeConfigs
+                    const existingLocalNode = localNodes.find(node => node.type === json.type);
+                    const existingBuiltInNode = nodeConfigs.find(node => node.type === json.type);
+
+                    if (existingLocalNode || existingBuiltInNode) {
+                        const confirmReplace = window.confirm(`A node with type "${json.type}" already exists. Do you want to replace it?`);
+                        if (!confirmReplace) {
+                            return;
+                        }
+
+                        // Replace the existing node
+                        setLocalNodes(prev => prev.filter(node => node.type !== json.type).concat(json));
+                        toast.success('Custom node replaced successfully');
+                        return;
+                    }
+
+                    // Store the custom node data in localStorage
+                    setLocalNodes(prev => [...prev, json]);
+                    // Show success message
+                    toast.success('Custom node added locally');
+                } catch (err) {
+                    console.error('Failed to parse JSON:', err);
+                    toast.error('Invalid JSON file. Please check the format.');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
 
     return (
         <>
@@ -108,6 +161,16 @@ function AvailableNodes() {
                             />
                         }
                     })}
+                {/* add your own */}
+                <div
+                    className="flex flex-col w-28 h-28 border border-dashed bg-muted/20 text-muted-foreground/50 hover:text-muted-foreground rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
+                    onClick={handlerCustomUpload}
+                >
+                    <Plus size={22} />
+                    <div className="truncate whitespace-normal text-center">
+                        Custom Node
+                    </div>
+                </div>
             </div>
         </>
     );

@@ -133,8 +133,9 @@ export default function FlowPanel() {
     }
 
     useEffect(() => {
-        showFullCode({ comments: showComments })
-    }, [showComments]);
+        if (showCodeDialog)
+            showFullCode({ comments: showComments })
+    }, [showComments, showCodeDialog]);
 
     async function formatFlow() {
         if (flowIsRunning) return

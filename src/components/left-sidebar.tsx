@@ -290,16 +290,44 @@ export function LeftSidebar() {
                         <ChevronRight size={10} strokeWidth={1.3} />
                     </Button>
                 </div>
-                <div className="absolute bottom-0 flex gap-1 p-1 items-center justify-around w-full px-2">
-                    <Button variant="link" className="p-0 text-muted-foreground" onClick={showGuide}>
-                        <HelpCircle size={5} className="w-5 h-5" />
-                    </Button>
-                    <div className=" text-muted-foreground text-xs hover:underline">
-                        <Link href="/builder">
-                            <PenTool size={5} className="w-5 h-5" />
-                        </Link>
+                <div className="absolute bottom-0 w-full border-t bg-background/80 backdrop-blur-sm">
+                    <div className="flex items-center justify-between px-4 py-3">
+                        <div className="text-xs text-muted-foreground flex flex-col items-start justify-center">
+                            <span className="font-medium">v{AppVersion}</span>
+                            {process.env.commitHash && (
+                                <Link
+                                    href={`https://github.com/ankushKun/visual-ao/commit/${process.env.commitHash}`}
+                                    target="_blank"
+                                    className="hover:underline hover:text-foreground transition-colors"
+                                >
+                                    {process.env.commitHash.substring(0, 7)}
+                                </Link>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 rounded-full hover:bg-muted"
+                                onClick={showGuide}
+                                title="Help Guide"
+                            >
+                                <HelpCircle size={16} className="text-muted-foreground" />
+                            </Button>
+
+                            <Link href="/builder">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 rounded-full hover:bg-muted"
+                                    title="Node Builder"
+                                >
+                                    <PenTool size={16} className="text-muted-foreground" />
+                                </Button>
+                            </Link>
+                        </div>
+
                     </div>
-                    <div className=" text-xs text-muted-foreground text-center">v{AppVersion} - <Link href={`https://github.com/ankushKun/visual-ao/commit/${process.env.commitHash}`} target="_blank" className="hover:underline">{process.env.commitHash}</Link></div>
                 </div>
             </div>
         </>
