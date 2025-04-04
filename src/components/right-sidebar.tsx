@@ -31,7 +31,7 @@ export function ToggleButton({ onClick, nameType, className, disabled }: { onCli
 
 
 // a single node in the list
-function NodeTemplate({ type, Icon, disabled }: { type: TNodeType, Icon: LucideIcon, disabled?: boolean }) {
+function NodeTemplate({ type, Icon, disabled, isLocal }: { type: TNodeType, Icon: LucideIcon, disabled?: boolean, isLocal?: boolean }) {
     function addThisNode() {
         if (disabled) return;
         addNode(type)
@@ -40,9 +40,11 @@ function NodeTemplate({ type, Icon, disabled }: { type: TNodeType, Icon: LucideI
     return (
         <div
             data-disabled={disabled}
-            className="flex flex-col w-28 h-28 border bg-muted hover:bg-muted-foreground/20 transition-colors duration-100 rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
+            className="flex flex-col overflow-clip relative w-28 h-28 border bg-muted hover:bg-muted-foreground/20 transition-colors duration-100 rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
             onClick={addThisNode}
         >
+            {isLocal && <div className="absolute top-0 right-0 bg-muted-foreground/20 text-muted-foreground/80 rounded-bl-md px-1 pl-1.5 text-xs">local</div>
+            }
             <Icon size={22} />
             <div className="truncate whitespace-normal text-center">
                 {keyToNode(type) || type}
@@ -161,6 +163,16 @@ function AvailableNodes() {
                             />
                         }
                     })}
+                {/* local nodes */}
+                {localNodes.map((node, index) => {
+                    return <NodeTemplate
+                        isLocal={true}
+                        disabled={false}
+                        key={`local-${index}`}
+                        type={node.type}
+                        Icon={node.icon ? node.icon : node.iconName ? require("lucide-react")[node.iconName] : FileQuestion}
+                    />
+                })}
                 {/* add your own */}
                 <div
                     className="flex flex-col w-28 h-28 border border-dashed bg-muted/20 text-muted-foreground/50 hover:text-muted-foreground rounded-md items-center justify-center aspect-square gap-2 hover:drop-shadow data-[disabled=true]:hover:drop-shadow-none data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-default p-2 cursor-pointer"
