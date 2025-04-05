@@ -8,21 +8,37 @@ import { installAPM, installPackage, parseOutupt, runLua, spawnToken } from '@/l
 import { getCode, getConnectedNodes, updateNodeData } from '@/lib/events';
 import { customNodes, Node, Nodes, NodeSizes } from '@/nodes/index';
 import { attachables, nodeConfigs, RootNodesAvailable, SubRootNodesAvailable } from '@/nodes/index/registry';
-import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, useNodesData, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useActiveAddress } from 'arweave-wallet-kit';
-import { BoxIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { data as TokenData } from '@/nodes/token';
 import { toast } from 'sonner';
 import { TNodeType } from '@/nodes/index/type';
 import { useTheme } from 'next-themes';
-const defaultNodes = [
+import { Button } from '@/components/ui/button'; 
+import { useHistoryStore } from '@/hooks/history-store'; 
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { BoxIcon, Redo2Icon, Undo2Icon } from 'lucide-react'; 
+import { addEdge, Background, BackgroundVariant, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, NodeChange, EdgeChange, useReactFlow, ReactFlowProvider, SelectionMode } from '@xyflow/react';
+
+
+// const defaultNodes = [
+//   {
+//     id: "start",
+//     position: { x: 50, y: 200 },
+//     type: "start",
+//     data: {}
+//   }
+// ];
+//  New defaultNodes 
+const defaultNodes: any[] = [
   {
     id: "start",
     position: { x: 50, y: 200 },
     type: "start",
-    data: {}
+    data: {
+      label: "Start",          
+      attachable: true          
+    }
   }
 ];
 
@@ -34,6 +50,7 @@ export default function Main({ heightPerc }: { heightPerc?: number }) {
 }
 
 const ignoreChangesForNodes = ["start", "annotation"]
+
 function Flow({ heightPerc }: { heightPerc?: number }) {
   const globals = useGlobalState()
   const address = useActiveAddress()
@@ -42,9 +59,111 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
   const { setActiveNode } = useGlobalState()
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  
+  // For tracking whether changes should be recorded in history
+  const [shouldRecordHistory, setShouldRecordHistory] = useState(true);
+  
+  // Debounce timer here
+  const historyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Get history store methods
+  const { 
+    saveCurrent, 
+    undo, 
+    redo, 
+    clear: clearHistory, 
+    canUndo, 
+    canRedo,
+    performingUndoRedo,
+    setPerformingUndoRedo
+  } = useHistoryStore();
+  
+  const saveToHistory = useCallback(() => {
+    if (!shouldRecordHistory || performingUndoRedo) return;
+    
+    if (historyTimer.current) {
+      clearTimeout(historyTimer.current);
+    }
+    
+    historyTimer.current = setTimeout(() => {
+      saveCurrent({ nodes, edges });
+    }, 300); 
+  }, [nodes, edges, saveCurrent, shouldRecordHistory, performingUndoRedo]);
+  
+  useEffect(() => {
+    saveToHistory();
+    
+    return () => {
+      if (historyTimer.current) {
+        clearTimeout(historyTimer.current);
+      }
+    };
+  }, [nodes, edges, saveToHistory]);
+  
+  // Handle undo
+  const handleUndo = useCallback(() => {
+    if (!canUndo()) return;
+    
+    const previous = undo();
+    if (!previous) return;
+    
+    setShouldRecordHistory(false);
+    
+    setNodes(previous.nodes);
+    setEdges(previous.edges);
+    
+    setTimeout(() => {
+      setPerformingUndoRedo(false);
+      setShouldRecordHistory(true);
+    }, 50);
+  }, [canUndo, undo, setNodes, setEdges, setPerformingUndoRedo]);
+  
+  // Handle redo
+  const handleRedo = useCallback(() => {
+    if (!canRedo()) return;
+    
+    const next = redo();
+    if (!next) return;
+    
+    setShouldRecordHistory(false);
+    
+    setNodes(next.nodes);
+    setEdges(next.edges);
+    
+    setTimeout(() => {
+      setPerformingUndoRedo(false);
+      setShouldRecordHistory(true);
+    }, 50);
+  }, [canRedo, redo, setNodes, setEdges, setPerformingUndoRedo]);
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!globals.activeProcess) return;
+      
+      // Handle Ctrl+Z / Cmd+Z for undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      
+      // Handle Ctrl+Y / Cmd+Y or Ctrl+Shift+Z / Cmd+Shift+Z for redo
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleUndo, handleRedo, globals.activeProcess]);
+  
+  useEffect(() => {
+    clearHistory();
+  }, [globals.activeProcess, clearHistory]);
 
-
-  // add node
+  // add node - with fixed dependencies
   useEffect(() => {
     const addNodeListener = ((e: CustomEvent) => {
       if (!globals.activeProcess) return
@@ -151,9 +270,9 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
     window.addEventListener("add-node", addNodeListener)
     return () => window.removeEventListener("add-node", addNodeListener)
-  }, [nodes, setEdges, globals.activeProcess, globals.attach])
+  }, [nodes, edges, setNodes, setEdges, globals.activeProcess, globals.attach, globals.toggleSidebar, globals.setActiveNode, globals.setAttach])
 
-  // update node data
+  // update node data - with fixed dependencies
   useEffect(() => {
     const updateNodeDataListener = ((e: CustomEvent) => {
       const id = e.detail.id
@@ -182,9 +301,9 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
     window.addEventListener("update-node-data", updateNodeDataListener)
     return () => window.removeEventListener("update-node-data", updateNodeDataListener)
-  }, [setNodes, globals.setActiveNode, globals.activeNode?.id])
+  }, [setNodes])
 
-  // delete node
+  // delete node - with fixed dependencies
   useEffect(() => {
     const deleteNodeListener = ((e: CustomEvent) => {
       const id = e.detail.id
@@ -271,9 +390,10 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
 
     window.addEventListener("delete-node", deleteNodeListener)
     return () => window.removeEventListener("delete-node", deleteNodeListener)
-  }, [nodes, setEdges, edges])
+  }, [nodes, edges, setNodes, setEdges, globals.setActiveNode, globals.setAttach, globals.toggleSidebar, 
+      globals.setAvailableNodes, globals.resetNodes, globals.setFlowIsRunning, globals.setOrder])
 
-  // add edge
+  // add edge - with fixed dependencies
   useEffect(() => {
     const addEdgeListener = ((e: CustomEvent) => {
       const edge = e.detail.edge
@@ -284,7 +404,7 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     return () => window.removeEventListener("add-edge", addEdgeListener)
   }, [setEdges])
 
-  // remove edge
+  // remove edge - with fixed dependencies
   useEffect(() => {
     const removeEdgeListener = ((e: CustomEvent) => {
       const id = e.detail.id
@@ -295,24 +415,41 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     return () => window.removeEventListener("remove-edge", removeEdgeListener)
   }, [setEdges])
 
-  // load nodes and edges from localStorage
+  // load nodes and edges from localStorage - memoized for performance
   useEffect(() => {
     if (!globals.activeProcess) return
 
     // Clear current nodes/edges before loading new process
     const savedData = localStorage.getItem(`flow-${globals.activeProcess}`)
     if (savedData) {
-      const parsedData = JSON.parse(savedData)
-      setNodes(parsedData.nodes)
-      setEdges(parsedData.edges)
+      try {
+        const parsedData = JSON.parse(savedData)
+        setNodes(parsedData.nodes)
+        setEdges(parsedData.edges)
+        
+        // Initialize history with current state after loading
+        setTimeout(() => {
+          saveCurrent({ nodes: parsedData.nodes, edges: parsedData.edges });
+        }, 100);
+      } catch (e) {
+        console.error("Failed to parse saved flow data", e)
+        setNodes(defaultNodes)
+        setEdges([])
+        localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify({ nodes: defaultNodes, edges: [] }))
+      }
     } else {
       setNodes(defaultNodes)
       setEdges([])
       localStorage.setItem(`flow-${globals.activeProcess}`, JSON.stringify({ nodes: defaultNodes, edges: [] }))
+      
+      // Initialize history with default state
+      setTimeout(() => {
+        saveCurrent({ nodes: defaultNodes, edges: [] });
+      }, 100);
     }
-  }, [globals.activeProcess]) // Only depend on activeProcess changes
+  }, [globals.activeProcess, setNodes, setEdges, saveCurrent])
 
-  // save nodes and edges to localStorage
+  // save nodes and edges to localStorage - debounced with proper deps
   useEffect(() => {
     if (!globals.activeProcess) return
 
@@ -443,7 +580,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
     globals.setActiveNode(undefined)
   }, [globals.activeProcess])
 
-  async function onNodeClick(e: any, node: Node) {
+  // Handle node click - extracted as memoized function
+  const onNodeClick = useCallback(async (e: any, node: Node) => {
     if (globals.flowIsRunning) return
     console.log("onNodeClick", node)
 
@@ -562,7 +700,20 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         setTimeout(() => setCenter(node.position.x + NodeSizes.normal.width / 2, node.position.y + NodeSizes.normal.height / 2, { duration: 500, zoom: 0.8 }), 100)
       }
     }
-  }
+  }, [globals.flowIsRunning, globals.setActiveNode, globals.setAttach, globals.toggleSidebar, 
+      globals.consoleRef, globals.resetNodes, globals.setFlowIsRunning, globals.addRunningNode, 
+      globals.addErrorNode, globals.addOutput, globals.addSuccessNode, fitView, setCenter]);
+
+  // Custom node changes handler to record history
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    // Filter out ignored node types and remove operations
+    const filteredChanges = changes
+      .filter(change => change.type !== "remove")
+      .filter(change => !ignoreChangesForNodes.includes((change as any).id));
+    
+    // Apply changes
+    onNodesChange(filteredChanges as any);
+  }, [onNodesChange]);
 
   return (
     <div className="w-full h-[calc(100%-20px)]">
@@ -579,12 +730,35 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
               </>
             } */}
           </>}
+          
+          {/* Add undo/redo buttons */}
+          <div className="ml-auto flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-4 w-4 p-0" 
+              onClick={handleUndo} 
+              disabled={!canUndo() || globals.flowIsRunning}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2Icon size={12} className={canUndo() ? "" : "opacity-30"} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-4 w-4 p-0" 
+              onClick={handleRedo} 
+              disabled={!canRedo() || globals.flowIsRunning}
+              title="Redo (Ctrl+Y or Ctrl+Shift+Z)"
+            >
+              <Redo2Icon size={12} className={canRedo() ? "" : "opacity-30"} />
+            </Button>
+          </div>
         </>}
       </div>
 
 
       <ReactFlow
-        // nodesDraggable={false}
         nodesConnectable={false}
         // nodesFocusable={false}
         // elementsSelectable={false}
@@ -599,12 +773,8 @@ function Flow({ heightPerc }: { heightPerc?: number }) {
         nodes={globals.activeProcess ? nodes :
           [{ id: "no-prc-message", position: { x: 50, y: 50 }, data: { label: "Please select a process to start", muted: true, italic: true }, type: "annotation" }]}
         edges={edges}
-        onNodeClick={onNodeClick as any}
-        onNodesChange={(e: NodeChange[]) => {
-          // prevent deletion
-          const e_ = e.filter(e__ => e__.type !== "remove").filter(e__ => !ignoreChangesForNodes.includes((e__ as any).id))
-          onNodesChange(e_ as any)
-        }}
+        onNodeClick={onNodeClick}
+        onNodesChange={handleNodesChange}
         onNodeDrag={() => { updateNodeData("", {}) }}
         onPaneClick={() => {
           globals.setActiveNode(undefined)
